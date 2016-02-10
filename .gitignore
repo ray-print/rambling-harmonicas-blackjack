@@ -1,0 +1,22 @@
+#Mac
+.DS_Store
+Thumbs.db
+
+#Java
+*.class
+*.jar
+
+#Build
+build/
+dist/
+
+#Netbeans
+nbactions.xml
+nbbuld/
+nbdist/
+nbproject/*
+!nbproject/project.properties
+!nbporject/project.xml
+
+#Strategy data files -- these will be added in in a future commit
+data/ 
