@@ -79,14 +79,10 @@ protected float getBestEV() {
    if (complete) {
       return bestEV;
    }
-   else {
-      assert false;
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Attempted to pull the best EV from a"
-                 + "non-complete Answer.");
-      }
-      return -1000;
-   }
+   assert false : 
+           "Attempted to pull the best EV from a non-complete Answer.";
+   return -1000;
+   
 }
 
 /**
@@ -99,14 +95,9 @@ protected float getSecondBestEV() {
    if (complete) {
       return secondBestEV;
    }
-   else {
-      assert false;
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Attempted to pull the best EV from a"
-                 + "non-complete Answer.");
-      }
-      return -1000;
-   }
+   assert false :
+           "Attempted to pull the best EV from a non-complete Answer.";
+   return -1000;
 }
 
 /**
@@ -166,12 +157,8 @@ static private Action byteToAction(byte myByte) {
       default:
          //What if the file is corrupted?
          assert false : "Action.ERROR is never part of basic strategy";
-         if (Blackjack.debug()) {
-            throw new IllegalStateException();
-         }
          return Action.ERROR;
    }
-
 }
 
 /**
@@ -306,14 +293,9 @@ static protected int answerHash(byte firstPlayer, byte secondPlayer,
       if (firstPlayer == secondPlayer) {
          return (int) dealerCard + 100000 * ((int) firstPlayer);
       }
-      else {
-         if (Blackjack.debug()) {
-            System.out.println("answerHash called with a recommended split, "
-                    + "despite the fact that\n"
-                    + "the player can't split becuase his cards are different.");
-            throw new IllegalArgumentException();
-         }
-      }
+      throw new IllegalArgumentException("answerHash called with a recommended "
+      + "split, despite the fact that\n "
+      + "the player can't split becuase his cards are different.");
    }
 
 //The order of the player cards does not matter to the caller. So I should
@@ -421,14 +403,14 @@ private boolean hasBlackjack() {
 }
 
 /**
- * Used to succinctly serialize an Answer into one byte. Untested. Used
+ * Used to succinctly serialize an Answer into one byte. Used
  * by Strategy.
- *
+ * TODO: Test this function
+ * 
  * @return
  */
 byte getConsolidatedActions() {
-   if (Blackjack.debug() && (this.bestAction == this.secondBestAction)
-           && !hasBlackjack()) {
+   if ((this.bestAction == this.secondBestAction) && !hasBlackjack()) {
       System.err.print(this);
       throw new RuntimeException("Actions identical during save.");
    }
@@ -468,14 +450,13 @@ protected Answer(State aState, boolean consolidated) {
            && (!aState.playerBJ())) {
       State.printStateStatus(aState, "Error in answer constructor: top "
               + "two actions are the same.");
-      if (Blackjack.debug()) {
-         throw new RuntimeException();
-      }
+      assert false;
    }
 
    if (!checkValidEV(consolidated)) {
       State.printStateStatus(aState, "Error in Answer constructor - "
               + "EV is incorrect.");
+      assert false;
    }
 }
 
