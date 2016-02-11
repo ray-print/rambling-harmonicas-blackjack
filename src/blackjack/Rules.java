@@ -454,7 +454,7 @@ public boolean noDoublePostSplit() {
 
 /**
  * This variable is used only for calculation purposes; it has no effect
- * outside of fastDealerRecursive
+ * outside of DealerRecursive
  */
 int getDealerMaxHandSize() {
    return dealerMaxHandSize;

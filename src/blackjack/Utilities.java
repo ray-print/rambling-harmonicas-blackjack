@@ -45,7 +45,7 @@ public static boolean isBust(final ArrayList<Card> myCards) {
 }
 
 /**
- * True if the hand is soft. Internal function used by fastDealerRecursive
+ * True if the hand is soft. Internal function used by DealerRecursive
  */
 static boolean isSoft(final int[] myCards, final int handTotal) {
    if (myCards[0] == 0) {

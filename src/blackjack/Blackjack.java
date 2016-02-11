@@ -337,7 +337,7 @@ static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) 
       }
       else {
          try {
-            double[] solvedDealerProbs = fastDealerRecursive(
+            double[] solvedDealerProbs = DealerRecursive(
                     dealerCards, myShoe, theRules);
             Blackjack.incrementMisses();
             if ((myCacheStatus != NO_CACHE)
@@ -1051,7 +1051,7 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
  *
  * Use Testers.printAndTestFastDealerRecursive to debug this.
  */
-static double[] fastDealerRecursive(final int[] myCards, final FastShoe myDeck,
+static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
         final Rules theRules) {
    double[] endProbabilities = new double[7];
    int i;
@@ -1111,7 +1111,7 @@ static double[] fastDealerRecursive(final int[] myCards, final FastShoe myDeck,
             throw new IllegalArgumentException();
          }
          myCards[i] += 1;
-         scratch = fastDealerRecursive(myCards, myDeck, theRules);
+         scratch = DealerRecursive(myCards, myDeck, theRules);
          for (j = 0; j < scratch.length; j++) {
             endProbabilities[j] = scratch[j] * Probabilities[i] + endProbabilities[j];
          }

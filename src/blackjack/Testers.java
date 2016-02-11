@@ -1282,7 +1282,7 @@ static private void testRulesCopyConstructor(Rules theRules, Rules otherRules) {
 }
 
 /**
- * Includes no tests, but useful for debugging fastDealerRecursive
+ * Includes no tests, but useful for debugging DealerRecursive
  *
  * @param myCards
  * @param Deck
@@ -1301,7 +1301,7 @@ static private void printAndTestFastDealerRecursive(
    int[] handArray = new int[10];
    Utilities.convertCardArraytoArray(myCards, handArray);
    final double[] epicFail =
-           Blackjack.fastDealerRecursive(handArray, Deck, myRules);
+           Blackjack.DealerRecursive(handArray, Deck, myRules);
    double probability_sum = 0;
 
    if (displayBaseInfo) {
@@ -1347,7 +1347,7 @@ static private void printAndTestFastDealerRecursive(
 }
 
 /**
- * Used solely for debugging fastDealerRecursive
+ * Used solely for debugging DealerRecursive
  *
  * SETS HOLE CARD TO FALSE, MESSES AROUND WITH DECK
  *
@@ -1756,7 +1756,7 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
       cloneOfStartHand.add(new Card(startingCards.get(i)));
    }
 
-   final double[] calculatedResults = Blackjack.fastDealerRecursive(handArray, new FastShoe(myShoe), theRules);
+   final double[] calculatedResults = Blackjack.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
 
    ArrayList<Card> results;
    final double ITERATIONS = 50000;
@@ -1882,13 +1882,13 @@ private static void advancedTestResolveHands() {
    //Then do losing hand:
    calculatedValue -= 1;
    //Then do blackjack -- A 10 is insta-lose, otherwise nothing happens.
-   //calculatedValue = probOfTen * -1; (should be done already by fastDealerRecursive)
+   //calculatedValue = probOfTen * -1; (should be done already by DealerRecursive)
 
    int[] dealerCards = new int[10];
    ArrayList<Card> dealerArrayList = new ArrayList<Card>();
    dealerArrayList.add(dealerCard);
    dealerCards = Utilities.convertCardArraytoArray(dealerArrayList, dealerCards);
-   double[] dealerResults = Blackjack.fastDealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerResults = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
 
    double intermediateCalculatedValue = 0;
    //Dealer has 21, either natural or from drawing. You lose.
@@ -2102,7 +2102,7 @@ static void testResolveHands() {
    Utilities.zero(dealerCards);
 
    dealerCards[ aState.getDealerUpCard().value() - 1] = 1;
-   double[] dealerProbs = Blackjack.fastDealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerProbs = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
    //13 and 20. That's what both of these hands have. I also took insurance. Dang that's way
    //too many calculations.
 
