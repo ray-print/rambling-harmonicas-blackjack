@@ -9,9 +9,14 @@ package blackjack;
  * @author Watongo
  */
 public interface VagueShoe {
-    void addCard(Card aCard);
-    Card fastDrawSpecific (CardValue myCardValue);
-    double fastProbabilityOf(CardValue aCardValue);
-    int numberOfCards();
-    void printContents();
+void addCard(Card aCard);
+
+Card fastDrawSpecific(CardValue myCardValue);
+
+double fastProbabilityOf(CardValue aCardValue);
+
+int numberOfCards();
+
+void printContents();
+
 }
