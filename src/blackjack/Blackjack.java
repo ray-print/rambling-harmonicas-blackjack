@@ -2,22 +2,15 @@ package blackjack;
 
 import java.util.*;
 
-/**
- * Upon package completion -- Review all JavaDocs. Do more unit
- * testing. Go through exceptions.
- * Archive code relating to exact split calculations.
- * Really great to do -- hella testing. Standardize indices and CardValues.
- * Get rid of this file -- move everything to Utilities or Strategy or some
- * other class.
- *
- * @param args
- */
+// This class should probably be refactored with functionality moved to 
+// Utilities or Strategy or some new class(es).
+// TODO: Factor out cache into separate file
 public class Blackjack {
 static public long dealerIterations = 0;
 static public long fastDealerIterations = 0;
 static public long playerIterations = 0;
 static public long holeCardCheck = 0;
-final static int ACECARD = 0; //Represent INDEX POSITION, not value.
+final static int ACECARD = 0; //Represents INDEX POSITION, not value.
 final static int TWOCARD = 1;
 final static int THREECARD = 2;
 final static int FOURCARD = 3;
@@ -35,48 +28,54 @@ private static Map<String, float[]> dealerProbabilitiesCache;
 private static long hits = 0;
 private static long misses = 0;
 private static boolean cacheInitialized = false;
-/**
- * Prints the composition-dependent basic strategy for hard opening
+
+/*
+ * Loop variables used to prints the composition-dependent basic strategy 
+ * for hard opening
  * hands.
  *
- * @param numberDecks Number of decks in shoe
- * @param theRules Rule set
  *
  */
-public static final CardValue[] oneToTen = {CardValue.ACE, CardValue.TWO, CardValue.THREE, CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
-public static final CardValue[] twoToTen = {CardValue.TWO, CardValue.THREE, CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
-public static final CardValue[] twoToAce = {CardValue.TWO, CardValue.THREE, CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, CardValue.EIGHT, CardValue.NINE, CardValue.TEN, CardValue.ACE};
+public static final CardValue[] oneToTen = {CardValue.ACE, CardValue.TWO, 
+   CardValue.THREE, CardValue.FOUR, CardValue.FIVE, CardValue.SIX, 
+   CardValue.SEVEN, CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
+public static final CardValue[] twoToTen = {CardValue.TWO, CardValue.THREE, 
+   CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, 
+   CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
+public static final CardValue[] twoToAce = {CardValue.TWO, CardValue.THREE, 
+   CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, 
+   CardValue.EIGHT, CardValue.NINE, CardValue.TEN, CardValue.ACE};
 //Ace at the end.
+
+//Move these to Testers.java
 public static final double TWO_PERCENT_ERROR = 0.02;
-public static final double MAXIMUM_ABSOLUTE_ERROR = 3.0E-4; //Absolute -- for house edge calculations
-public static final double FIVE_PERCENT_ERROR = 0.05; //Five percent for house edge calculations
+public static final double MAXIMUM_ABSOLUTE_ERROR = 3.0E-4; 
+public static final double FIVE_PERCENT_ERROR = 0.05; 
 public static final double ONE_PERCENT_ERROR = 0.01;
 public static final double EPSILON = 1.0E-4; // = 0.01 %
 
 /**
  * Call this before trying to access the cache. If the cache has already been
- * initialized,
- * this function will do nothing and return.
- *
- *
+ * initialized, this function will do nothing and return.
  */
 public static void initCache() {
    if (cacheInitialized) {
       return;
    }
    dealerProbabilitiesCache = new HashMap(
-           (cacheStatus == FULL_CACHE) ? INIT_FULL_CACHE_SIZE : ((cacheStatus == SMALL_CACHE) ? SMALL_CACHE_SIZE : 0));
+           (cacheStatus == FULL_CACHE) ? 
+               INIT_FULL_CACHE_SIZE : 
+               (  (cacheStatus == SMALL_CACHE) ? SMALL_CACHE_SIZE : 0) );
    cacheInitialized = true;
-
 }
 
 public static void incrementHits() {
    hits++;
-
 }
 
 public static void incrementMisses() {
    misses++;
+   /* TODO: Use a logger for this
    if (Blackjack.debug()) {
       final int size = dealerProbabilitiesCache.size();
       if (size == 0) {
@@ -85,9 +84,7 @@ public static void incrementMisses() {
       if ((size % 100000) == 0) {
          printCacheStatus();
       }
-
-   }
-
+   }*/
 }
 
 public static long getHits() {
@@ -98,14 +95,14 @@ public static long getMisses() {
    return misses;
 }
 
+//TODO: Use an enum for this
 final public static int SMALL_CACHE = 10;
 final public static int FULL_CACHE = 100;
 final public static int NO_CACHE = -1;
 private static int cacheStatus = FULL_CACHE;
 final public static int INIT_FULL_CACHE_SIZE = 300000;
 final public static int SMALL_CACHE_SIZE = 30000;
-//17,800 -> 1 MB of memory, for doubles. I can double the size if I use floats.
-//And then instantly upcast them back to doubles, otherwise I'd have to change everything.
+
 /**
  * Store values in the cache which go up to this far in the shoe (12 cards
  * drawn)
@@ -114,10 +111,7 @@ final public static int SMALL_CACHE_SIZE = 30000;
 final public static int CACHE_DEPTH = 12;
 
 /**
- * final public static int SMALL_CACHE = 10;
- * final public static int FULL_CACHE = 100;
- * final public static int NO_CACHE = -1;
- *
+ * TODO: use enum for this
  * @return Current kind of cache being used.
  */
 public static int getCacheStatus() {
@@ -125,12 +119,9 @@ public static int getCacheStatus() {
 }
 
 /**
- *
+ *  TODO: use enum for this
  *
  * @param cacheCode
- * final public static int SMALL_CACHE
- * final public static int FULL_CACHE
- * final public static int NO_CACHE
  */
 public static void setCache(int cacheCode) {
    switch (cacheCode) {
@@ -140,7 +131,8 @@ public static void setCache(int cacheCode) {
          cacheStatus = cacheCode;
          break;
       default:
-         throw new IllegalArgumentException("Cache status must be either NO_CACHE, SMALL_CACHE, or FULL_CACHE");
+         throw new IllegalArgumentException("Cache status must be either "
+                 + "NO_CACHE, SMALL_CACHE, or FULL_CACHE");
    }
 }
 
@@ -155,14 +147,14 @@ public static void clearCache() {
    }
    cacheInitialized = false;
    initCache();
-
 }
 
 /**
  *
  * @return True if debugging is enabled, false otherwise
- *
- */
+ * @deprecated Use asserts for doing assertions; for logging, a separate
+ * set-up is to be created
+  */
 public static boolean debug() {
    if (DEBUGGING) {
       return true;
@@ -174,32 +166,22 @@ public static boolean debug() {
 
 /**
  * Given a finished State (a player is done deciding what to do; all hands are
- * finished),
- * this tells you whether or not the dealer needs to deal. It also may change
- * the current
- * player hand (State.currentHand). Throws an IllegalStateException if not all
- * hands are done or
- * if there is
- * a logic error.
+ * finished), this tells you whether or not the dealer needs to deal. 
+ * It also may change the current player hand (State.currentHand). Throws an 
+ * IllegalStateException if not all hands are done or if there is a logic error.
  *
- * ?When would the last action be null??
  * THEN:
- * * Call State.calculateEV(theRules) if
- * no deal is needed. OR
- *  * After this function, if a deal was needed, display the dealer's down card,
- * or draw one
- * if he has no hole card.
+ * - Call State.calculateEV(theRules) if no deal is needed. OR
+ * - If a deal was needed, display the dealer's down card, or draw one if he 
+ * has no hole card.
  *
  * If the dealer does have BJ (it's a no hole card game), and a deal was
- * necessary,
- * tell State that fact. (If a deal was NOT necessary, do NOT tell State that,
- * just call
- * calculateEV(theRules) )
+ * necessary, tell State that fact. (If a deal was NOT necessary, 
+ * do NOT tell State that, just call calculateEV(theRules) )
  *
  * If a deal is needed, then deal the dealer out; then call
  * State.calculateEV(dealerProbabilities, theRules), where dealerProbabilites is
- * the
- * simplified version of the dealer's hand.
+ * the simplified version of the dealer's hand.
  */
 public static boolean dealNecessary(State finishedState, Rules theRules) {
    if (!finishedState.allDone()) {
@@ -211,10 +193,7 @@ public static boolean dealNecessary(State finishedState, Rules theRules) {
    finishedState.resetCurrentHand();
    boolean flag = true;
 
-
-
-   if (theRules.dealerHoleCard()
-           && finishedState.dealerBlackJackChecked()) {
+   if (theRules.dealerHoleCard() && finishedState.dealerBlackJackChecked()) {
       if (finishedState.dealerHasBJ() && (finishedState.lastAction() == null)) {
          dealNecessary = false;
          flag = false;
@@ -225,7 +204,6 @@ public static boolean dealNecessary(State finishedState, Rules theRules) {
          flag = false;
       }
       //You have BJ and he doesn't.
-
    }
 
    while (flag) {
@@ -254,20 +232,16 @@ public static boolean dealNecessary(State finishedState, Rules theRules) {
 
    }
 
-
-
-
-//Regardless of anything else, if you take insurance in a no hole card games
-//the dealer must go, to see if he has blackjack.. Even if you bust or surrender all your hands.
-
-
+   //Regardless of anything else, if you take insurance in a no hole card game
+   //the dealer must go, to see if he has blackjack.. 
+   //Even if you bust or surrender all your hands.
+   //TODO: Did I code that in here?
    return dealNecessary;
 }
 
 /**
  * Creates a key for the dealer probability cache based on the shoe, rules, and
  * dealer up card.
- *
  *
  * This function should create a different key if any of the following change:
  * Dealer up card
@@ -285,75 +259,64 @@ public static boolean dealNecessary(State finishedState, Rules theRules) {
  */
 static String getKeyForMap(FastShoe myShoe, final int dealerCardIndex,
         Rules theRules) {
-   StringBuilder building = new StringBuilder();
+   StringBuilder builder = new StringBuilder();
    if (theRules.hitOn17() == true) {
-      building.append("H");
+      builder.append("H");
    }
    else {
-      building.append("S");
+      builder.append("S");
    }
-   building.append(myShoe.myStringKey());
-   assert ((dealerCardIndex >= Blackjack.ACECARD) && (dealerCardIndex <= Blackjack.TENCARD));
-   building.append(dealerCardIndex);   // 0-9.
+   builder.append(myShoe.myStringKey());
+   assert ((dealerCardIndex >= Blackjack.ACECARD) && 
+           (dealerCardIndex <= Blackjack.TENCARD));
+   builder.append(dealerCardIndex);   // 0-9.
 
-
-   /*/*  COMMENTING OUT -- TESTING
+   /*
     if (theRules.dealerHoleCard() )
     building.append("H");
     else building.append("N");
     */
 
-
    if ((dealerCardIndex == Blackjack.ACECARD)
            || (dealerCardIndex == Blackjack.TENCARD)) {
       if (theRules.dealerHoleCard()) {
-         building.append("H");
+         builder.append("H");
       }
       else {
-         building.append("N");
+         builder.append("N");
       }
    }
    else {
-      building.append("I"); //For irrelevant
+      builder.append("I"); //For irrelevant
    }
 
-   building.append(theRules.getAccuracy());
+   builder.append(theRules.getAccuracy());
 //This doesn't appear to have an impact.
 
-
-
-   return building.toString();
+   return builder.toString();
 }
 
 /**
- * Call it when the player's actions are done to finalize the
+ * Call this when the player's actions are done to finalize the
  * state. Tested under four different, fairly complicated
  * scenarios. This is done right before comparing EVs of the
  * possible States. Specifically, when ALL the split hands are
  * resolved.
  *
- * Tested for a variety of hands, with a dealer hole card. Performs
- * correctly with no blackjacks for hits, doubles, stands,
- * surrenders, and splits.
- *
- *
  * This is a wrapper function for State.calculateEV. This is the function that
- * creates
- * and uses the dealer probability cache.
+ * creates and uses the dealer probability cache.
  *
  */
 static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) {
    int i, j, k;
-
 
    final boolean dealNecessary = dealNecessary(finishedState, theRules);
    if (!dealNecessary) {
       finishedState.calculateEV(theRules);
    }
    else if (dealNecessary) {
-      //System.out.println("Deal necessary.");
       int[] dealerCards = new int[10];
-      float[] dealerProbabilities; //NOW A FLOAT []
+      float[] dealerProbabilities; 
 
       String keyForMap = getKeyForMap(myShoe, finishedState.getDealerUpCard().value() - 1, theRules);
       Utilities.zero(dealerCards);
@@ -361,12 +324,12 @@ static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) 
       dealerCards[ finishedState.getDealerUpCard().value() - 1] = 1;
 
       final int myCacheStatus = getCacheStatus();
-      //OK -- As long as they dealer has the same card and the shoe is exactly the same
-      //SHOULD CLEAR OUT THIS MAP WHENEVER: you change the number of decks, the dealer can
-      //hit or stand on soft 17, perhaps hole/no hole card.
-      //The Cache is only to be used with a full shoe
+      // Should clear out the cache on certain rule changes: different 
+      // number of decks, the dealer can hit or stand on soft 17, 
+      // perhaps hole/no hole card.
+      // The Cache is only to be used with a full shoe
 
-      initCache(); // Initializes it the first time, does nothing afterwards.
+      initCache(); 
       if ((myCacheStatus != NO_CACHE) && dealerProbabilitiesCache.containsKey(keyForMap)) {
          Blackjack.incrementHits();
          dealerProbabilities = (float[]) dealerProbabilitiesCache.get(keyForMap);
@@ -392,37 +355,24 @@ static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) 
             finishedState.calculateEV(solvedDealerProbs, theRules);
          }
          catch (IllegalArgumentException e) {
-            if (Blackjack.debug()) {
-               e.printStackTrace();
-               State.printStateStatus(finishedState, "And here is my error state.");
-               throw new IllegalArgumentException();
-            }
+            State.printStateStatus(finishedState, 
+                    "And here is my error state.");
+            throw new IllegalArgumentException(e);
+
          }
          catch (IllegalStateException e) {
-            if (Blackjack.debug()) {
-               e.printStackTrace();
-               State.printStateStatus(finishedState, "Hole card probabilities not correctly loaded.");
-               throw new IllegalStateException();
-            }
+            State.printStateStatus(finishedState, 
+                    "Hole card probabilities not correctly loaded.");
+            throw new IllegalStateException(e);
          }
       }
-
-      /*
-       System.out.println();
-       System.out.println("Dealer probability vector:");
-       for (int qq = 0; qq < dealerProbabilities.length; qq++)
-       System.out.print("  " + dealerProbabilities[qq]);
-       System.out.println();
-       */
-
-
    }
    return finishedState;
-
-
 }
 
 /**
+ * Used when the dealer hand size has maxed out (see dealer hand size limit
+ * in Rules)
  * Utterly untested; Estimate of the dealer probabilities for
  * terminal hands; calculates the chances of going bust on the next
  * card and standing on the next card; assumes those values are the
@@ -441,7 +391,8 @@ static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) 
 protected static void setApproxProbabilities(
         double[] endProbabilities, FastShoe myDeck,
         final int handValue, boolean isSoft) {
-   if ((handValue <= 11) || (isSoft)) //Stupid dealer has not even gotten started. Fooey. All bets off.
+   if ((handValue <= 11) || (isSoft)) 
+      //Stupid dealer has not even gotten started. Fooey. All bets off.
    {
       endProbabilities[0] = 1D / 6D;
       for (int q = 2; q < endProbabilities.length; q++) {
@@ -455,30 +406,26 @@ protected static void setApproxProbabilities(
       final double probUnder = myDeck.probGettingThisOrLess(
               21 - handValue);
       //Chance of not going bust on next card
-      //System.out.println(probUnder + " is probUnder.");
       final double probBustNextCard = 1D - probUnder;
 
-
+      //you're undone if you get 16 or less. otherwise you're done.
       final double probUndoneNextCard = myDeck.probGettingThisOrLess(
-              16 - handValue); //you're undone if you get 16 or less. otherwise you're done.
+              16 - handValue); 
+      
 
       final double probDoneNextCard = probUnder - probUndoneNextCard;
       if (Math.abs(probBustNextCard + probDoneNextCard) < 0.001) {
          endProbabilities[0] = probBustNextCard;
       }
       else {
+         //These are all doubles, no casting needed.
          endProbabilities[0] = probBustNextCard
                  + (probBustNextCard * probUndoneNextCard)
-                 / (probBustNextCard + probDoneNextCard); //These are all doubles, no casting needed.
-      }       //optional improvements...?
+                 / (probBustNextCard + probDoneNextCard); 
+      }
       for (int i = 2; i < endProbabilities.length; i++) {
          endProbabilities[i] = (1D - endProbabilities[0]) / 5D;
       }
-      /*
-       if ((endProbabilities[0] > 0.99) && (endProbabilities[0] < 1.01)) {
-       System.out.println(handValue + " is the handValue.");
-       myDeck.printContents();
-       } */
    }
 
    //Check probabilities
@@ -486,28 +433,26 @@ protected static void setApproxProbabilities(
    for (int j = 0; j < endProbabilities.length; j++) {
       sum += endProbabilities[j];
    }
+   
    if (Math.abs(sum - 1) > 0.0001) //Sum should equal 1. Hence this should be zero.
    {
+      StringBuilder builder = new StringBuilder();
       for (int i = 0; i < endProbabilities.length; i++) {
-         System.out.println(
-                 "Element " + i + " is " + endProbabilities[i]);
+         builder.append("\nElement " + i + " is " + endProbabilities[i]);
       }
-      System.out.println(
-              "Handvalue is " + handValue + ". isSoft is " + isSoft);
-      throw new AssertionError();
-
+      builder.append("\nHandvalue is " + handValue + ". isSoft is " + isSoft);
+      throw new AssertionError(builder.toString());
    }
 }
 
 public static void printProbs(double[] array) {
+   //TODO: Use some library to pretty print the table, doing it by hand is dumb
    System.out.println(
            "Total\t       A        2        3        4        5        6        7        8        9       10");
    System.out.print("\t");
    for (int i = 0; i < array.length; i++) {
-      System.out.format("%+.4f  ",
-              array[i]);
+      System.out.format("%+.4f  ", array[i]);
    }
-
 }
 
 /**
@@ -544,9 +489,6 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
    theRules.setMaxNumberSplitHands(0);
    State duh;
    ArrayList<ArrayList<State>> solvedStates = new ArrayList<ArrayList<State>>();
-   //for (int i = 0; i <11 ; i++)
-   //  solvedStates.add(new ArrayList<State>());
-   //static State PlayerRecursive(final FastShoe myShoe, final State myState, final Rules theRules)
    int rowNum = -1;
    int colNum = 0;
    for (CardValue pCardOne : Blackjack.twoToTen) {
@@ -571,8 +513,8 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
                try {
                   duh = PlayerRecursive(myShoe, duh, theRules);
                }
-               catch (NoRecommendationException e) {
-               }
+               catch (NoRecommendationException e) {} 
+               //TODO -- empty catch blocks are bad
                if (Blackjack.debug()) {
                   if ((duh.getPreferredAction() == duh.getSecondBestAction()) && (!duh.playerBJ())) {
                      System.out.println(theRules);
@@ -593,10 +535,10 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
       }
    }
    Collections.sort(solvedStates, new Comparator<ArrayList<State>>() {
-   @Override
-   public int compare(ArrayList<State> q, ArrayList<State> p) {
-      return q.get(0).handTotal() - p.get(0).handTotal();
-   }
+      @Override
+      public int compare(ArrayList<State> q, ArrayList<State> p) {
+         return q.get(0).handTotal() - p.get(0).handTotal();
+      }
 
    });
    theRules.setMaxNumberSplitHands(actualSplitsAllowed);
@@ -614,7 +556,8 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
  */
 static ArrayList<Answer> calculateAllSplitValues(Rules theRules,
         ArrayList<ArrayList<State>> hardAnswers,
-        ArrayList<ArrayList<State>> softAnswers, final boolean possibleDealerBJ) throws NoRecommendationException {
+        ArrayList<ArrayList<State>> softAnswers, final boolean possibleDealerBJ)
+        throws NoRecommendationException {
    double scratch;
    ArrayList<Answer> splitAnswers = new ArrayList<Answer>();
    for (CardValue PCard : Blackjack.oneToTen) {
@@ -632,26 +575,22 @@ static ArrayList<Answer> calculateAllSplitValues(Rules theRules,
 /**
  * I make a million calls to .size; to make this function faster, avoid those
  * calls.
- * How can calling a simple getter take 8 % of the whole program time??? Makes
- * no sense.
+ * How can calling a simple getter take 8 % of the whole program time??? :(
  * To make this faster, I need to make State more lightweight. If I don't intend
- * to use the
- * splitting functionality, I could get rid of some stuff.
+ * to use the splitting functionality, I could get rid of some stuff.
  *
  * @param myShoe
  * @param myState
  * @param theRules
  * @return
  *
- * Gives expected results for a simplified rule set with no splits
- * and no doubles.
  *
  * Test all functions in this. Simplify this behemoth. Consider
  * making a big function that would do all the EV calculations and
  * return the finished state. (everything after double bestEV =
  * -500); it'd just go something like return bestOfAll ( and take 6
  * arraylists, the shoe, the state, and the rules) That's why I
- * hesitate, 'cause it'd be a behemoth function.
+ * hesitate, 'cause that'd also be a behemoth function.
  */
 static State PlayerRecursive(final FastShoe myShoe, final State myState,
         final Rules theRules) throws NoRecommendationException {
@@ -664,7 +603,9 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       double[] probPostSplitDrawResults = new double[10];
       Card drawnCard;
       if (!myState.testPostSplit()) {
-         throw new NoRecommendationException("IllegalStateException:I have one card in hand, " + "but I haven't come from another split hand or myself.");
+         throw new NoRecommendationException("IllegalStateException: "
+                 + "I have one card in hand, " + 
+                 "but I haven't come from another split hand or myself.");
       }
       i = 0;
       for (CardValue q : Blackjack.oneToTen) {
@@ -757,7 +698,8 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
    }
    if (theRules.isPossible(Action.SURRENDER, myState) && theRules.getLateSurrender()) {
       scratch = new State(myState);
-      assert ((theRules.getEarlySurrender() == false) && (theRules.getEarlySurrenderNotOnAces() == false)) : theRules.toString();
+      assert ((theRules.getEarlySurrender() == false) && (theRules.getEarlySurrenderNotOnAces() == false)) : 
+              theRules.toString();
       scratch.action(Action.SURRENDER);
       if (scratch.nextHand()) {
          scratch = PlayerRecursive(myShoe, scratch, theRules);
@@ -822,13 +764,12 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
    }
    //Whew. I now have all the possible states, and their expected values.
    //If I have a choice of what to do, then pick the best choice and return it. (use function)
-   //If I don't have a choice, combine everything, calculate EV, and like, flag that or something? Definitely return it.
+   //If I don't have a choice, combine everything, calculate EV ...
    //it's just like the busted hands scenario.
    double secondBestEV = -500;
    double bestEV = -500;
    double currentEV;
-   //Post split draw return used to be here. I've moved it up to the start,
-   //since there's no point in hitting, drawing, etc. with one card in hand.
+
    if (doublePossible) {
       currentEV = Utilities.combinedStatesEV(doubleResults, probHitResults);
       if (currentEV > bestEV) {
@@ -896,8 +837,8 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
          secondBestEV = probDealerBJ * dealerBJWithHoleCard.getExpectedValue() + (1 - probDealerBJ) * secondBestEV;
       }
       else {
-         assert (false) : "Dealer can't have an early BJ in a no-hole game. Yaya error at end of PlayerRecursive in blackjack checking section.";
-         throw new NoRecommendationException("Dealer can't have an early BJ in a no-hole game.");
+         assert (false) : "Dealer can't have an early BJ in a no-hole game.";
+         throw new NoRecommendationException ("Dealer can't have an early BJ in a no-hole game.");
       }
    }
    if (bestAction == null) {
@@ -1045,7 +986,8 @@ static ArrayList<ArrayList<State>> solveSoftPlayersRecursive(Rules theRules,
  * @return An array of expected values.
  */
 static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
-        boolean possibleDealerBJ, CardValue PCard, CardValue DCard) throws NoRecommendationException {
+        boolean possibleDealerBJ, CardValue PCard, CardValue DCard) 
+        throws NoRecommendationException {
    double[] cardDrawProbs = myShoe.getAllProbs();
    double[] bestEVOfStates = new double[10];
    State scratch;
@@ -1054,7 +996,10 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
    for (CardValue q : Blackjack.oneToTen) {
       if (cardDrawProbs[q.value() - 1] > 0) {
          myShoe.fasterDrawSpecific(q);
-         assert (myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 4) || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 5) || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 6));
+         assert (
+              myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 4) 
+           || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 5)
+           || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 6));
          if ((PCard == CardValue.ACE) && (q == CardValue.TEN) || (PCard == CardValue.TEN) && (q == CardValue.ACE)) {
             myCards.add(new Card(Suit.DIAMONDS, CardValue.ACE));
             myCards.add(new Card(Suit.CLUBS, CardValue.EIGHT));
