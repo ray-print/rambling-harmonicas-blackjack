@@ -136,10 +136,9 @@ static private byte actionToByte(Action anAction) {
  * Throws exception if the byte can't be correctly translated
  * to an action.
  *
- * @param myByte, between 0-4.
+ * @param myByte
  */
 static private Action byteToAction(byte myByte) {
-   Action myAction;
    switch (myByte) {
       case 0:
          return Action.HIT;

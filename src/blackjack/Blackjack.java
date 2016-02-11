@@ -1000,7 +1000,8 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
               myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 4) 
            || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 5)
            || myShoe.numberOfCards() == (theRules.getNumberOfDecks() * 52 - 6));
-         if ((PCard == CardValue.ACE) && (q == CardValue.TEN) || (PCard == CardValue.TEN) && (q == CardValue.ACE)) {
+         if (       (PCard == CardValue.ACE) && (q == CardValue.TEN) 
+                 || (PCard == CardValue.TEN) && (q == CardValue.ACE) ) {
             myCards.add(new Card(Suit.DIAMONDS, CardValue.ACE));
             myCards.add(new Card(Suit.CLUBS, CardValue.EIGHT));
             scratch = new State(myCards, new Card(Suit.CLUBS, DCard));
@@ -1020,7 +1021,11 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
          scratch = PlayerRecursive(myShoe, scratch, theRules);
          myCards.clear();
          myShoe.addCard(q);
-         if ((theRules.noDoublePostSplit() && scratch.getPreferredAction() == Action.DOUBLE) || ((PCard == CardValue.ACE) && (theRules.noDoubleSplitAces()) && (scratch.getPreferredAction() == Action.DOUBLE))) {
+         if ((    theRules.noDoublePostSplit() 
+                 && scratch.getPreferredAction() == Action.DOUBLE) 
+                 || ((PCard == CardValue.ACE) 
+                 && (theRules.noDoubleSplitAces()) 
+                 && (scratch.getPreferredAction() == Action.DOUBLE))) {
             bestEVOfStates[i] = scratch.getSecondBestEV();
          }
          else {
@@ -1035,21 +1040,18 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
    return bestEVOfStates;
 }
 
-/**
- * Roughly 12 % faster than original fast dealer recursive; tested
- * (w/1 deck) and works fine. * Robust enough to give excellent
- * performance after having been called billions of times.
- * Also, this is what takes forever. I can inline some functions, though
- * I don't really want to.
- *
- * "myCards is [10] array with 0 meaning 0 cards of that kind. 0 1
- * 2 3 etc. Ace Two Three Four *
+/** 
+ * 
+  * Possible future speed optimizations: 
+ * - Some functions calls could be inlined :(
+ * 
+ * myCards is [10] array with 0 meaning 0 cards of that kind. 0 1
+ * 2 3 etc. Ace Two Three Four 
  *
  * endProbabilities[0] = P(Bust)
  * endProbabilities[1] = P(Natural Blackjack)
- * endProbabilities[2] = 17
+ * endProbabilities[2] = 17 etc.
  *
- * Use Testers.printAndTestFastDealerRecursive to debug this.
  */
 static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
         final Rules theRules) {
@@ -1085,7 +1087,8 @@ static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
             endProbabilities[3] = 1;
             return endProbabilities;
          case 17:
-            if ((theRules.hitOn17() == false) || !Utilities.isSoft(myCards, handValue)) {
+            if ((theRules.hitOn17() == false) 
+                 || !Utilities.isSoft(myCards, handValue)) {
                endProbabilities[2] = 1;
                return endProbabilities;
             }
@@ -1099,7 +1102,7 @@ static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
       return endProbabilities;
    }
    double[] Probabilities = myDeck.getDealerProbabilities(cardsInHand, theRules.dealerHoleCard(), myCards);
-   //I've solved for all the probabilities. Now start hitting me.
+   //Solved for all the probabilities. Now start hitting me.
    double[] scratch;
    int j;
    for (i = 0; i < myCards.length; i++) {
@@ -1123,8 +1126,6 @@ static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
 }
 
 /**
- * USED
- *
  *
  * @param someStates
  * @return True if some states are advising a different first or second action
@@ -1140,25 +1141,9 @@ static boolean anyDisagreementHere(ArrayList<State> someStates) throws NoRecomme
          throw new NoRecommendationException();
       }
       if (firstAction != someStates.get(i).getPreferredAction()) {
-         /* DEBUGGING
-          System.out.println("Discord among first action. Player: " +
-          someStates.get(i).getFirstCardValue() + ", " +
-          someStates.get(i).getSecondCardValue() + ", dealer card " +
-          someStates.get(i).getDealerUpCard() + "."
-          );
-          */
-         //throw new RuntimeException();
          return true;
       }
       if (secondAction != someStates.get(i).getSecondBestAction()) {
-         /* DEBUGGING
-          System.out.println("Discord among second action. Player: " +
-          someStates.get(i).getFirstCardValue() + ", " +
-          someStates.get(i).getSecondCardValue() + ", dealer card " +
-          someStates.get(i).getDealerUpCard() + "."
-          );
-          */
-         //throw new RuntimeException();
          return true;
       }
    }
@@ -1186,7 +1171,8 @@ static boolean anyDisagreementHere(ArrayList<State> someStates) throws NoRecomme
  * @param similarStates
  */
 static void solveConsolidationAndReplace(double[] probThisState,
-        double sumOfProbs, ArrayList<State> similarStates) throws NoRecommendationException {
+        double sumOfProbs, ArrayList<State> similarStates) 
+        throws NoRecommendationException {
    assert (similarStates.size() == probThisState.length);
    if (similarStates.size() <= 1) {
       return;
@@ -1205,8 +1191,6 @@ static void solveConsolidationAndReplace(double[] probThisState,
       //ICK
       //find top score, second best score. Find associated action. (same index)
       //Scale according to size of similarStates.
-      //    System.out.println("There is discord among handvalue " + similarStates.get(0).handTotal() +
-      //           ", with dealer card " + similarStates.get(0).getDealerUpCard());
       double[] score = new double[4];
       Utilities.zero(score);
       Action[] possibleActions = new Action[4];
@@ -1265,31 +1249,14 @@ static void solveConsolidationAndReplace(double[] probThisState,
 
       }
       else {
-         /* Not sure of the point of these commented out lines.
-          * Just set it to be right. If the first best is set right, the second
-          * best might still be set wrong.
-          * if (similarStates.get(k).getPreferredAction() != bestAction)
-          {
-          if (similarStates.get(k).getSecondBestAction() == bestAction)
-          {
-          Utilities.swapTopChoices(similarStates.get(k));
-          }
-          else
-          {
-          */
          similarStates.get(k).setPreferredAction(bestAction);
          similarStates.get(k).setSecondBestAction(secondBestAction);
          similarStates.get(k).overWriteEV(bestEV);
          similarStates.get(k).setSecondBestEV(secondBestEV);
-
-         /*    }
-          } */
-
-      }
+     }
    }
 }
 
-//Cripes.
 /**
  * Factors in the chance of the dealer having blackjack, including insurance in
  * a hole card game.
@@ -1329,9 +1296,11 @@ private static double splitApproxIncludingDealerBJ(Rules theRules,
 }
 
 private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
-        boolean possibleDealerBJ, FastShoe myShoe, Rules theRules) throws NoRecommendationException {
+        boolean possibleDealerBJ, FastShoe myShoe, Rules theRules) 
+        throws NoRecommendationException {
    State scratch = new State(PCard, PCard, DCard);
-   if ((!possibleDealerBJ) && ((DCard == CardValue.TEN) || (DCard == CardValue.ACE))) {
+   if ( (!possibleDealerBJ) && 
+        ( (DCard == CardValue.TEN) || (DCard == CardValue.ACE)) ) {
       scratch.setDealerBlackjack(false);
    }
    scratch = Blackjack.PlayerRecursive(myShoe, scratch, theRules);
@@ -1342,12 +1311,17 @@ private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
       return scratch.getSecondBestEV();
    }
    else {
-      if (!theRules.dealerHoleCard() && ((DCard == CardValue.TEN) || (DCard == CardValue.ACE))) ;
+      if (!theRules.dealerHoleCard() && 
+          ( (DCard == CardValue.TEN) || (DCard == CardValue.ACE)) ) 
+         ;
       else {
-         System.err.println("Splitting aces is the third best option.");
-         System.err.println(theRules);
-         System.err.println("I'm in Strategy.noHitSplitAcesSolve");
-         System.err.println("Here is my state: " + scratch);
+         StringBuilder builder = new StringBuilder();
+         builder.append("Splitting aces is the third best option.\n")
+                .append(theRules)
+                .append("I'm in Strategy.noHitSplitAcesSolve\n")
+                .append("Here is my state:\n")
+                .append(scratch);
+         assert false: builder.toString();
       }
       return -100.0;
    }
@@ -1355,15 +1329,13 @@ private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
 
 /**
  * Tested under 1 rule set; mostly works, but off by a large margin in certain
- * rare
- * circumstances (when only one deck is being used). Don't know why.
+ * rare circumstances (when only one deck is being used). Don't know why.
  * Note the special treatment of dealer blackjacks. In a hole card game, they
- * are impossible
- * on split hands, since you'd never split. However, they still must be factored
- * into this
+ * are impossible on split hands, since you'd never split. 
+ * However, they still must be factored into this
  * decision, since they are factored into the other decisions. So: completely
- * discount
- * them when figuring out the probability, then factor them back in at the end.
+ * discount them when figuring out the probability, then factor them back in
+ * at the end.
  *
  * Could use better testing; watch carefully for changes to the rule set that
  * persist after this function is done.
@@ -1386,13 +1358,8 @@ private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
  */
 static double splitSolve(Rules theRules, CardValue PCard, CardValue DCard,
         final boolean possibleDealerBJ) throws NoRecommendationException {
-   final long originalRulesHash;
-   if (Blackjack.debug()) {
-      originalRulesHash = theRules.myHashKey();
-   }
-   else {
-      originalRulesHash = -1;
-   }
+   final long originalRulesHash = theRules.myHashKey();
+
    final boolean acePlayer = (PCard == CardValue.ACE) ? true : false;
    FastShoe myShoe = new FastShoe(theRules.getNumberOfDecks());
    myShoe.fasterDrawSpecific(DCard);
@@ -1421,21 +1388,16 @@ static double splitSolve(Rules theRules, CardValue PCard, CardValue DCard,
    final boolean actualEarlySurrenderNotOnAces = theRules.getEarlySurrenderNotOnAces();
    final double actualBlackJackPayback = theRules.getBlackJackPayback();
    final int maxNumberSplitHands = theRules.getMaxNumberSplitHands();
-   if (Blackjack.debug()) {
-      theRules.setBlackjackPayback(9.98);
-   }
-   else {
-      theRules.setBlackjackPayback(1);
-   }
-   //Garbage values -- these should never be used.
 
+
+   //Garbage values -- these should never be used.
+   theRules.setBlackjackPayback(9.98);
    theRules.setEarlySurrender(false);
    theRules.setLateSurrender(false);
    theRules.setMaxNumberSplitHands(0);
    theRules.setEarlySurrenderNotOnAces(false);
    //
-   int i;
-   int j;
+   int i, j;
    final boolean resplitPossible;
    if ((maxNumberSplitHands > 1) && !(acePlayer && (theRules.getNumResplitAces() == 0))) {
       resplitPossible = true;
@@ -1443,7 +1405,8 @@ static double splitSolve(Rules theRules, CardValue PCard, CardValue DCard,
    else {
       resplitPossible = false;
    }
-   double[] bestEVOfStates = Blackjack.getBestEVOfSplitStates(myShoe, theRules, possibleDealerBJ, PCard, DCard);
+   double[] bestEVOfStates = Blackjack.getBestEVOfSplitStates(myShoe, theRules, 
+           possibleDealerBJ, PCard, DCard);
    //BUTT E-Z ALGORITHM BELOW
    //The way I understand it, if there is no resplitting, then I can just say:
    // sumEVDualProb = 2 * (weightedEV of bestEVOfStates); and be done with it.
@@ -1451,59 +1414,20 @@ static double splitSolve(Rules theRules, CardValue PCard, CardValue DCard,
    // replace bestEVOfStates[PCard] with its resplit calculation, which is just
    // the weighted EV of bestEVOfResplitStates [] = getBestEVOfSplitStates(yada)
    // , called after I remove the one extra card to it.
-      /*
-    double sumEVDualProb =0;
-    double [] splitProbs = myShoe.getAllProbs();
-    double fastEVOfResplit = 0;
-    double totalEVResplitDone =0;
-    double [] fastProbCardsOnResplit = null;
-    double [] fastBestEVOfThirdSplitHand = null;
-    if (resplitPossible )
-    {
-    myShoe.fasterDrawSpecific(PCard);
-    fastProbCardsOnResplit = myShoe.getAllProbs();
-    fastBestEVOfThirdSplitHand = getBestEVOfSplitStates(myShoe, theRules,
-    possibleDealerBJ,PCard, DCard); //check that this stores things in the right place in the array
-    for (int kk = Blackjack.ACECARD; kk < fastBestEVOfThirdSplitHand.length; kk++)
-    fastEVOfResplit += fastBestEVOfThirdSplitHand[kk] * fastProbCardsOnResplit[kk];
-    myShoe.addCard(PCard);
-    }
-    for (i=0; i < splitProbs.length; i++)
-    {
-    sumEVDualProb += splitProbs[i] * bestEVOfStates[i];
-    if (resplitPossible)
-    {
-    if (i != PCard.value() -1 )
-    totalEVResplitDone += fastProbCardsOnResplit[i] * fastBestEVOfThirdSplitHand[i];
-    else
-    totalEVResplitDone += fastProbCardsOnResplit[i] * ( fastEVOfResplit +fastBestEVOfThirdSplitHand[i])/2;
-    }
-    }
-    */
-   //Hm. More of an error than before. But roughly the same. I don't think this
-   //is tied to resplitting; it's more general; otherwise I wouldn't get such big errors.
+
    double penUltimateEV;
-   /* BUTT E-Z
-    if ( (sumEVDualProb > totalEVResplitDone ) || (!resplitPossible) )
-    penUltimateEV = sumEVDualProb *2;
-    else penUltimateEV = 2 * totalEVResplitDone ;
-    */
-   //OK. Next step -- comment out everything 1st and 3rd lines above
-   //leaving sumEVDualProb *=2;
-   //Compare the split values to those online. This is to verify that it is indeed
-   //a resplit problem.
-   //BUTT EZ ALGORITHM ABOVE
-   penUltimateEV = combinedProbSplitApprox(bestEVOfStates, myShoe, PCard, resplitPossible, theRules, possibleDealerBJ, DCard, acePlayer);
+
+   penUltimateEV = combinedProbSplitApprox(bestEVOfStates, myShoe, PCard, 
+           resplitPossible, theRules, possibleDealerBJ, DCard, acePlayer);
    assert (penUltimateEV < 10) : penUltimateEV + " is the problem.";
-   final double splitEVAnswer = splitApproxIncludingDealerBJ(theRules, probDealerBJ, penUltimateEV, PCard, DCard);
+   final double splitEVAnswer = splitApproxIncludingDealerBJ(theRules, 
+           probDealerBJ, penUltimateEV, PCard, DCard);
    theRules.setBlackjackPayback(actualBlackJackPayback);
    theRules.setEarlySurrender(actualEarlySurrender);
    theRules.setLateSurrender(actualLateSurrender);
    theRules.setMaxNumberSplitHands(maxNumberSplitHands);
    theRules.setEarlySurrenderNotOnAces(actualEarlySurrenderNotOnAces);
-   if (Blackjack.debug()) {
-      assert (originalRulesHash == theRules.myHashKey());
-   }
+   assert (originalRulesHash == theRules.myHashKey());
    return splitEVAnswer;
 }
 
@@ -1526,7 +1450,8 @@ static double combinedProbSplitApprox(final double[] bestEVOfFirstSplitHand,
    double fastEVOfResplit = 0;
    myShoe.fasterDrawSpecific(PCard);
    final double[] fastProbCardsOnResplit = myShoe.getAllProbs();
-   final double[] fastBestEVOfThirdSplitHand = Blackjack.getBestEVOfSplitStates(myShoe, theRules, dealerBJPossible, PCard, DCard);
+   final double[] fastBestEVOfThirdSplitHand = Blackjack.getBestEVOfSplitStates
+           (myShoe, theRules, dealerBJPossible, PCard, DCard);
    for (int kk = 0; kk < fastBestEVOfThirdSplitHand.length; kk++) {
       if (fastProbCardsOnResplit[kk] > 0) {
          fastEVOfResplit += fastBestEVOfThirdSplitHand[kk] * fastProbCardsOnResplit[kk];
@@ -1561,9 +1486,8 @@ static double combinedProbSplitApprox(final double[] bestEVOfFirstSplitHand,
       }
       myShoe.addCard(firstDrawnCard);
    }
-   if (Blackjack.debug()) {
-      assert ((sumTest < 1.001) && (sumTest > 0.999));
-   }
+   assert ((sumTest < 1.001) && (sumTest > 0.999));
+
    if (!resplitAllowed) {
       return evNoResplit;
    }
@@ -1597,7 +1521,8 @@ static double combinedProbSplitApprox(final double[] bestEVOfFirstSplitHand,
  * This is set to protected for testing purposes.
  */
 static void consolidateIntoTotalDependent(
-        ArrayList<ArrayList<State>> hardAnswers, Rules theRules) throws NoRecommendationException {
+        ArrayList<ArrayList<State>> hardAnswers, Rules theRules) 
+        throws NoRecommendationException {
    ArrayList<State> similarStates = new ArrayList<State>();
    ArrayList<State> columnOfStates = new ArrayList<State>();
    FastShoe myShoe = new FastShoe(theRules.getNumberOfDecks());
@@ -1616,7 +1541,10 @@ static void consolidateIntoTotalDependent(
          assert (similarStates.size() <= columnOfStates.size());
          probThisState = new double[similarStates.size()];
          for (int ii = 0; ii < similarStates.size(); ii++) {
-            probThisState[ii] = myShoe.probTheseThreeInOrder(similarStates.get(ii).getFirstCardValue(), similarStates.get(ii).getSecondCardValue(), similarStates.get(ii).getDealerUpCard().getCardValue());
+            probThisState[ii] = myShoe.probTheseThreeInOrder(
+                    similarStates.get(ii).getFirstCardValue(), 
+                    similarStates.get(ii).getSecondCardValue(), 
+                    similarStates.get(ii).getDealerUpCard().getCardValue());
             sumOfProbs += probThisState[ii];
          }
          Blackjack.solveConsolidationAndReplace(probThisState, sumOfProbs, similarStates);
@@ -1638,7 +1566,8 @@ private static ArrayList<State> retrieveStatesOfHandValue(final int handValue,
         ArrayList<State> theStates) {
    ArrayList<State> constantHandValue = new ArrayList<State>();
    for (int i = 0; i < theStates.size(); i++) {
-      if ((theStates.get(i).handTotal() == handValue) && (theStates.get(i).getFirstCardValue() != theStates.get(i).getSecondCardValue())) {
+      if ((theStates.get(i).handTotal() == handValue) && 
+         (theStates.get(i).getFirstCardValue() != theStates.get(i).getSecondCardValue())) {
          constantHandValue.add(theStates.get(i));
       }
    }
