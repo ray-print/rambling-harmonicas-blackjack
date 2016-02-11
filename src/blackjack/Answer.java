@@ -5,17 +5,15 @@ import java.io.Serializable;
 
 
 /**
- * This should be package-private. Strategy is the go-between between Answers and the outside
- * world.
- * The two ways I've chosen to save this to file: direct object serialization -- which
- * has far too much overhead, so is not currently being used -- 
+ * This should be package-private. Strategy is the go-between between Answers 
+ * and the outside world.
+ * The two ways I've chosen to save this to file: direct object serialization -- 
+ * which has far too much overhead, so is not currently being used -- 
  * or converting this class into a single byte, by
- * dropping the EV data, putting together the actions, and having the location of the data
- * encode the cards being stored.
- * 
- * Notes on serialization:
-http://www.ibm.com/developerworks/java/library/j-5things1/index.html?ca=#toggle
-http://www.javapractices.com/topic/TopicAction.do?Id=45
+ * dropping the EV data, putting together the actions, and having the location 
+ * of the data encode the cards being stored.
+ * TODO: Deprecate the first method (direct object serialization) and add on
+ * a database
  */
 class Answer implements Serializable
 {
@@ -32,14 +30,11 @@ private final transient boolean complete;
 static private final transient long serialVersionUID = 1001L;
 
 /**
- *
- *
  * @param aCardValue
  * @return
  */
 static protected byte cardValueToByte(CardValue aCardValue)
 {
-
    return (byte) (aCardValue.value());
 }
 
@@ -55,33 +50,6 @@ static protected CardValue byteToCardValue(byte myByte)
    if (myByte >= 11)
       throw new IllegalArgumentException("Invalid byte: " + myByte);
    return CardValue.cardValueFromInt(myByte);
-   /*
-   switch (myByte) {
-   case 1:
-      return CardValue.ACE;
-   case 2:
-      return CardValue.TWO;
-   case 3:
-      return CardValue.THREE;
-   case 4:
-      return CardValue.FOUR;
-   case 5:
-      return CardValue.FIVE;
-   case 6:
-      return CardValue.SIX;
-   case 7:
-      return CardValue.SEVEN;
-   case 8:
-      return CardValue.EIGHT;
-   case 9:
-      return CardValue.NINE;
-   case 10:
-      return CardValue.TEN;
-
-   }
-   throw new IllegalArgumentException("Invalid byte: " + myByte);
-*/
-
 }
 
 protected CardValue getDealerCard()
@@ -112,20 +80,17 @@ protected Action getSecondBestAction()
 /** Only can be used on complete answers (those which have a bestEV and
  * secondBestEV set). See notes on variable "complete."
  * Throws an exception otherwise.
- * 
- * 
- * @return 
  */
 protected float getBestEV()
 {
    if (complete)
-   return bestEV;
+      return bestEV;
    else {
     assert false;
     if (Blackjack.debug())
-    { throw new IllegalStateException("Attempted to pull the best EV from a"
+    { 
+       throw new IllegalStateException("Attempted to pull the best EV from a"
             + "non-complete Answer.");
-       
     }
     return -1000;
    }
@@ -135,19 +100,17 @@ protected float getBestEV()
  * secondBestEV set). See notes on variable "complete."
  * Throws an exception otherwise.
  * 
- * 
- * @return 
  */
 protected float getSecondBestEV()
 {
    if (complete)
-   return secondBestEV;
-      else {
+      return secondBestEV;
+   else {
     assert false;
     if (Blackjack.debug())
-    { throw new IllegalStateException("Attempted to pull the best EV from a"
+    { 
+       throw new IllegalStateException("Attempted to pull the best EV from a"
             + "non-complete Answer.");
-       
     }
     return -1000;
    }
@@ -156,7 +119,7 @@ protected float getSecondBestEV()
 /** Changing these values involves at least changing one of the constructors,
  * if not other parts of the code as well.
  * Valid for HIT, STAND, DOUBLE, SURRENDER, and SPLIT.
- *Asserts false for insurance since it should never be stored here (it's not
+ * Asserts false for insurance since it should never be stored here (it's not
  * part of basic strategy)
  *
  * Throws an exception on Action.ERROR.
@@ -182,16 +145,12 @@ static private byte actionToByte(Action anAction)
    }
 
    throw new IllegalStateException();
-
 }
 
 /** Throws exception if the byte can't be correctly translated
  * to an action.
  *
- *
  * @param myByte, between 0-4.
- * @return
- *
  */
 static private Action byteToAction(byte myByte)
 {
@@ -210,8 +169,6 @@ static private Action byteToAction(byte myByte)
    case 5:
       assert false : "Insurance is never part of basic strategy";
       return Action.INSURANCE;
-//Insurance and error should never show up here since they're never part of
-//basic strategy
    default:
       //What if the file is corrupted?
       assert false : "Action.ERROR is never part of basic strategy";
@@ -231,7 +188,7 @@ static private Action byteToAction(byte myByte)
  */
  int myHashKey()
 {
-      if ((bestAction == 4) || (secondBestAction == 4))
+   if ((bestAction == 4) || (secondBestAction == 4))
       try {
          return answerHash(firstPlayerCard, secondPlayerCard, dealerCard, true);
       }
@@ -240,7 +197,7 @@ static private Action byteToAction(byte myByte)
       }
    else
       return answerHash(firstPlayerCard, secondPlayerCard, dealerCard, false);
-   
+
 }
 
 
@@ -254,14 +211,16 @@ return myHashKey();
 
 
 /** Needs testing -- it had failed at least one test at one point.
- *
+ * 
+ * Not currently used in any code other than testing code (see
+ * Testers.testConstructors). Would be nice to have this tested and
+ * available for testing purposes.
+ * 
  * @param obj Object to compare to
  * @return True if they're the same, false otherwise. The player card order can
  * be reversed.
  *
- * Not currently used in any code other than testing code (see
- * Testers.testConstructors ~ line 2663). Would be nice to have this tested and
- * available for testing purposes.
+
  */
 @Override
 public boolean equals(Object obj)
@@ -324,9 +283,11 @@ public boolean equals(Object obj)
  * This returns the key to be used in the hash map. Every hand that can
  * be split actually has two separate keys. However, just because it can
  * be split doesn't mean there's a split entry for it in the map -- no entry
- * will be created if splitting was neither the first best nor second best action.
+ * will be created if splitting was neither the first best nor second best 
+ * action.
  * 
- * This function could fail if the bytes used to represent the cards have a value of 0.
+ * This function could fail if the bytes used to represent the cards have a 
+ * value of 0.
  * 
  * @param firstPlayer
  * @param secondPlayer
@@ -335,24 +296,24 @@ public boolean equals(Object obj)
  * non-split hand
  * @return
  */
-static protected int answerHash(byte firstPlayer, byte secondPlayer, byte dealerCard,
-        boolean splitRecommended)
+static protected int answerHash(byte firstPlayer, byte secondPlayer, 
+        byte dealerCard, boolean splitRecommended)
 {
-   
    if (splitRecommended) {
       if (firstPlayer == secondPlayer)
          return (int) dealerCard + 100000 * ((int) firstPlayer);
       else {
          if (Blackjack.debug())
-         {System.out.println("answerHash called with a recommended split, despite the fact that\n" 
+         {System.out.println("answerHash called with a recommended split, "
+                 + "despite the fact that\n" 
                  + "the player can't split becuase his cards are different.");
             throw new IllegalArgumentException();
          }       
-
       }
    }
    
-//The order of the player cards does not matter to the caller. So I should always put them 
+//The order of the player cards does not matter to the caller. So I should 
+//always put them 
 //in the same order, here, so I always get the same result. Highest card second.
    if (firstPlayer <= secondPlayer)
       return (int) dealerCard + 100 * (int) firstPlayer + 10000 * (int) secondPlayer;
@@ -372,16 +333,16 @@ static protected int answerHash(byte firstPlayer, byte secondPlayer, byte dealer
  * @throws IOException (Unlikely)
  * 
  */
-Answer(Action bestAction, Action secondBestAction, State aState) throws IOException
+Answer(Action bestAction, Action secondBestAction, State aState) throws 
+        IOException
 { 
    this ( getConsolidatedActions( Answer.actionToByte(bestAction),
                             Answer.actionToByte(secondBestAction) )  ,
           Answer.byteToCardValue( State.getEffectiveCard(aState, 1)  ),
           Answer.byteToCardValue( State.getEffectiveCard(aState, 2)  ),
           Answer.byteToCardValue( State.getEffectiveCard(aState, 0)  ) );
-   
-   
 }
+
 /**
  * Convenience function for Answer(byte consolidatedAction, 
  * CardValue firstPlayerCard, CardValue secondPlayerCard,
@@ -407,27 +368,28 @@ Answer (Action bestAction, Action secondBestAction, CardValue firstPlayerCard,
  * Two other constructors also redirect here.
  * UNTESTED.
  */
-Answer(byte consolidatedAction, CardValue firstPlayerCard, CardValue secondPlayerCard,
-        CardValue dealerCard) throws IOException
-{ this.complete = false;
-//actions are 0-5 
-
+Answer( byte consolidatedAction, CardValue firstPlayerCard, 
+        CardValue secondPlayerCard,CardValue dealerCard) throws IOException
+{ 
+   this.complete = false;
    this.bestEV = this.secondBestEV = -1000;
    this.firstPlayerCard = Answer.cardValueToByte(firstPlayerCard);
    this.secondPlayerCard = Answer.cardValueToByte(secondPlayerCard);
    this.dealerCard = Answer.cardValueToByte(dealerCard);
    if ( (consolidatedAction < 0) || (consolidatedAction > 35) )
-      throw new IOException("Error in reconstructing Answer from byte " + consolidatedAction + " -- "
-   + " expected values are between 0 and 35. Dummybyte is " + Strategy.dummyByte);
+      throw new IOException("Error in reconstructing Answer from byte " + 
+              consolidatedAction + " -- expected values are between 0 and 35."
+              + " Dummybyte is " + Strategy.dummyByte);
    this.secondBestAction = (byte) (consolidatedAction % 6);
    this.bestAction = (byte) ( (consolidatedAction - this.secondBestAction)/6 );
    if ( (this.bestAction == this.secondBestAction) && (!hasBlackjack() ) )
-   {  System.err.println("Error in Answer constructor -- suggested actions are identical.");
-      throw new IOException("Error in reconstructing Answer -- suggested actions are identical:" +
+   {
+      System.err.println("Error in Answer constructor -- suggested actions are"
+           + " identical.");
+      throw new IOException("Error in reconstructing Answer -- suggested actions"
+              + " are identical:" +
             byteToAction(  this.bestAction)
               );
-      
-      
    }
 }
 
@@ -438,13 +400,14 @@ Answer(byte consolidatedAction, CardValue firstPlayerCard, CardValue secondPlaye
  */
 private boolean hasBlackjack()
 {
-  if (  ( CardValue.ACE == byteToCardValue(this.firstPlayerCard ) ) &&
+   if (  ( CardValue.ACE == byteToCardValue(this.firstPlayerCard ) ) &&
         ( CardValue.TEN == byteToCardValue(this.secondPlayerCard) )   )
-    return true;
-  else if (  ( CardValue.TEN == byteToCardValue(this.firstPlayerCard ) ) &&
+      return true;
+   else if (  ( CardValue.TEN == byteToCardValue(this.firstPlayerCard ) ) &&
              ( CardValue.ACE == byteToCardValue(this.secondPlayerCard) )   )
        return true;
-  else return false;
+   else
+      return false;
 }
 
 /** Used to succinctly serialize an Answer into one byte. Untested. Used
@@ -452,14 +415,14 @@ private boolean hasBlackjack()
  * @return 
  */
 byte getConsolidatedActions()
-{ if (Blackjack.debug() && (this.bestAction == this.secondBestAction) && !hasBlackjack() )
+{ if (Blackjack.debug() && (this.bestAction == this.secondBestAction)
+        && !hasBlackjack() )
   {   
-      System.err.print(this);
+     System.err.print(this);
      throw new RuntimeException("Actions identical during save.");
   }
    
-  return getConsolidatedActions(this.bestAction,this.secondBestAction);
-   
+  return getConsolidatedActions(this.bestAction,this.secondBestAction); 
 }
 
 /** This function needs to be changed if the coding for Actions changes.
@@ -493,22 +456,20 @@ protected Answer(State aState, boolean consolidated)
    if ( (aState.getPreferredAction() == aState.getSecondBestAction() ) &&
            (!aState.playerBJ()) )
    {
-      State.printStateStatus(aState, "Error in answer constructor: top two actions are the same.");
+      State.printStateStatus(aState, "Error in answer constructor: top "
+              + "two actions are the same.");
       if (Blackjack.debug())
          throw new RuntimeException();
    }
    
    if (! checkValidEV(consolidated))
-     State.printStateStatus(aState, "Error in Answer constructor - EV is incorrect.");
-      //Check for invalid EV.
-
-   
+     State.printStateStatus(aState, "Error in Answer constructor - "
+             + "EV is incorrect.");
 }
      
 protected Answer(State aState)
 {
    this(aState, false);
-
 }
 
 /** Do not call me on incomplete answers -- I'll assert false and return false.
@@ -519,7 +480,7 @@ protected Answer(State aState)
  */
 private boolean checkValidEV(boolean consolidated)
 { 
-      if ( ((bestEV < -10) || (bestEV > 10) 
+   if ( ((bestEV < -10) || (bestEV > 10) 
            || (secondBestEV < -10) || (secondBestEV > 10))
       || ( (!consolidated) && (secondBestEV > bestEV) ) )
       {
@@ -532,8 +493,6 @@ private boolean checkValidEV(boolean consolidated)
    return true;
 }
 
-
-
 @Override
 public String toString()
 {  String ln = System.getProperty("line.separator");
@@ -543,15 +502,17 @@ public String toString()
       s.append( "is complete: ").append(ln);
    else s.append( " is not complete: ").append(ln);
 
-   s.append("Dealer card: ").append(getDealerCard()).append(". " + "Player cards: ").append(
-   getFirstPlayerCard()).append(" and ").append(getSecondPlayerCard()).append(
-   ", recommended" + " action of ").append(getBestAction()).append(", with an EV of ").append(
-   (String.valueOf(bestEV)));
-   s.append(".").append(ln).append(" Second best action is to ").append(
-   getSecondBestAction()).append(" with an EV of ").append(String.valueOf(secondBestEV)) ;
+   s.append("Dealer card: ").append(getDealerCard()).append(". " +
+           "Player cards: ").append(
+   getFirstPlayerCard()).append(" and ").append(getSecondPlayerCard())
+           .append(", recommended" + " action of ").append(getBestAction())
+           .append(", with an EV of ")
+           .append((String.valueOf(bestEV)));
+   s.append(".").append(ln).append(" Second best action is to ")
+           .append(getSecondBestAction()).append(" with an EV of ")
+           .append(String.valueOf(secondBestEV)) ;
    
-   s.append(ln).append(
-           "My code is ").append(myHashKey());
+   s.append(ln).append("My code is ").append(myHashKey());
    return s.toString();
 }
 

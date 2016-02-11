@@ -5,17 +5,16 @@ package blackjack;
  * While INSURANCE is listed here, it is fundamentally different than other
  * actions and treated differently. For example, it is never listed in
  * the State's action list.
- * Action.ERROR 
- * indicates that that Action has not been initialized; it's usually not
- * used as an error condition.
+ * Action.ERROR indicates that that Action has not been initialized; it's 
+ * usually not used as an error condition.
  */
 public enum Action
 {
    HIT, STAND, DOUBLE, SURRENDER, INSURANCE, SPLIT, ERROR;
 
    /**
-    * I wrote this function before I realized that Java enums automatically
-    * disallow shallow clone behavior.
+    * (I wrote this function before I realized that Java enums automatically
+    * disallow shallow clone behavior.)
     * @param myAction
     * @return
     * @deprecated
@@ -34,16 +33,14 @@ public enum Action
          case SURRENDER:
             return Action.SURRENDER;
          case INSURANCE:
-            return Action.INSURANCE; //Not really an action.
+            return Action.INSURANCE; 
          case SPLIT:
             return Action.SPLIT;
          case ERROR:
-            return Action.ERROR; //Used solely as null or a marker of impossibility.
+            return Action.ERROR;
       }
       throw new RuntimeException(
               "Error in Action.deepclone(Action). Have a nice day.");
-
-
    }
 
    public char abbrev()
@@ -58,8 +55,6 @@ public enum Action
       }
       char q = toString().charAt(0);
       return q;
-
-
    }
 
    @Override
@@ -69,5 +64,4 @@ public enum Action
       String s = super.toString();
       return s.substring(0, 1) + s.substring(1).toLowerCase();
    }
-
 }
