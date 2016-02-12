@@ -48,13 +48,8 @@ private final CardValue myValue;
  * @param myValue
  */
 public Card(final Suit mySuit, final CardValue myValue) {
-
    this.mySuit = mySuit;
    this.myValue = myValue;
-   //This is safe, right?
-   //this.mySuit = Suit.deepClone(mySuit);
-   //this.myValue = CardValue.deepClone(myValue);
-
 }
 
 public Card(final Suit mySuit, final CardValue myValue, final boolean noclone) {
@@ -88,13 +83,7 @@ public CardValue getCardValue() {
    return myValue;
 }
 
-/**
- * Gives a deep clone. Yay.
- *
- *
- * @return
- */
-public Suit getSuit() { //public enum Suit { SPADES, CLUBS, DIAMONDS, HEARTS ;
+public Suit getSuit() {
    return mySuit;
 }
 
@@ -104,71 +93,4 @@ public String toString() {
 
 }
 
-/**
- * Gives a deep clone.
- * There's got to be some more efficient way of doing this!
- *
- * @return
- */
-/*
- public CardValue getCardValue()
- {
- switch (myValue) {
- case ACE:
- return CardValue.ACE;
- case TWO:
- return CardValue.TWO;
- case THREE:
- return CardValue.THREE;
- case FOUR:
- return CardValue.FOUR;
- case FIVE:
- return CardValue.FIVE;
- case SIX:
- return CardValue.SIX;
- case SEVEN:
- return CardValue.SEVEN;
- case EIGHT:
- return CardValue.EIGHT;
- case NINE:
- return CardValue.NINE;
- case TEN:
- return CardValue.TEN;
- case JACK:
- return CardValue.JACK;
- case QUEEN:
- return CardValue.QUEEN;
- case KING:
- return CardValue.KING;
- }
- System.out.println("Error in function Card.cardVal()");
- throw new RuntimeException();
-
- }
- */
-/*
- * /** Gives a deep clone. Yay.
- *
- *
- * @return
- */
-/*
- public Suit getSuit()
- { //public enum Suit { SPADES, CLUBS, DIAMONDS, HEARTS ;
- switch (mySuit) {
- case SPADES:
- return Suit.SPADES;
- case HEARTS:
- return Suit.HEARTS;
- case CLUBS:
- return Suit.CLUBS;
- case DIAMONDS:
- return Suit.DIAMONDS;
- }
- //  return Suit.HEARTS;
- System.out.println("Enum error in function Card.classSuit()");
- throw new RuntimeException();
- }
-
- */
 }
