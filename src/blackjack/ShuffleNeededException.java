@@ -1,16 +1,11 @@
 package blackjack;
 
-/**
- *
- * AFTER TESTING MAKE THIS SUBCLASS RUNTIME EXCEPTION
- */
-public class ShuffleNeededException extends Exception {
-public ShuffleNeededException() {
-}
+public class ShuffleNeededException extends RuntimeException {
+   private static final long serialVersionUID = -3825323107980632817L;
+public ShuffleNeededException() {}
 
 public ShuffleNeededException(String msg) {
    super(msg);
-
 }
 
 }

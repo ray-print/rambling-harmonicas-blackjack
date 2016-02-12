@@ -14,24 +14,12 @@ private CardValue(final int myValue) {
    this.myValue = myValue;
 }
 
-/**
- *
- *
- *
- * @return Value of the card. Stored as an int, so it's a deep clone.
- */
 public int value() {
    return myValue;
 }
-/*final private String cardName;
- private CardValue(final String cardName,final int myValue) {
- this.cardName = cardName;
- this.myValue = myValue;
-
- } */
 
 /**
- * * UNTESTED.
+ * Really, Java, this is the best you got?
  * 1 -> ACE
  * 2-> TWO ETC
  *
@@ -39,10 +27,6 @@ public int value() {
  * @return
  */
 static public CardValue cardValueFromInt(int value) {
-   if ((value < 1) || (value > 11)) {
-      System.err.println("Invalid argument: " + value);
-      throw new IllegalArgumentException();
-   }
    switch (value) {
       case 1:
       case 11:
@@ -66,11 +50,10 @@ static public CardValue cardValueFromInt(int value) {
       case 10:
          return CardValue.TEN;
       default:
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("Invalid CardValue: " + value);
    }
 }
 
-//modify this to do its thing to cardName???
 @Override
 public String toString() {
    //only capitalize the first letter
@@ -83,40 +66,4 @@ public String toString() {
    }
 }
 
-/* Don't need this because of how enums work. Yay.
- static public CardValue deepClone(CardValue toBeCloned)
- {
- switch (toBeCloned) {
- case ACE:
- return CardValue.ACE;
- case TWO:
- return CardValue.TWO;
- case THREE:
- return CardValue.THREE;
- case FOUR:
- return CardValue.FOUR;
- case FIVE:
- return CardValue.FIVE;
- case SIX:
- return CardValue.SIX;
- case SEVEN:
- return CardValue.SEVEN;
- case EIGHT:
- return CardValue.EIGHT;
- case NINE:
- return CardValue.NINE;
- case TEN:
- return CardValue.TEN;
- case JACK:
- return CardValue.JACK;
- case QUEEN:
- return CardValue.QUEEN;
- case KING:
- return CardValue.KING;
- }
- System.out.println("Error in function CardValue.deepClone()");
- throw new RuntimeException();
-
- }
- */
 }
