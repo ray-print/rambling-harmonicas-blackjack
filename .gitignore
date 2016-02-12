@@ -9,6 +9,13 @@ Thumbs.db
 #Build
 build/
 dist/
+output/
+
+#Gradle
+.gradle
+/buildSrc/build
+/subprojects/*/build
+/subprojects/docs/src/samples/*/*/build
 
 #Netbeans
 nbactions.xml
@@ -18,5 +25,12 @@ nbproject/*
 !nbproject/project.properties
 !nbporject/project.xml
 
-#Strategy data files -- these will be added in in a future commit
-data/ 
+# Eclipse
+# -------
+*.classpath
+*.project
+*.settings
+/bin
+/subprojects/*/bin
+atlassian-ide-plugin.xml
+

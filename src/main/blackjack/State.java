@@ -1319,8 +1319,7 @@ protected void calculateEV(final float[] dealerProbabilities, Rules theRules) {
  *
  */
 public int getHandResult(int handIndex, int dealerHandTotal, boolean dealerBJ) {
-   List<Integer> handResults;
-   Action lastAction = lastAction(handIndex); //Performs check on handIndex
+   Action lastAction = lastAction(handIndex); 
 
    if (dealerBJ && (dealerHandTotal != 21)) {
       throw new IllegalArgumentException("The dealer cannot have blackjack if her hand total is " + dealerHandTotal);

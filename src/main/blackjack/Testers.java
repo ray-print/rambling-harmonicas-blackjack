@@ -11,7 +11,8 @@ import java.util.*;
  *
  */
 public class Testers {
-public static void main(String[] args) throws NoRecommendationException, IOException, ClassNotFoundException {
+public static void main(String[] args) throws 
+        NoRecommendationException, IOException, ClassNotFoundException {
    State.usedForCalculation(true);
 
    final boolean verbosity = false;
