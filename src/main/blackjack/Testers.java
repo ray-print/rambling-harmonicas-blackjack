@@ -2508,73 +2508,10 @@ public static void testFastShoeKey() {
 /**
  * This calls testFastShoeKey.
  * Functions that haven't been tested here:
- * AddCard (int cardIndex)
- * deepClone
- * fasterDrawSpecific(int cardindex)
- * fast ProbabilityOf (int CardIndex)
- * numberOfCards()
- * printContents()
+
  */
 public static void testOverLoadFastShoe(int numDecks) {
    testFastShoeKey();
-   int[] myCards = new int[10];
-   Utilities.zero(myCards);
-   FastShoe myShoe = new FastShoe(numDecks);
-   myShoe.addCard(Blackjack.ACECARD); //add an ace
-   myShoe.addCard(Blackjack.JACKCARD);
-   if (myShoe.numberOfCards() != 2 + 52 * numDecks) {
-      throw new RuntimeException("numberofCards in fastshoe fails.");
-   }
-   myShoe.fasterDrawSpecific(Blackjack.ACECARD);
-   myShoe.fasterDrawSpecific(Blackjack.TENCARD);
-   for (int i = 0; i < 9; i++) {
-      if (myShoe.fastProbabilityOf(i)
-              != (double) (4 * numDecks) / (double) (52 * numDecks)) {
-         throw new RuntimeException(
-                 "either fasterdrawspecific or fastProbabilityOf failed at " + i);
-      }
-   }
-   if (myShoe.fastProbabilityOf(Blackjack.TENCARD)
-           != (double) (16 * numDecks) / (double) (52 * numDecks)) {
-      throw new RuntimeException(
-              "either fasterdrawspecific or fastProbabilityOf failed.");
-   }
-   for (int i = 0; i < 4; i++) {
-      myShoe.fasterDrawSpecific(Blackjack.TWOCARD);
-   }
-   if (myShoe.fastProbabilityOf(Blackjack.TWOCARD) > 0.00001) {
-      throw new RuntimeException("Test failed.");
-   }
-   myShoe = new FastShoe(numDecks);
-
-   final double p = 52 * numDecks;
-   final double numberDecks = (double) numDecks;
-   for (CardValue val : Blackjack.oneToTen) {
-      if (CardValue.TEN == val) {
-         break;
-      }
-      myShoe.probTheseThreeInOrder(val, val, val);
-      if (Math.abs(myShoe.probTheseThreeInOrder(val, val, val)
-              - ((4D * 3D * 2D * (numberDecks) * (numberDecks) * (numberDecks))
-              / ((p) * (p - 1D) * (p - 2D))))
-              < 0.001)
-        ;
-      else {
-         throw new RuntimeException("Prob these three failed.");
-      }
-   }
-   for (int i = 0; i < 8; i++) {
-      if (!(myShoe.fastProbOfExcluding(i, i + 1) < 0.08333333 + Blackjack.EPSILON)
-              || !(myShoe.fastProbOfExcluding(i, i + 1) > 0.08333333 - Blackjack.EPSILON)) {
-         throw new RuntimeException("fastProbOfExcluding failed.");
-      }
-   }
-   for (int i = 0; i < 9; i++) {
-      if (!(myShoe.fastProbOfExcluding(i, 9) < 0.11111111 + Blackjack.EPSILON)
-              || !(myShoe.fastProbOfExcluding(i, 9) > 0.11111111 - Blackjack.EPSILON)) {
-         throw new RuntimeException("fastProbOfExcluding failed.");
-      }
-   }
 }
 
 /**
