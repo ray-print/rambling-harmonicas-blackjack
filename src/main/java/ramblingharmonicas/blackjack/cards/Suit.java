@@ -1,4 +1,4 @@
-package blackjack;
+package blackjack.cards;
 
 public enum Suit {
 SPADES, CLUBS, DIAMONDS, HEARTS;

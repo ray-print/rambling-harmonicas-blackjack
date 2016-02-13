@@ -33,4 +33,4 @@ nbproject/*
 /bin
 /subprojects/*/bin
 atlassian-ide-plugin.xml
-
+/.externalToolBuilders

@@ -1,5 +1,5 @@
 package blackjack;
-
+import blackjack.cards.*;
 /**
  * Indicates an internal problem in the Strategy class.
  *

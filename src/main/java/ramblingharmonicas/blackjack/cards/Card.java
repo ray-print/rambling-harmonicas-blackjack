@@ -1,4 +1,4 @@
-package blackjack;
+package blackjack.cards;
 
 /**
  * An individual card. Contains a suit and value.

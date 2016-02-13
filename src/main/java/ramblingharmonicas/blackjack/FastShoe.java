@@ -1,4 +1,5 @@
 package blackjack;
+import blackjack.cards.*;
 
 /**
  * Contains all cards in a dealing shoe.
@@ -191,9 +192,6 @@ double fastProbOfExcluding(final int goodCardIndex, final int excludedIndex) {
 
    return (double) (cardValueCache[(goodCardIndex + 1)])
            / ((double) (totalCards - cardValueCache[(excludedIndex + 1)]));
-//Java requires explicit upcasting.
-
-
 }
 
 /**

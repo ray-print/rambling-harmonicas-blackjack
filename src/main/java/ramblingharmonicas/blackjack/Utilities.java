@@ -1,5 +1,5 @@
 package blackjack;
-
+import blackjack.cards.*;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+
 
 public class Utilities {
 public static String stackTraceToString(Throwable t) {
@@ -581,7 +582,7 @@ public static int[] convertBytesToInteger(byte[] b) throws IOException {
 /**
  * Convenience function for exception handling while
  * attempting to close a Stream. Upon failure, I print the stack
- * trace and return false.
+ * trace and return false. (Not necessary after upgrade to Java 1.7)
  *
  * @param Closeable stream
  * @return True if the stream was null or was successfully closed.

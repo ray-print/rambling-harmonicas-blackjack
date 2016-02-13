@@ -1,4 +1,4 @@
-package blackjack;
+package blackjack.cards;
 
 /**
  * Enumerated card values.
