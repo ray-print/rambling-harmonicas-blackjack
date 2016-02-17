@@ -994,7 +994,6 @@ public static void allFastTests() {
    Testers.testCards();
    Testers.testOverloadedDealer(); //Utilities functions
    Testers.testOverLoadFastShoe(1);
-   Testers.fastShoeTest();
    Testers.testShoe();
    Testers.dealerClassTest();
    Testers.testDealerHCP();
@@ -1423,55 +1422,6 @@ static void testFastDealerRecursive(final int numDecks,
    System.out.println(
            "I used " + numDecks + " decks and a max hand size of "
            + myRules.getDealerMaxHandSize() + " cards.");
-
-}
-
-/**
- * Performs basic test of several draw and player functions in FastShoe:
- * fastProbabilityOf x2
- * fastProbOfExcluding
- * playerProbability
- * probTheseThreeInOrder
- *
- *
- */
-static void fastShoeTest() {
-   FastShoe amIBadAss = new FastShoe(2);
-   amIBadAss.addCard(new Card(Suit.SPADES, CardValue.JACK));
-   amIBadAss.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
-   amIBadAss.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
-   amIBadAss.addCard(new Card(Suit.DIAMONDS, CardValue.KING));
-   amIBadAss.addCard(new Card(Suit.DIAMONDS, CardValue.TEN));
-   amIBadAss.addCard(new Card(Suit.DIAMONDS, CardValue.ACE));
-   assert (amIBadAss.numberOfCards() == 52 * 2 + 6);
-
-   for (CardValue k : Blackjack.twoToTen) {
-      if (k == CardValue.TEN) {
-         assert (amIBadAss.fastProbabilityOf(Blackjack.TENCARD) == 37D / 110D);
-         break;
-      }
-      assert (amIBadAss.fastProbabilityOf(k) == 8D / 110D) : amIBadAss.fastProbabilityOf(k);
-
-      if (k != CardValue.NINE) {
-         assert (amIBadAss.probabilityOfExcluding(k,
-                 CardValue.NINE) == 8D / 102D);
-      }
-   }
-   FastShoe tryMe = amIBadAss.deepClone();
-
-   amIBadAss.fastDrawSpecific(CardValue.ACE);
-   amIBadAss.fastDrawSpecific(CardValue.TWO);
-   tryMe.fastDrawSpecific(CardValue.THREE);
-   tryMe.fastDrawSpecific(CardValue.THREE);
-   tryMe.fastDrawSpecific(CardValue.FOUR);
-   double probOfThree = 0;
-   probOfThree += amIBadAss.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD) * 7 / 107;
-   probOfThree += (1 - amIBadAss.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD)) * 8 / 107;
-   assert (amIBadAss.playerProbability(true, new Card(Suit.CLUBS, CardValue.TEN), CardValue.THREE)
-           == probOfThree);
-   assert (tryMe.probTheseThreeInOrder(CardValue.THREE, CardValue.THREE, CardValue.THREE)
-           == (6D / 107D) * (5D / 106D) * (4D / 105D));
-
 
 }
 

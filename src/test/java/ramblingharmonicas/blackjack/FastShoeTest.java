@@ -16,13 +16,13 @@ public class FastShoeTest {
 
 	private final FastShoe aShoe;
 	private final int numDecks;
-
+	private final int numberOfCards;
 	private final static int [] aceToNine = { Blackjack.ACECARD, Blackjack.TWOCARD,
 		Blackjack.THREECARD, Blackjack.FOURCARD, Blackjack.FIVECARD, Blackjack.SIXCARD, 
 		Blackjack.SEVENCARD, Blackjack.EIGHTCARD, Blackjack.NINECARD};
 	private final static int [] aceToEight = { Blackjack.ACECARD, Blackjack.TWOCARD,
 		Blackjack.THREECARD, Blackjack.FOURCARD, Blackjack.FIVECARD, Blackjack.SIXCARD, 
-		Blackjack.SEVENCARD, Blackjack.EIGHTCARD, Blackjack.NINECARD};
+		Blackjack.SEVENCARD, Blackjack.EIGHTCARD};
 
 	@Parameters
 	public static Collection<Object[]> data() {
@@ -34,6 +34,7 @@ public class FastShoeTest {
 	public FastShoeTest(int decks) {
 		numDecks = decks;
 		aShoe = new FastShoe(decks);
+		numberOfCards = 52 * numDecks;
 	}
 
 	@Test
@@ -47,6 +48,11 @@ public class FastShoeTest {
 		aShoe.addCard(Blackjack.ACECARD);
 		aShoe.addCard(Blackjack.JACKCARD);
 		assertEquals(aShoe.numberOfCards(), 52 * numDecks + 2);
+		aShoe.addCard(new Card(Suit.SPADES, CardValue.JACK));
+	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
+	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
+	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.KING));
+	    assertEquals (52 * numDecks + 6, aShoe.numberOfCards());
 	}
 
 	@Test
@@ -67,6 +73,40 @@ public class FastShoeTest {
 					(double) (16 * numDecks) / (double) (52 * numDecks);
 	}
 
+	@Test
+	public void integrationTestTwoProbabilityOf () {
+		   aShoe.addCard(new Card(Suit.SPADES, CardValue.JACK));
+		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
+		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
+		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.KING));
+		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.TEN));
+		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.ACE));
+		   int numberCards = 52 * numDecks + 6;
+		   for (CardValue cv : Blackjack.twoToTen) {
+		      if (cv == CardValue.TEN) {
+		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
+		        		 aShoe.fastProbabilityOf(Blackjack.TENCARD),
+		        		 Blackjack.SMALLEST_EPSILON);
+		         break;
+		      }
+		      assertEquals ( (4D * numDecks) / numberCards, aShoe.fastProbabilityOf(cv),
+		    		  Blackjack.SMALLEST_EPSILON); 
+		   }
+	}
+	
+	@Test
+	public void testProbabilityOfExcluding() {
+		for (CardValue cv : Blackjack.twoToTen) {
+			if (cv != CardValue.TEN) {
+				assertEquals ( 4D / (52D - 16D), aShoe.probabilityOfExcluding(cv,
+	                 CardValue.TEN), Blackjack.SMALLEST_EPSILON); 
+	        } 
+			else {
+	        	assertEquals ( 16D / (52D - 4D), aShoe.probabilityOfExcluding(cv, 
+	        		CardValue.ACE), Blackjack.SMALLEST_EPSILON);
+	        }
+		}
+	}
 	@Test
 	public void integrationTestProbablityOf() {
 		aShoe.addCard(Blackjack.ACECARD);
@@ -101,14 +141,42 @@ public class FastShoeTest {
 	@Test
 	public void testProbOfExcluding() {
 		for (int card : aceToEight) {
-			assertEquals(aShoe.fastProbOfExcluding(card,  card+1), 0.08333333,
+			assertEquals(0.08333333, aShoe.fastProbOfExcluding(card,  card+1),
 					Blackjack.SMALLEST_EPSILON);
 		}
 		for (int card : aceToNine) {
-			assertEquals(aShoe.fastProbOfExcluding(card,  Blackjack.TENCARD), 0.11111111,
+			assertEquals(0.11111111, aShoe.fastProbOfExcluding(card,  Blackjack.TENCARD), 
 					Blackjack.SMALLEST_EPSILON);
 		}
 	}
+	
+	@Test
+	public void testDeepClone() {
+	   FastShoe shoeCopy = aShoe.deepClone();
+	   assertEquals(shoeCopy.numberOfCards(), aShoe.numberOfCards());
+	   assertEquals(shoeCopy.myStringKey(), aShoe.myStringKey());
+	   aShoe.fastDrawSpecific(CardValue.ACE);
+	   aShoe.fastDrawSpecific(CardValue.TWO);
+	   assertEquals(numberOfCards -2, aShoe.numberOfCards());
+	   assertEquals(numberOfCards, shoeCopy.numberOfCards());
+	   shoeCopy.fastDrawSpecific(CardValue.THREE);
+	   shoeCopy.fastDrawSpecific(CardValue.THREE);
+	   shoeCopy.fastDrawSpecific(CardValue.FOUR);
+	   assertEquals(numberOfCards -3, shoeCopy.numberOfCards());
+	   assertEquals(numberOfCards -2, aShoe.numberOfCards());
+	}
+	
+	/* TODO: Separate these tests. Then move over the key test, then I'm done with the
+	 * FastShoe unit tests.
+	 * 	   double probOfThree = 0;
+		   probOfThree += aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD) * 7 / (numberOfCards - 1);
+		   probOfThree += (1 - aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD)) * 8 / 107;
+		   assert (aShoe.playerProbability(true, new Card(Suit.CLUBS, CardValue.TEN), CardValue.THREE)
+		           == probOfThree);
+		   assert (shoeCopy.probTheseThreeInOrder(CardValue.THREE, CardValue.THREE, CardValue.THREE)
+		           == (6D / 107D) * (5D / 106D) * (4D / 105D));		*/
+
+	
 /* Untested
  * FastShoe(FastShoe myOriginal, int[] cardArray) and its three extremely similar functions
  *

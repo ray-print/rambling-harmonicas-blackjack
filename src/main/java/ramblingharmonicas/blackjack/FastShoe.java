@@ -47,14 +47,6 @@ public FastShoe(int numberOfDecks) throws IllegalArgumentException {
 
 }
 
-/**
- * Creates a deep clone of this FastShoe.
- * Tested once. Seemed to create a true deep clone, with the member
- * variables of the clone independent of the original.
- * Used by the Shoe class.
- *
- * @return
- */
 public FastShoe deepClone() {
    return new FastShoe(this, cardValueCache);
 }
@@ -65,9 +57,7 @@ FastShoe(FastShoe myOriginal, int[] cardArray) {
 
 /**
  * Constructs FastShoe from a cardValueCache
- * Tested indirectly, once, via deepClone.
- *
- * @param cardArray
+ * @param cardArray Internal representation of cards
  */
 private FastShoe(int[] cardArray) {
    System.arraycopy(cardArray, 0, this.cardValueCache, 0, cardArray.length);
@@ -240,7 +230,6 @@ public Card fastDrawSpecific(final CardValue thisCard) {
       throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
    }
 
-   int i;
    if (cardValueCache[thisCard.value()] == 0) {
       throw new IllegalStateException("FastShoe.fastdrawSpecific(CardValue) called for a CardValue not present"
               + " in the shoe.");
@@ -264,7 +253,6 @@ public void fasterDrawSpecific(final CardValue thisCard) {
       throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
    }
 
-   int i;
    if (cardValueCache[thisCard.value()] == 0) {
       throw new IllegalStateException("FastShoe.fastdrawSpecific(CardValue) called for a CardValue not present"
               + " in the shoe.");
@@ -284,7 +272,7 @@ public void fasterDrawSpecific(final int cardIndex) {
    if (totalCards == 0) {
       throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
    }
-   int i;
+
    if (cardValueCache[(cardIndex + 1)] == 0) {
       System.out.println("FastShoe.fastdrawSpecific(cardIndex) called for a CardValue not present"
               + " in the shoe: " + cardIndex);
