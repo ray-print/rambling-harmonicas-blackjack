@@ -79,69 +79,73 @@ public static void viewSplitTable(Strategy myStrategy,
    Action bestAction = null;
    Action secondBestAction = null;
    double ev;
-   int i;
-   int j;
-   final String newLineAndTab = "\n\t   ";
+   StringBuilder sb = new StringBuilder();
+   Formatter formatter = new Formatter(sb, Locale.US);
+   StringBuilder cardString;
+   //Assume 96 character console
    try {
-      System.out.println("For the purposes of actions, the dealer is assumed to not have blackjack.");
-      System.out.println("However, the expected values do not make that assumption.");
-      System.out.println("Total\t       2        3        4        5        6        7        8        9        10       A");
+      //System.out.println("For the purposes of actions, the dealer is assumed to not have blackjack.");
+      //System.out.println("However, the expected values do not make that assumption.");
+	  formatter.format("%16s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%n",
+			   "Player Total","2", "3","4","5","6","7","8","9","10","A");
       for (int handValue = 2; handValue < 22; handValue += 2) {
          playerCard = new Card(Suit.CLUBS, CardValue.cardValueFromInt(handValue / 2));
-         System.out.print(handValue / 2 + "," + handValue / 2 + "\t       ");
+         if (handValue == 2) {
+        	 cardString = new StringBuilder("A,A");
+         }
+         else {
+         	cardString = (new StringBuilder("")).append(handValue/2)
+         					.append(",").append(handValue/2);
+         }
+         formatter.format("%16s", cardString);
          for (CardValue dealerCV : Blackjack.twoToAce) {
             dealerCard = new Card(Suit.CLUBS, dealerCV);
             aState = new State(playerCard, playerCard, dealerCard);
             aState.setDealerBlackjack(false);
             bestAction = myStrategy.findBestAction(aState);
-            System.out.print(bestAction.abbrev() + "        ");
+            formatter.format("%8s",bestAction.abbrev() );
          }
 
          if (myStrategy.isCompleteLoaded()) {
-            System.out.print(newLineAndTab);
+            formatter.format("%n");
             for (CardValue dealerCV : Blackjack.twoToAce) {
                dealerCard = new Card(Suit.CLUBS, dealerCV);
                aState = new State(playerCard, playerCard, dealerCard);
                ev = myStrategy.findBestEV(theRules, aState);
-               System.out.format("%+.4f  ", ev);
+               formatter.format("%+.4f  ", ev); //TODO get spacing right
             }
          }
          if (displaySecondBest) {
-            System.out.print("\n\t       ");
+        	formatter.format("%n%16s", "");
             for (CardValue dealerCV : Blackjack.twoToAce) {
                dealerCard = new Card(Suit.CLUBS, dealerCV);
                aState = new State(playerCard, playerCard, dealerCard);
                aState.setDealerBlackjack(false);
                secondBestAction = myStrategy.findSecondBestAction(theRules, aState);
-               System.out.print(secondBestAction.abbrev() + "        ");
+               formatter.format("%8s",secondBestAction.abbrev());
             }
             if (myStrategy.isCompleteLoaded()) {
-
-               System.out.print(newLineAndTab);
+               formatter.format("%n");;
                for (CardValue dealerCV : Blackjack.twoToAce) {
                   dealerCard = new Card(Suit.CLUBS, dealerCV);
                   aState = new State(playerCard, playerCard, dealerCard);
                   ev = myStrategy.findSecondBestEV(theRules, aState);
-                  System.out.format("%+.4f  ", ev);
+                  formatter.format("%+.4f  ", ev); //TODO fix spacing
                }
             }
          }
-         System.out.println();
+         formatter.format("%n");
       }
+      System.out.println(sb);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
-      if (Blackjack.debug()) {
-         System.err.println(theRules.toString() + aState);
-      }
+      System.err.println(theRules.toString() + aState);
    }
    catch (IOException q) {
       q.printStackTrace();
-      if (Blackjack.debug()) {
-         System.err.println(theRules.toString() + aState);
-      }
+      System.err.println(theRules.toString() + aState);   
    }
-
 }
 
 /**
