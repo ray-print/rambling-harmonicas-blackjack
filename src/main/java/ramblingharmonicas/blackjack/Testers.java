@@ -6,19 +6,16 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * All of the tests for this blackjack package.
- *
+ * TODO: Move all tests in this file into JUnit. 
+ * TODO: Move all code which solves and then stores data sets into separate file.
+ * TODO: Move all non-tests into Blackjack.java
  *
  */
 public class Testers {
-public static void main(String[] args) throws 
-        NoRecommendationException, IOException, ClassNotFoundException {
-   State.usedForCalculation(true);
 
-   final boolean verbosity = false;
-   Testers.allFastTests();
-
-   /* Don't run these tests when I do not have the raw files in the directory, and
+public static void callTests() {
+	Testers.allFastTests();
+   /* Don't run these tests when the raw data files don't exist, or
     * when calculations are deactivated.
     //runAllCalculations(false);
     //consolidateFiles(false);
@@ -26,27 +23,25 @@ public static void main(String[] args) throws
     //This should throw an exception quickly if calculations are deactivated
     */
 
-//validateConsolidatedFiles(true); //This takes about 14 minutes.
-
-   Strategy someStrat = new Strategy(new Rules(1), Strategy.Skill.COMP_DEP);
-//someStrat.testToggles();
-   Rules theRules = new Rules(2);
-   theRules.setEarlySurrender(true);
+	//validateConsolidatedFiles(true); //This takes about 14 minutes.
+	 Strategy someStrat = new Strategy( new Rules(8), Strategy.Skill.TOTAL_DEP);
+	 someStrat.testToggles();
+	//Testers.testStrategy(false); //This test is time-consuming
+	 Testers.testTotalEV.doAll(false, false); //Verbosity, saving
+	   //Blackjack.printCacheStatus();
+	 Testers.testResplitEVs();
+	   //Blackjack.printCacheStatus();
+}
+public static void main(String[] args) throws 
+        NoRecommendationException, IOException, ClassNotFoundException {
+   //Testers.callTests();
+   Rules theRules = new Rules(8);
+   theRules.setEarlySurrender(false);
    theRules.setHoleCard(true);
-   someStrat.setCalculationDeactivated(true);
-   someStrat.setMapLoadDeactivated(true);
+   Strategy someStrat = new Strategy(theRules, Strategy.Skill.COMP_DEP);
+   someStrat.setForceSolve(true);
    someStrat.solve(theRules);
    someStrat.print();
-
-//Testers.testStrategy(false); //This test is time-consuming
-
-
-   Testers.testTotalEV.doAll(false, false); //Verbosity, saving
-   //Blackjack.printCacheStatus();
-//Testers.testResplitEVs();
-   //Blackjack.printCacheStatus();
-
-
 }
 
 private static void runAllCalculations(boolean verbosity) {

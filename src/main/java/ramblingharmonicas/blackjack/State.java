@@ -23,7 +23,12 @@ import blackjack.cards.*;
 public class State {
 /**
  * Maximum allowable hands.
- *
+ * TODO: Fix this and finish optimization of State.
+ * State should have a single variable called optimize. If optimize is true, it should
+ * set a variety of options -- specifically, State should use no ArrayLists/enums,
+ * switching to plain arrays and constants. Optimize being true should also disable
+ * all functions which use those (have them all throw errors). This requires a separate
+ * set of functions which take/use arrays and enums.
  */
 static private int MAX_NUMBER_HANDS = 3;
 static public final int PUSH = 10;
