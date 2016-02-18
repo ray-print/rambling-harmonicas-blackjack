@@ -34,14 +34,7 @@ public static void callTests() {
 }
 public static void main(String[] args) throws 
         NoRecommendationException, IOException, ClassNotFoundException {
-   //Testers.callTests();
-   Rules theRules = new Rules(8);
-   theRules.setEarlySurrender(false);
-   theRules.setHoleCard(true);
-   Strategy someStrat = new Strategy(theRules, Strategy.Skill.COMP_DEP);
-   someStrat.setForceSolve(true);
-   someStrat.solve(theRules);
-   someStrat.print();
+   Testers.callTests();
 }
 
 private static void runAllCalculations(boolean verbosity) {

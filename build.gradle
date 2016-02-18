@@ -8,19 +8,19 @@
 
 apply plugin: 'java'
 apply plugin: 'application'
-mainClassName = "blackjack.Testers" // For now
+mainClassName = "blackjack.Blackjack"
+description = "Blackjack calculator"
 
 // In this section you declare where to find the dependencies of your project
 repositories {
-    // Use 'jcenter' for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     jcenter()
+	mavenCentral()
 }
 
-// In this section you declare the dependencies for your production and test code
 dependencies {
     // The production code uses the SLF4J logging API at compile time
     compile 'org.slf4j:slf4j-api:1.7.14'
+	compile 'net.sf.jopt-simple:jopt-simple:4.9'
 
     // TestNG is also supported by the Gradle Test task. Just change the
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
@@ -31,6 +31,7 @@ dependencies {
 run {
     jvmArgs '-ea'
 }
+
 test {
     jvmArgs '-ea'
 	testLogging.showStandardStreams = true
@@ -41,14 +42,6 @@ test {
 }
 //TODO: Find out the syntax for Gradle glob patterns
 sourceSets {
-	main {
-		java {
-			srcDirs = ['src/main/java/ramblingharmonicas/blackjack', 'src/main/java/ramblingharmonicas/blackjack/cards']
-		}
-		resources {
-			srcDirs = ['data']
-		}
-	}
 	test {
 		java {
 			srcDirs = ['src/test/java/ramblingharmonicas/blackjack', 'src/main/java/ramblingharmonicas/blackjack/cards']
