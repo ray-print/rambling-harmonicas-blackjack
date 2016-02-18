@@ -49,6 +49,57 @@ public boolean isAllSolved() {
    return allSolved;
 }
 
+public StringBuilder getHardTable(final boolean displaySecondBest) {
+	Skill strategyType = getStrategyType();
+	final boolean hardTable = true, compDep;
+	if (strategyType == Skill.COMP_DEP || strategyType == Skill.PERFECT) {
+		compDep = true;
+	}
+	else {
+		compDep = false;
+	}
+	CardValue firstPlayerCard, secondPlayerCard;
+	State myState;
+	ArrayList<ArrayList<State>> solvedStates = new ArrayList<ArrayList<State>>();
+	ArrayList<State> currentStates = new ArrayList<State>() ;
+
+	for (int i = 2; i < 11; i++) {
+		  for (int j = i + 1; j < 11; j++) {
+			  currentStates = new ArrayList<State>() ;
+			  for (CardValue dealerCard : Blackjack.twoToAce) {
+				  firstPlayerCard = CardValue.cardValueFromInt(i);
+				  secondPlayerCard = CardValue.cardValueFromInt(j);
+				  myState = new State(firstPlayerCard, secondPlayerCard, dealerCard);
+				  myState.setDealerBlackjack(false); 
+				  currentStates.add(myState);
+			  }
+			  solvedStates.add(currentStates);
+		  }
+	}
+	//Order by hand total
+	Collections.sort(solvedStates, new Comparator<ArrayList<State>>() {
+	      @Override
+	      public int compare(ArrayList<State> q, ArrayList<State> p) {
+	         return q.get(0).handTotal() - p.get(0).handTotal();
+	      }
+	});
+
+	if (!compDep) {
+		//For total-dependent strategy, remove all rows with the same hand total
+		int rowHandTotal, nextRowHandTotal;
+		for (int i = 0; i < solvedStates.size() - 1; i++) {
+			rowHandTotal = solvedStates.get(i).get(0).handTotal();
+			nextRowHandTotal = solvedStates.get(i+1).get(0).handTotal();
+			if (rowHandTotal == nextRowHandTotal) {
+				solvedStates.remove(i);
+				i--;
+			}
+		}
+	}
+
+	return getTable(solvedStates, hardTable, displaySecondBest);
+}
+
 /**
  * Displays the post-blackjack EV for split hands.
  * Returns with an error message if the Strategy has not been solved or the
@@ -3352,23 +3403,22 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
 }
 
 /**
- * Prints the split table and soft table to screen.
- * Future: Should print the hard table as well.
- * This should really be changed into toString, for the sake of standardization
- * and so that error messages can go out in the correct output stream.
+ * Prints the split, soft, and hard strategy tables to screen.
+ * Future: Should just return StringBuilder.
+ * TODO: Standardize and note whether dealer A up card expected values include the possibility of
+ * dealer blackjack or not.
  */
 public void print() {
-   System.out.println("The details of this strategy are (Rules, Split Table, Soft Table):");
-   System.out.println("-------------------------------");
    System.out.println(theRules);
    Strategy.viewSplitTable(this, true);
    Strategy.viewSoftTable(this, true);
+   StringBuilder sb = getHardTable(true);
+   System.out.println(sb);
    try {
       System.out.println("The house edge is " + getHouseEdge() + "%");
    }
    catch (NoRecommendationException nre) {
       System.err.println(nre);
-
    }
    catch (IOException ioe) {
       System.err.println(ioe);
@@ -3541,5 +3591,94 @@ public boolean isCompleteLoaded() {
    return false;
 
 }
+
+/**
+ * Creates the hard, soft, and split strategy tables. Requires a width of 92 characters.
+ * @param states Solved states used to draw table. Each row should have the same player cards and 
+ * an ascending dealer up card, going from 2 to A. 
+ * @param hardTable True if the table being printed is for hard hand totals
+ * @param displaySecondBest True to display the second best action/EV for the rule set
+ */
+private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardTable, boolean displaySecondBest) {
+	String leftHandHeading = "Player Cards";
+	final boolean showHandTotal; 
+	StringBuilder sb = new StringBuilder();
+	Formatter formatter = new Formatter(sb, Locale.US);
+
+	if (hardTable && ( strategyType != Skill.COMP_DEP) && strategyType != Skill.PERFECT ) {
+		leftHandHeading = "Hand Total";
+		showHandTotal = true;
+	}		
+	else {
+		showHandTotal = false;
+	}
+	formatter.format("%41s%14s%41s%n", "","Dealer Up Card",""); //center text. 92 characters console
+	formatter.format("%-16s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%n",
+			   leftHandHeading,"2", "3","4","5","6","7","8","9","10","A");
+	Action bestAction, secondBestAction;
+	ArrayList<State> currentStates;
+	State firstState;
+	double ev;
+	String handString;
+	try {
+	for (int i = 0; i < states.size(); i++) {
+		currentStates = states.get(i);
+		firstState = currentStates.get(0);
+		if (showHandTotal) {
+		    handString = Integer.toString(firstState.handTotal());
+		}
+		else {
+			handString = firstState.getFirstCardValue().value() + ", " + 
+						 firstState.getSecondCardValue().value();
+		}
+		formatter.format("%-16s", handString);
+		for (State aState : currentStates) {
+			bestAction = findBestAction(aState);
+			formatter.format("%8s",bestAction.abbrev() );
+		}
+		formatter.format("%n");
+		if (isCompleteLoaded()) {
+			formatter.format("%16s", "");
+			for (State aState : currentStates) {
+				ev = findBestEV(theRules, aState);
+				formatter.format("%+8.4f", ev);
+			}
+			formatter.format("%n");
+		}
+		if (!displaySecondBest) {
+			continue;
+		}
+		
+		formatter.format("%16s", "");
+		for (State aState : currentStates) {
+			secondBestAction = findSecondBestAction(theRules, aState);
+			formatter.format("%8s",secondBestAction.abbrev());
+		}
+		formatter.format("%n");
+		if (isCompleteLoaded()) {
+			for (State aState : currentStates) {
+				ev = findSecondBestEV(theRules, aState);
+				formatter.format("%+8.4f", ev);
+			}
+		}
+	}
+	formatter.close();
+	return sb;
+	}
+	catch (NoRecommendationException e) {
+	      e.printStackTrace();
+	      System.err.println(e);
+		  formatter.close();
+		  return new StringBuilder("");
+	}
+	catch (IOException e) {
+	      e.printStackTrace();  
+	      System.err.println(e);
+		  formatter.close();
+		  return new StringBuilder("");
+	}
+}
+
+
 
 }
