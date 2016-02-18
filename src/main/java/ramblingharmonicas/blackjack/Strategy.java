@@ -97,108 +97,54 @@ public StringBuilder getHardTable(final boolean displaySecondBest) {
 		}
 	}
 
-	return getTable(solvedStates, hardTable, displaySecondBest);
+	return getTable(solvedStates, hardTable, displaySecondBest, "HARD HANDS");
 }
 
 /**
  * Displays the post-blackjack EV for split hands.
- * Returns with an error message if the Strategy has not been solved or the
- * strategy type is set to perfect.
- *
- * @param myStrategy
+ * @param displaySecondBest Show second best action and EV
  */
-public static void viewSplitTable(Strategy myStrategy,
-        final boolean displaySecondBest) {
-   if (!myStrategy.isAllSolved()) {
-      System.err.println("This strategy has not been solved yet.");
-      return;
+public StringBuilder getSplitTable(final boolean displaySecondBest) {
+   State aState;
+   final boolean hardTable = false;
+   ArrayList<ArrayList <State>> splitStates = new ArrayList<ArrayList<State>>();
+   ArrayList<State> currentStates;
+   for (CardValue playerCard: Blackjack.twoToAce) {
+	   currentStates = new ArrayList<State>();
+	   for (CardValue dealerCard : Blackjack.twoToAce) {
+		   aState = new State(playerCard, playerCard, dealerCard);
+		   aState.setDealerBlackjack(false);
+		   currentStates.add(aState);
+	   }
+	   splitStates.add(currentStates);
    }
-   if (myStrategy.getStrategyType() == Skill.PERFECT) {
-      System.err.println("The split table cannot be viewed on perfect strategy because it"
-              + " always depends on the shoe contents. To view perfect composition-dependent"
-              + " play with a pristine shoe, set the strategy type to Skill.ADVANCED.");
-      return;
-   }
-   final Rules theRules = myStrategy.getMyRules();
-   Card playerCard;
-   Card dealerCard;
-   State aState = null;
-   Action bestAction = null;
-   Action secondBestAction = null;
-   double ev;
-   StringBuilder sb = new StringBuilder();
-   Formatter formatter = new Formatter(sb, Locale.US);
-   StringBuilder cardString;
-   //Assume 96 character console
-   try {
-      //System.out.println("For the purposes of actions, the dealer is assumed to not have blackjack.");
-      //System.out.println("However, the expected values do not make that assumption.");
-	  formatter.format("%16s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%n",
-			   "Player Total","2", "3","4","5","6","7","8","9","10","A");
-      for (int handValue = 2; handValue < 22; handValue += 2) {
-         playerCard = new Card(Suit.CLUBS, CardValue.cardValueFromInt(handValue / 2));
-         if (handValue == 2) {
-        	 cardString = new StringBuilder("A,A");
-         }
-         else {
-         	cardString = (new StringBuilder("")).append(handValue/2)
-         					.append(",").append(handValue/2);
-         }
-         formatter.format("%16s", cardString);
-         for (CardValue dealerCV : Blackjack.twoToAce) {
-            dealerCard = new Card(Suit.CLUBS, dealerCV);
-            aState = new State(playerCard, playerCard, dealerCard);
-            aState.setDealerBlackjack(false);
-            bestAction = myStrategy.findBestAction(aState);
-            formatter.format("%8s",bestAction.abbrev() );
-         }
+   return getTable(splitStates, hardTable, displaySecondBest, "SPLIT HANDS");
+}
 
-         if (myStrategy.isCompleteLoaded()) {
-            formatter.format("%n");
-            for (CardValue dealerCV : Blackjack.twoToAce) {
-               dealerCard = new Card(Suit.CLUBS, dealerCV);
-               aState = new State(playerCard, playerCard, dealerCard);
-               ev = myStrategy.findBestEV(theRules, aState);
-               formatter.format("%+.4f  ", ev); //TODO get spacing right
-            }
-         }
-         if (displaySecondBest) {
-        	formatter.format("%n%16s", "");
-            for (CardValue dealerCV : Blackjack.twoToAce) {
-               dealerCard = new Card(Suit.CLUBS, dealerCV);
-               aState = new State(playerCard, playerCard, dealerCard);
-               aState.setDealerBlackjack(false);
-               secondBestAction = myStrategy.findSecondBestAction(theRules, aState);
-               formatter.format("%8s",secondBestAction.abbrev());
-            }
-            if (myStrategy.isCompleteLoaded()) {
-               formatter.format("%n");;
-               for (CardValue dealerCV : Blackjack.twoToAce) {
-                  dealerCard = new Card(Suit.CLUBS, dealerCV);
-                  aState = new State(playerCard, playerCard, dealerCard);
-                  ev = myStrategy.findSecondBestEV(theRules, aState);
-                  formatter.format("%+.4f  ", ev); //TODO fix spacing
-               }
-            }
-         }
-         formatter.format("%n");
-      }
-      System.out.println(sb);
+/**
+ * Prints soft table of the given Strategy to screen.
+ *
+ * @param displaySecondBest Shows the second best action and EV
+ */
+public StringBuilder getSoftTable(final boolean displaySecondBest) {
+   State aState;
+   final boolean hardTable = false;
+   ArrayList<ArrayList <State>> softStates = new ArrayList<ArrayList<State>>();
+   ArrayList<State> currentStates;
+   for (CardValue playerCard : Blackjack.twoToTen) {
+	   currentStates = new ArrayList<State>();
+	   for (CardValue dealerCard : Blackjack.twoToAce) {  //prints out best action
+		   aState = new State(CardValue.ACE, playerCard, dealerCard);
+		   aState.setDealerBlackjack(false);
+		   currentStates.add(aState);
+	   }
+	   softStates.add(currentStates);
    }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      System.err.println(theRules.toString() + aState);
-   }
-   catch (IOException q) {
-      q.printStackTrace();
-      System.err.println(theRules.toString() + aState);   
-   }
+   return getTable(softStates, hardTable, displaySecondBest, "SOFT HANDS");
 }
 
 /**
  * The loaded Rule Set. Used along with loadedRuleSet (the Rules key)
- *
- *
  */
 private Rules theRules;
 /**
@@ -3409,10 +3355,22 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
  * dealer blackjack or not.
  */
 public void print() {
+   if (!isAllSolved()) {
+      System.err.println("This strategy has not been solved yet.");
+      return;
+   }
+   if (getStrategyType() == Skill.PERFECT) {
+      System.err.println("The split table cannot be viewed on perfect strategy because it"
+              + " always depends on the shoe contents. To view perfect composition-dependent"
+              + " play with a pristine shoe, set the strategy type to Skill.ADVANCED.");
+      return;
+   }
    System.out.println(theRules);
-   Strategy.viewSplitTable(this, true);
-   Strategy.viewSoftTable(this, true);
-   StringBuilder sb = getHardTable(true);
+
+   StringBuilder sb = new StringBuilder();
+   sb.append(getHardTable(true));
+   sb.append(getSoftTable(true));
+   sb.append(getSplitTable(true));
    System.out.println(sb);
    try {
       System.out.println("The house edge is " + getHouseEdge() + "%");
@@ -3427,147 +3385,8 @@ public void print() {
 
 }
 
-/**
- * NOT FUNCTIONAL YET
- *
- * @return
- */
-@Override
-public String toString() {
-   if (true) {
-      throw new UnsupportedOperationException();
-   }
-
-   StringBuilder s = new StringBuilder();
-   final String ln = System.getProperty("line.separator");
-   s.append("The details of this strategy are (Rules, Split Table, Soft Table):").append(ln);
-   s.append("-------------------------------").append(ln);
-   s.append(theRules);
-   if (true) {
-      return s.toString();
-   }
-   Strategy.viewSplitTable(this, true);
-   Strategy.viewSoftTable(this, true);
-   try {
-      System.out.println("The house edge is " + getHouseEdge() + "%");
-   }
-   catch (NoRecommendationException nre) {
-      System.err.println(nre);
-
-   }
-   catch (IOException ioe) {
-      System.err.println(ioe);
-
-   }
-
-   return null;
-
-}
-
 public Rules getMyRules() {
    return new Rules(theRules);
-
-}
-
-/**
- * Prints soft table of the given Strategy to screen.
- *
- * @param myStrategy Strategy to display
- * @param displaySecondBest Shows the second best action and EV
- *
- *
- */
-public static void viewSoftTable(Strategy myStrategy,
-        final boolean displaySecondBest) {
-   if (!myStrategy.isAllSolved()) {
-      System.out.println("This strategy has not been solved yet.");
-      return;
-
-   }
-   final boolean dealerBJ = false;
-//In order to show the correct options, the State needs to be told that the dealer does
-//not have blackjack, because otherwise the player isn't allowed to do anything (except
-//get insurance or, if allowed, early surrender).
-
-   final Card aceCard = new Card(Suit.CLUBS, CardValue.ACE);
-   final boolean isComplete = myStrategy.isCompleteLoaded();
-   Card playerCard, dealerCard;
-   Rules theRules = myStrategy.getMyRules();
-   Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
-   State aState = null;
-   Action bestAction, secondBestAction;
-   double ev;
-   int i, j;
-   final String newLineAndTab = "\n\t   ";
-   try {
-
-      System.out.println("For the purposes of actions, the dealer is assumed to not have blackjack.");
-      System.out.println("However, the expected values do not make that assumption.");
-      System.out.println(
-              "Total\t       2        3        4        5        6        7        8        9        10       A");
-      for (CardValue myValue : Blackjack.twoToTen) {
-         playerCard = new Card(Suit.CLUBS, myValue);
-         System.out.print("A, " + myValue.value() + "\t       ");
-         for (CardValue dealerCV : Blackjack.twoToAce) {  //prints out best action
-            dealerCard = new Card(Suit.CLUBS, dealerCV);
-            aState = new State(aceCard, playerCard, dealerCard);
-            aState.setDealerBlackjack(dealerBJ);
-            bestAction = myStrategy.findBestAction(aState);
-            System.out.print(bestAction.abbrev() + "        ");
-         }
-
-
-
-         if (isComplete) {
-            System.out.print(newLineAndTab); //Next line
-            for (CardValue dealerCV : Blackjack.twoToAce) {  //prints out best EV
-               dealerCard = new Card(Suit.CLUBS, dealerCV);
-               aState = new State(aceCard, playerCard, dealerCard);
-               ev = myStrategy.findBestEV(aState);
-               System.out.format("%+.4f  ", ev);
-            }
-         }
-         if (displaySecondBest) {
-            System.out.print("\n\t       ");
-            for (CardValue dealerCV : Blackjack.twoToAce) {
-               dealerCard = new Card(Suit.CLUBS, dealerCV);
-               aState = new State(aceCard, playerCard, dealerCard);
-               aState.setDealerBlackjack(dealerBJ);
-               secondBestAction = myStrategy.findSecondBestAction(aState);
-               System.out.print(secondBestAction.abbrev() + "        ");
-
-            }
-            if (isComplete) {
-               System.out.print(newLineAndTab);
-               for (CardValue dealerCV : Blackjack.twoToAce) {
-                  dealerCard = new Card(Suit.CLUBS, dealerCV);
-                  aState = new State(aceCard, playerCard, dealerCard);
-                  ev = myStrategy.findSecondBestEV(aState);
-                  System.out.format("%+.4f  ", ev);
-               }
-            }
-         }
-
-         System.out.println();
-      }
-
-
-   }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      System.err.println(theRules.toString() + aState);
-      if (Blackjack.debug()) {
-         throw new RuntimeException();
-      }
-   }
-   catch (IOException q) {
-      q.printStackTrace();
-      System.err.println(theRules.toString() + aState);
-      if (Blackjack.debug()) {
-         throw new RuntimeException();
-      }
-   }
-
 
 }
 
@@ -3599,12 +3418,13 @@ public boolean isCompleteLoaded() {
  * @param hardTable True if the table being printed is for hard hand totals
  * @param displaySecondBest True to display the second best action/EV for the rule set
  */
-private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardTable, boolean displaySecondBest) {
+private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardTable, boolean displaySecondBest,
+		String tableTitle) {
 	String leftHandHeading = "Player Cards";
 	final boolean showHandTotal; 
 	StringBuilder sb = new StringBuilder();
 	Formatter formatter = new Formatter(sb, Locale.US);
-
+	formatter.format("%n%40s%12s%40s%n", "", tableTitle, "");
 	if (hardTable && ( strategyType != Skill.COMP_DEP) && strategyType != Skill.PERFECT ) {
 		leftHandHeading = "Hand Total";
 		showHandTotal = true;
