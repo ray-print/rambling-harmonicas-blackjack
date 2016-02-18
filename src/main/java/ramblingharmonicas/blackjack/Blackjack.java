@@ -446,16 +446,6 @@ protected static void setApproxProbabilities(
    }
 }
 
-public static void printProbs(double[] array) {
-   //TODO: Use some library to pretty print the table, doing it by hand is dumb
-   System.out.println(
-           "Total\t       A        2        3        4        5        6        7        8        9       10");
-   System.out.print("\t");
-   for (int i = 0; i < array.length; i++) {
-      System.out.format("%+.4f  ", array[i]);
-   }
-}
-
 /**
  * Prints the current dealer probability cache status: Size,
  * misses/hit ratio, and how deep into the shoe the cache will venture.
