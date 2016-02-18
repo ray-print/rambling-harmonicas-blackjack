@@ -1603,9 +1603,6 @@ protected int getAnswerHash(boolean splitAnswerDesired) {
    if (splitAnswerDesired && (this.numberCardsInHand() != 2)) {
       System.err.println("My calling function wanted me to get a split answer, but I have more than 2"
               + " cards in hand.");
-      if (Blackjack.debug()) {
-         throw new IllegalArgumentException();
-      }
       assert false;
    }
    final byte effectiveFirstCard = State.getEffectiveCard(this, 1);
