@@ -1,5 +1,6 @@
 package blackjack;
 import blackjack.cards.*;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,19 +32,16 @@ import java.util.*;
  * protected void makeDataDirectory()
  * protected static File getStrategyFile(String filename)
  *
- * Currently, there is no way to load the Rules into a Strategy without solving
- * for the Rules
- * at the same time, other than to make a new Strategy object.
  *
- * Check -- Carefully monitor the public functions. Whenever Strategy is
- * passed a Rule set, call findAllAnswers, which will update theRules
- * (use a copy constructor or something, deep clone it) and loadedRuleSet.
+ * Internal workings -- Whenever Strategy is
+ * passed a Rule set, findAllAnswers should be called, which will update Strategy's
+ * copy of the Rules and loadedRuleSet.
  *
  */
 public class Strategy {
 /**
  *
- * @return true if this Strategy is loaded and ready to go (This implies that
+ * @return true if this Strategy is loaded and ready to go (If true,
  * any calls to Strategy which don't involve a change in the Rules or Skill will
  * be fast.)
  */
@@ -54,8 +52,7 @@ public boolean isAllSolved() {
 /**
  * Displays the post-blackjack EV for split hands.
  * Returns with an error message if the Strategy has not been solved or the
- * strategy type
- * is set to perfect.
+ * strategy type is set to perfect.
  *
  * @param myStrategy
  */
@@ -64,7 +61,6 @@ public static void viewSplitTable(Strategy myStrategy,
    if (!myStrategy.isAllSolved()) {
       System.err.println("This strategy has not been solved yet.");
       return;
-
    }
    if (myStrategy.getStrategyType() == Skill.PERFECT) {
       System.err.println("The split table cannot be viewed on perfect strategy because it"
@@ -163,7 +159,6 @@ private Rules theRules;
 private DrawMode playerDrawMode;
 /**
  * What card the dealer is allowed to draw first (for practice purposes).
- *
  */
 private DrawMode dealerDrawMode;
 private double houseEdge;
@@ -178,15 +173,10 @@ private long loadedRuleSet;
 /**
  * Stores the answers of the current Rule Set. Note that this
  * stores values by individual player cards, regardless of the
- * selected Skill. If using total-dependent strategy, I have
- * rewriten all handvalue duplicates so that they give the same
- * advice and the same EV.
+ * selected Skill.
  */
 private Map<Integer, Answer> allAnswers;
-/**
- * 650
- *
- */
+
 public final static int NUMBER_ANSWERS = 650;
 /**
  * Set to true when I've solved everything for this rule set. For
@@ -197,14 +187,10 @@ public final static int NUMBER_ANSWERS = 650;
 private boolean allSolved = false;
 
 /**
- * Tested on one rule set. Works fine.
- * why didn't I solve this days ago instead of wasting time coding
- * so much other crap about it.
- *
  * You can only get insurance on an Ace. For any other card this
  * will throw an exception.
  *
- * DO SOMETHING ABOUT WEIRD WARNING
+ * TODO: Verify that this sometimes produces a weird warning, and if it does, fix it.
  *
  * @param myShoe Current shoe.
  * @param theRules Current rule set.
@@ -218,12 +204,8 @@ public static boolean insuranceGoodIdea(VagueShoe myShoe, Rules theRules,
    if (!theRules.isPossible(Action.INSURANCE, myState)) {
       System.err.println(theRules);
       System.err.println(myState);
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("The Rules starts that insurance is impossible.");
-      }
-      else {
-         return false;
-      }
+      assert false: "The Rules starts that insurance is impossible.";
+      return false;
    }
    double probability;
    Card dealerCard = myState.getDealerUpCard();
@@ -246,10 +228,8 @@ public static boolean insuranceGoodIdea(VagueShoe myShoe, Rules theRules,
 
 /**
  * Strategy constructors do not load the total EV map or the Strategy from file,
- * nor
- * do they solve a given Rules set. Other public functions may do those, as
- * necessary,
- * as part of the task they are being asked to perform.
+ * nor do they solve a given Rules set. Other public functions may do those, as
+ * necessary, as part of the task they are being asked to perform.
  *
  *
  * @param theRules The game rules
@@ -279,7 +259,7 @@ public Strategy(Rules theRules, Skill skillLevel) {
    this.fullAnswers = false;
    this.forceSolve = false;
    this.totalEVMapSkill = skillLevel;
-   this.playerDrawMode = DrawMode.FREE_PLAY; //default
+   this.playerDrawMode = DrawMode.FREE_PLAY;
    this.dealerDrawMode = DrawMode.FREE_PLAY;
    this.mapLoadDeactivated = false;
 }
@@ -603,7 +583,7 @@ void insideAction(Rules someRules) {
       Testers.validateSolvedStrategy(thisStrat);
       //Validate this rule set right now.
    }
-   catch (NoRecommendationException nre) { //System.out.println(nre);
+   catch (NoRecommendationException nre) {
       throw new RuntimeException(nre);
    }
    catch (IOException ioe) {
@@ -640,8 +620,6 @@ private void writeConsolidatedFiles(byte[][] hit17Data, byte[][] stand17Data,
       writeOneConsolidatedFile(fileOut, hit17Data, stand17Data);
 
       fileOut.close();
-      //System.out.println(filename + " has been saved to file.");
-
    }
    catch (FileNotFoundException exceptional) {
 
@@ -1190,11 +1168,6 @@ void allTogglesDone() {
 
 }
 
-/**
- * What strategy level should I be solving for here?
- *
- *
- */
 public enum Skill {
 VERY_EASY(0), SIMPLE(10),
 /**
@@ -1212,7 +1185,8 @@ COMP_DEP(30),
  * cards in your hand.
  */
 PERFECT(40);
-private int mySkill;
+//TODO: Change this to a Skill enum if there are no performance implications
+private int mySkill; 
 
 /**
  *
@@ -1351,8 +1325,6 @@ private void findAllAnswers(Rules someRules) throws NoRecommendationException,
                System.err.println("The file name I was looking for is: " + fileNameForAnswers());
                throw new NoRecommendationException(null, someRules, "I have to calculate "
                        + "this rule set.");
-               //System.err.println("This is my rule set: "+ theRules);
-
 
             }
             calculateBasicStrategy();
@@ -2024,7 +1996,6 @@ public String getDirectoryName() {
  */
 private void loadAnswersFromFile() throws IOException {
    InputStream answerFile;
-   ObjectInputStream myAnswers = null;
    if (!fullAnswers) {
       Rules someRules = new Rules(theRules);
       someRules.setBlackjackPayback(1.5);
@@ -2035,41 +2006,12 @@ private void loadAnswersFromFile() throws IOException {
    }
    else {
       throw new UnsupportedOperationException();
-      //answerFile = getFileInputStream (fileNameForAnswers(fullAnswers, theRules));
    }
    //System.out.println("Attempting to load file " + fileNameForAnswers(fullAnswers) );
    try {
-
-      Answer currentAnswer;
-      if (fullAnswers) {
-         /* All this code is probably fine, it's just completely untested.
-          myAnswers = new ObjectInputStream(answerFile);
-          final int sizeOfMap = (int) myAnswers.readShort(); //If this is wrong,
-          //the next loop will throw a (checked) exception
-          for (int i = 0; i <sizeOfMap; i++)
-          {
-          currentAnswer = (Answer) myAnswers.readObject();
-          allAnswers.put(currentAnswer.myHashKey(), currentAnswer);
-          }
-
-          this.houseEdge = (Double) myAnswers.readDouble();
-          assert (Math.abs(this.houseEdge) < 10);
-          if ( myAnswers.available() > 5)
-          { myAnswers.close();
-          throw new IOException("File size not calculated correctly??");
-
-          }
-          myAnswers.close();  */
-         throw new UnsupportedOperationException();
-      }
-      else {
-         loadSmallFile(answerFile);
-      }
-
-
+      loadSmallFile(answerFile);
       answerFile.close();
       //Praise the lord here.
-
       //At some point earlier than this, the map has already been loaded, if desired.
 
       if (!mapLoadDeactivated) {
@@ -2084,62 +2026,27 @@ private void loadAnswersFromFile() throws IOException {
       allSolved = true;
       //System.out.println("File " + fileNameForAnswers(fullAnswers) + " has apparently been loaded.");
       //System.out.println("Size of my map: "+ allAnswers.size() );
-      //OK. But after I do this, the next line gives me NOTHING.
-      //this.print();
-
-      //ClassNotFound - >wrap in an IO exception
    }
    catch (StreamCorruptedException corruption) {
-
-      if (myAnswers != null) {
-         try {
-            myAnswers.close();
-            answerFile.close();
-
-         }
-         catch (IOException ioproblem) {
-            ioproblem.initCause(corruption);
-            throw ioproblem;
-         }
-
-
+     try {
+         answerFile.close();
       }
-
+      catch (IOException ioproblem) {
+         ioproblem.initCause(corruption);
+         throw ioproblem;
+      }
       throw new IOException(Utilities.stackTraceToString(corruption));
-
    }
    catch (IOException iotrouble) {
-      if (myAnswers != null) {
-         try {
-            myAnswers.close();
-            answerFile.close();
-         }
-         catch (IOException ioproblem) {
-            ioproblem.initCause(iotrouble);
-            throw ioproblem;
-         }
-
+     try {
+         answerFile.close();
+      }
+      catch (IOException ioproblem) {
+         ioproblem.initCause(iotrouble);
+         throw ioproblem;
       }
       throw iotrouble;
    }
-   /*   catch (ClassNotFoundException cce)
-    {
-    if (myAnswers != null)
-    {
-    try {  myAnswers.close();
-    answerFile.close();
-
-    }
-    catch (IOException ioproblem)
-    {
-    ioproblem.initCause(cce);
-    throw ioproblem;
-    }
-
-
-    }
-    throw new IOException(cce);
-    } */
 }
 
 /**
@@ -2155,13 +2062,11 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
         final boolean validateData)
         throws IOException {
    DataInputStream byteSource = null; //Too slow...
-   //BufferedInputStream byteSource = null;
    byte[] theRawStrat = new byte[Strategy.NUMBER_ANSWERS];
    byte[] scratchData = new byte[NUMBER_ANSWERS];
 
    try {
       byteSource = new DataInputStream(answerFile);
-//Adding a bufferedinputstream does nothing.
       if (fileRetrievalFormat == Strategy.MANY_SMALL_FILES) {
          retrieveRawByteData(byteSource, theRawStrat, Strategy.MANY_SMALL_FILES);
          if (!Utilities.attemptClosure(byteSource)) {
