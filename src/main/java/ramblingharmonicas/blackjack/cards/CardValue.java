@@ -18,6 +18,12 @@ public int value() {
    return myValue;
 }
 
+public String abbrev() {
+	if (myValue == 1) {
+		return "A";
+	}
+	return Integer.toString(myValue);
+}
 /**
  * Really, Java, this is the best you got?
  * 1 -> ACE

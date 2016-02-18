@@ -280,7 +280,7 @@ public void setForceSolve(boolean someValue) {
  * This is always calculated as if the shoe was full and as if the skill was
  * advanced.
  * It's called by print().
- * Future: modify this so that it works with other skill levels.
+ * TODO: modify this so that it works with other skill levels.
  *
  * @param theRules
  * @return the house edge ( = EV * -1), or a large negative number (far more
@@ -1865,7 +1865,7 @@ public Action findBestAction(Shoe myShoe, Rules theRules,
  */
 private boolean isPrecalculated() {
    if (forceSolve) {
-      System.out.println("Force solve is on.");
+      System.out.println("Force solve is on -- all calculations will be done fresh without using stored data.");
       return false;
    }
 
@@ -3365,15 +3365,21 @@ public void print() {
               + " play with a pristine shoe, set the strategy type to Skill.ADVANCED.");
       return;
    }
-   System.out.println(theRules);
+   System.out.println(theRules); //TODO: Create a prettier version of toString and use that
 
    StringBuilder sb = new StringBuilder();
    sb.append(getHardTable(true));
    sb.append(getSoftTable(true));
    sb.append(getSplitTable(true));
    System.out.println(sb);
+   if (strategyType != Skill.COMP_DEP) {
+	  // TODO: Figure out how far the program is from solving for total-dependent strategy and arbitrary strategies
+	  // There might be coding lurking somewhere that already does this. 
+	  System.out.println("The house edge is currently only available for composition-dependent strategy.");
+	  return;
+   }
    try {
-      System.out.println("The house edge is " + getHouseEdge() + "%");
+      System.out.format("The house edge is %.4f %%", (100 * getHouseEdge()));
    }
    catch (NoRecommendationException nre) {
       System.err.println(nre);
@@ -3448,8 +3454,8 @@ private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardT
 		    handString = Integer.toString(firstState.handTotal());
 		}
 		else {
-			handString = firstState.getFirstCardValue().value() + ", " + 
-						 firstState.getSecondCardValue().value();
+			handString = firstState.getFirstCardValue().abbrev() + ", " + 
+						 firstState.getSecondCardValue().abbrev();
 		}
 		formatter.format("%-16s", handString);
 		for (State aState : currentStates) {
@@ -3476,10 +3482,12 @@ private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardT
 		}
 		formatter.format("%n");
 		if (isCompleteLoaded()) {
+			formatter.format("%16s", "");
 			for (State aState : currentStates) {
 				ev = findSecondBestEV(theRules, aState);
 				formatter.format("%+8.4f", ev);
 			}
+			formatter.format("%n");
 		}
 	}
 	formatter.close();
