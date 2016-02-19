@@ -1308,7 +1308,7 @@ private void findAllAnswers(Rules someRules) throws NoRecommendationException,
       }
       else {
          final boolean saveCurrentEVMap = false;
-         if (!mapLoadDeactivated) {
+         if (!mapLoadDeactivated && !forceSolve) {
             loadTotalEVMap(false); //This call does nothing if map has already been loaded
          }
          final boolean isPrecal = isPrecalculated();

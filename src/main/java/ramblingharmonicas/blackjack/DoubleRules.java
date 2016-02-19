@@ -44,6 +44,7 @@ boolean getAutoToggles() {
  */
 boolean alwaysPossible;
 
+//TODO: Make all these private.
 boolean notOnAces;
 boolean onlyTenAndEleven;
 boolean onlyNineTenEleven;
@@ -105,7 +106,8 @@ public void setOnlyNineTenEleven(boolean onlyNineTenEleven) {
 }
 
 /**
- * TODO: Not yet saved in strategy files. Add tests to ensure this works.
+ * TODO: Not yet saved in strategy files. Add tests to ensure this works. Once that's
+ * done, add CLI support.
  */
 boolean notSplitAces() {
    return notSplitAces;
