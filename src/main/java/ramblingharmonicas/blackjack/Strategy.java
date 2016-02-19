@@ -3379,7 +3379,7 @@ public void print() {
 	  return;
    }
    try {
-      System.out.format("The house edge is %.4f %%", (100 * getHouseEdge()));
+      System.out.format("The house edge is %.4f%% %n", (100 * getHouseEdge()));
    }
    catch (NoRecommendationException nre) {
       System.err.println(nre);
@@ -3430,7 +3430,7 @@ private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardT
 	final boolean showHandTotal; 
 	StringBuilder sb = new StringBuilder();
 	Formatter formatter = new Formatter(sb, Locale.US);
-	formatter.format("%n%40s%12s%40s%n", "", tableTitle, "");
+	formatter.format("%40s%12s%40s%n", "", tableTitle, "");
 	if (hardTable && ( strategyType != Skill.COMP_DEP) && strategyType != Skill.PERFECT ) {
 		leftHandHeading = "Hand Total";
 		showHandTotal = true;
@@ -3490,6 +3490,7 @@ private StringBuilder getTable(ArrayList<ArrayList<State>> states, boolean hardT
 			formatter.format("%n");
 		}
 	}
+	formatter.format("%n");
 	formatter.close();
 	return sb;
 	}
