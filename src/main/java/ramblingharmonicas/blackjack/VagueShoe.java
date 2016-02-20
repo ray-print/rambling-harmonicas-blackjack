@@ -1,5 +1,5 @@
-package blackjack;
-import blackjack.cards.*;
+package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.cards.*;
 
 
 public interface VagueShoe {

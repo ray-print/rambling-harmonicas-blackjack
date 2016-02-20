@@ -1,1 +1,1 @@
-package blackjack;
+package ramblingharmonicas.blackjack;

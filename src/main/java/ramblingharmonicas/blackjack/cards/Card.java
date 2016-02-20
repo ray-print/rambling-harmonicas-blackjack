@@ -1,4 +1,4 @@
-package blackjack.cards;
+package ramblingharmonicas.blackjack.cards;
 
 /**
  * An individual card. Contains a suit and value.

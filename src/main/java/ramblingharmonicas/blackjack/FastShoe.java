@@ -1,5 +1,5 @@
-package blackjack;
-import blackjack.cards.*;
+package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.cards.*;
 
 /**
  * Contains all cards in a dealing shoe.
@@ -451,7 +451,7 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
 
    double probOfDrawingThisCard;
    //Going through the different cards the dealer might have drawn.
-   for (CardValue drawnDealerCard : Blackjack.oneToTen) {
+   for (CardValue drawnDealerCard : CardValue.oneToTen) {
       if (drawnDealerCard == undrawable) ; //The dealer can't draw this card.
       else {
          probOfDrawingThisCard =

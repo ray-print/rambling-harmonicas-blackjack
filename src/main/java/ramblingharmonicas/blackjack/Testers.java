@@ -1,5 +1,6 @@
-package blackjack;
-import blackjack.cards.*;
+package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.cards.*;
+
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -645,8 +646,8 @@ private static void testTotalConsolidatedForConsolidation(boolean verbosity,
       setActionsForHandTotals(false, bestAction, secondBestAction, aStrategy, dealerCard);
       setActionsForHandTotals(true, bestAction, secondBestAction, aStrategy, dealerCard);
       assert (bestAction[5] != null);
-      for (CardValue k : Blackjack.twoToTen) {
-         for (CardValue j : Blackjack.twoToTen) {
+      for (CardValue k : CardValue.twoToTen) {
+         for (CardValue j : CardValue.twoToTen) {
             if (k == j) {
                continue;
             }
@@ -719,7 +720,7 @@ private static void setActionsForHandTotals(boolean lowHands,
       firstCard = CardValue.TEN;
    }
 
-   for (CardValue k : Blackjack.twoToTen) { //if ( (k == doNotSet[0]) || (k == doNotSet[1]) )
+   for (CardValue k : CardValue.twoToTen) { //if ( (k == doNotSet[0]) || (k == doNotSet[1]) )
       // continue;
       handTotal = k.value() + firstCard.value();
       scratch = new State(k, firstCard, dealerCard);
@@ -781,9 +782,9 @@ static void validateSolvedStrategy(Strategy aStrategy) throws NoRecommendationEx
    //Card DCard;
    //Card firstPlayerCard;
    //Card secondPlayerCard;
-   for (CardValue dealerCard : Blackjack.oneToTen) {
-      for (CardValue firstPlayerCard : Blackjack.oneToTen) {
-         for (CardValue secondPlayerCard : Blackjack.oneToTen) {
+   for (CardValue dealerCard : CardValue.oneToTen) {
+      for (CardValue firstPlayerCard : CardValue.oneToTen) {
+         for (CardValue secondPlayerCard : CardValue.oneToTen) {
             testOneSolvedStrategy(dealerCard, firstPlayerCard, secondPlayerCard, aStrategy);
          }
       }

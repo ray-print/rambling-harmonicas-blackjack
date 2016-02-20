@@ -5,10 +5,9 @@
  * user guide available at https://docs.gradle.org/2.11/userguide/tutorial_java_projects.html
  */
 
-
 apply plugin: 'java'
 apply plugin: 'application'
-mainClassName = "blackjack.Blackjack"
+mainClassName = "ramblingharmonicas.blackjack.Blackjack"
 description = "Blackjack calculator"
 
 // In this section you declare where to find the dependencies of your project

@@ -1,5 +1,5 @@
-package blackjack;
-import blackjack.cards.*;
+package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.cards.*;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -66,7 +66,7 @@ public StringBuilder getHardTable(final boolean displaySecondBest) {
 	for (int i = 2; i < 11; i++) {
 		  for (int j = i + 1; j < 11; j++) {
 			  currentStates = new ArrayList<State>() ;
-			  for (CardValue dealerCard : Blackjack.twoToAce) {
+			  for (CardValue dealerCard : CardValue.twoToAce) {
 				  firstPlayerCard = CardValue.cardValueFromInt(i);
 				  secondPlayerCard = CardValue.cardValueFromInt(j);
 				  myState = new State(firstPlayerCard, secondPlayerCard, dealerCard);
@@ -109,9 +109,9 @@ public StringBuilder getSplitTable(final boolean displaySecondBest) {
    final boolean hardTable = false;
    ArrayList<ArrayList <State>> splitStates = new ArrayList<ArrayList<State>>();
    ArrayList<State> currentStates;
-   for (CardValue playerCard: Blackjack.twoToAce) {
+   for (CardValue playerCard: CardValue.twoToAce) {
 	   currentStates = new ArrayList<State>();
-	   for (CardValue dealerCard : Blackjack.twoToAce) {
+	   for (CardValue dealerCard : CardValue.twoToAce) {
 		   aState = new State(playerCard, playerCard, dealerCard);
 		   aState.setDealerBlackjack(false);
 		   currentStates.add(aState);
@@ -131,9 +131,9 @@ public StringBuilder getSoftTable(final boolean displaySecondBest) {
    final boolean hardTable = false;
    ArrayList<ArrayList <State>> softStates = new ArrayList<ArrayList<State>>();
    ArrayList<State> currentStates;
-   for (CardValue playerCard : Blackjack.twoToTen) {
+   for (CardValue playerCard : CardValue.twoToTen) {
 	   currentStates = new ArrayList<State>();
-	   for (CardValue dealerCard : Blackjack.twoToAce) {  //prints out best action
+	   for (CardValue dealerCard : CardValue.twoToAce) {  //prints out best action
 		   aState = new State(CardValue.ACE, playerCard, dealerCard);
 		   aState.setDealerBlackjack(false);
 		   currentStates.add(aState);
@@ -1532,12 +1532,12 @@ Answer findBestAnswer(Shoe myShoe, Rules someRules, State myState)
 private void loadAnEasyStrategy() throws NoRecommendationException {
    ArrayList<Card> myHand = new ArrayList<Card>(2);
    CardValue secondPlayer;
-   for (CardValue firstPlayer : Blackjack.oneToTen) {
+   for (CardValue firstPlayer : CardValue.oneToTen) {
       myHand.add(new Card(Suit.CLUBS, firstPlayer));
       for (int i = firstPlayer.value(); i < 11; i++) {
          secondPlayer = CardValue.cardValueFromInt(i);
          myHand.add(new Card(Suit.CLUBS, secondPlayer));
-         for (CardValue dealerCard : Blackjack.oneToTen) {
+         for (CardValue dealerCard : CardValue.oneToTen) {
             if (strategyType == Skill.VERY_EASY) {
                loadVeryEasy(Utilities.handTotal(myHand), dealerCard, firstPlayer, secondPlayer);
             }
@@ -2194,10 +2194,10 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
    CardValue secondPlayer;
    assert (allAnswers.isEmpty());
 
-   for (CardValue firstPlayer : Blackjack.oneToTen) {
+   for (CardValue firstPlayer : CardValue.oneToTen) {
       for (int i = firstPlayer.value(); i < 11; i++) {
          secondPlayer = CardValue.cardValueFromInt(i);
-         for (CardValue dealerCard : Blackjack.oneToTen) {
+         for (CardValue dealerCard : CardValue.oneToTen) {
             consolidated = rawData[index++];
             //consolidated, first second, dealer
             anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard);
@@ -2700,11 +2700,11 @@ private boolean smallFileMaker(OutputStream fileOut) {
       dataStream = new DataOutputStream(fileOut);
       CardValue secondPlayer;
       //OK. I don't want to double-record these.
-      for (CardValue firstPlayer : Blackjack.oneToTen) {
+      for (CardValue firstPlayer : CardValue.oneToTen) {
          for (int i = firstPlayer.value(); i < 11; i++) {
             secondPlayer = CardValue.cardValueFromInt(i);
             //iterate over the array, starting at firstPlayer
-            for (CardValue dealerCard : Blackjack.oneToTen) {
+            for (CardValue dealerCard : CardValue.oneToTen) {
                first = Answer.cardValueToByte(firstPlayer);
                second = Answer.cardValueToByte(secondPlayer);
                dealer = Answer.cardValueToByte(dealerCard);
@@ -3279,9 +3279,9 @@ private void calculateHouseEdge(/*Rules theRules*/) throws NoRecommendationExcep
    double probSum = 0;
    double probability;
 
-   for (CardValue dealerCard : Blackjack.oneToTen) {
-      for (CardValue firstPlayerCard : Blackjack.oneToTen) {
-         for (CardValue secondPlayerCard : Blackjack.oneToTen) {
+   for (CardValue dealerCard : CardValue.oneToTen) {
+      for (CardValue firstPlayerCard : CardValue.oneToTen) {
+         for (CardValue secondPlayerCard : CardValue.oneToTen) {
 
             probability = myShoe.probTheseThreeInOrder(firstPlayerCard, secondPlayerCard, dealerCard);
             if (probability > 0) {

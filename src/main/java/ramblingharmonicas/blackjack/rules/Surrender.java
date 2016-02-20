@@ -1,4 +1,4 @@
-package blackjack.rules;
+package ramblingharmonicas.blackjack.rules;
 
 public enum Surrender { EARLY, LATE, NONE, EARLY_EXCLUDING_ACES;} 
 //TODO: Use this in theRules and everywhere else; the performance implications are very negligible.

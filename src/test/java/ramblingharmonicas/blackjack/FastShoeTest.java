@@ -1,4 +1,4 @@
-package blackjack;
+package ramblingharmonicas.blackjack;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import blackjack.cards.*;
+import ramblingharmonicas.blackjack.cards.*;
 
 @RunWith(Parameterized.class)
 public class FastShoeTest {
@@ -82,7 +82,7 @@ public class FastShoeTest {
 		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.TEN));
 		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.ACE));
 		   int numberCards = 52 * numDecks + 6;
-		   for (CardValue cv : Blackjack.twoToTen) {
+		   for (CardValue cv : CardValue.twoToTen) {
 		      if (cv == CardValue.TEN) {
 		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
 		        		 aShoe.fastProbabilityOf(Blackjack.TENCARD),
@@ -96,7 +96,7 @@ public class FastShoeTest {
 	
 	@Test
 	public void testProbabilityOfExcluding() {
-		for (CardValue cv : Blackjack.twoToTen) {
+		for (CardValue cv : CardValue.twoToTen) {
 			if (cv != CardValue.TEN) {
 				assertEquals ( 4D / (52D - 16D), aShoe.probabilityOfExcluding(cv,
 	                 CardValue.TEN), Blackjack.SMALLEST_EPSILON); 
@@ -124,7 +124,7 @@ public class FastShoeTest {
 	   final double totalCards = 52 * numDecks;
 	   final double numberDecks = (double) numDecks;
 	   double probability, expectedProbability, startingCards;
-	   for (CardValue val : Blackjack.oneToTen) {
+	   for (CardValue val : CardValue.oneToTen) {
 		  probability = aShoe.probTheseThreeInOrder(val, val, val);
 	      if (CardValue.TEN == val) {
              startingCards = 16D * numberDecks;

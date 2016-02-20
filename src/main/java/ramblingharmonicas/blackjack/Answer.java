@@ -1,8 +1,8 @@
-package blackjack;
+package ramblingharmonicas.blackjack;
 
 import java.io.IOException;
 import java.io.Serializable;
-import blackjack.cards.*;
+import ramblingharmonicas.blackjack.cards.*;
 
 /**
  * This should be package-private. Strategy is the go-between between Answers

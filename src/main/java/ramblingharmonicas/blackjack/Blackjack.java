@@ -1,4 +1,4 @@
-package blackjack;
+package ramblingharmonicas.blackjack;
 
 import java.io.IOException;
 import java.util.*;
@@ -9,8 +9,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.ValueConversionException;
 import joptsimple.ValueConverter;
-import blackjack.cards.*;
-import blackjack.rules.Surrender;
+import ramblingharmonicas.blackjack.cards.*;
+import ramblingharmonicas.blackjack.rules.Surrender;
 
 
 //TODO: Refactor to move some functionality to Utilities or Strategy or some new class(es).
@@ -39,21 +39,6 @@ private static Map<String, float[]> dealerProbabilitiesCache;
 private static long hits = 0;
 private static long misses = 0;
 private static boolean cacheInitialized = false;
-
-/*
- * Loop variables used to prints the composition-dependent basic strategy 
- * for hard opening hands. TODO: Move to CardValue enum
- *
- */
-public static final CardValue[] oneToTen = {CardValue.ACE, CardValue.TWO, 
-   CardValue.THREE, CardValue.FOUR, CardValue.FIVE, CardValue.SIX, 
-   CardValue.SEVEN, CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
-public static final CardValue[] twoToTen = {CardValue.TWO, CardValue.THREE, 
-   CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, 
-   CardValue.EIGHT, CardValue.NINE, CardValue.TEN};
-public static final CardValue[] twoToAce = {CardValue.TWO, CardValue.THREE, 
-   CardValue.FOUR, CardValue.FIVE, CardValue.SIX, CardValue.SEVEN, 
-   CardValue.EIGHT, CardValue.NINE, CardValue.TEN, CardValue.ACE};
 
 //Move these to Testers.java
 public static final double TWO_PERCENT_ERROR = 0.02;
@@ -648,12 +633,12 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
    ArrayList<ArrayList<State>> solvedStates = new ArrayList<ArrayList<State>>();
    int rowNum = -1;
    int colNum = 0;
-   for (CardValue pCardOne : Blackjack.twoToTen) {
-      for (CardValue pCardTwo : Blackjack.twoToTen) {
+   for (CardValue pCardOne : CardValue.twoToTen) {
+      for (CardValue pCardTwo : CardValue.twoToTen) {
          if (pCardTwo.value() >= pCardOne.value()) {
             solvedStates.add(new ArrayList<State>());
             rowNum++;
-            for (CardValue dealerCard : Blackjack.twoToAce) {
+            for (CardValue dealerCard : CardValue.twoToAce) {
                myCards.clear();
                myCards.add(new Card(Suit.CLUBS, pCardOne));
                myCards.add(new Card(Suit.CLUBS, pCardTwo));
@@ -717,8 +702,8 @@ static ArrayList<Answer> calculateAllSplitValues(Rules theRules,
         throws NoRecommendationException {
    double scratch;
    ArrayList<Answer> splitAnswers = new ArrayList<Answer>();
-   for (CardValue PCard : Blackjack.oneToTen) {
-      for (CardValue DCard : Blackjack.oneToTen) {
+   for (CardValue PCard : CardValue.oneToTen) {
+      for (CardValue DCard : CardValue.oneToTen) {
          scratch = splitSolve(theRules, PCard, DCard, possibleDealerBJ);
          if (scratch > 50) {
             System.out.println("Player: " + PCard + ", dealer: " + DCard + ", value: " + scratch);
@@ -765,11 +750,11 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
                  "but I haven't come from another split hand or myself.");
       }
       i = 0;
-      for (CardValue q : Blackjack.oneToTen) {
+      for (CardValue q : CardValue.oneToTen) {
          probPostSplitDrawResults[i++] = myShoe.playerProbability(dealerHoleCard, dealerCard, q);
       }
       i = 0;
-      for (CardValue val : Blackjack.oneToTen) {
+      for (CardValue val : CardValue.oneToTen) {
          scratch = new State(myState);
          if (probPostSplitDrawResults[i] > 0) {
             drawnCard = myShoe.fastDrawSpecific(val);
@@ -877,13 +862,13 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       if (theRules.isPossible(Action.HIT, myState)) {
          hitPossible = true;
          i = 0;
-         for (CardValue q : Blackjack.oneToTen) {
+         for (CardValue q : CardValue.oneToTen) {
             hitResults[i] = new State(myState);
             probHitResults[i] = myShoe.playerProbability(dealerHoleCard, dealerCard, q);
             i++;
          }
          i = 0;
-         for (CardValue val : Blackjack.oneToTen) {
+         for (CardValue val : CardValue.oneToTen) {
             if (probHitResults[i] > 0) {
                drawnCard = myShoe.fastDrawSpecific(val);
                hitResults[i].action(Action.HIT, drawnCard);
@@ -898,11 +883,11 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       }
       if (theRules.isPossible(Action.DOUBLE, myState)) {
          doublePossible = true;
-         for (i = 0; i < Blackjack.oneToTen.length; i++) {
+         for (i = 0; i < CardValue.oneToTen.length; i++) {
             doubleResults[i] = new State(myState);
          }
          i = 0;
-         for (CardValue val : Blackjack.oneToTen) {
+         for (CardValue val : CardValue.oneToTen) {
             if (probHitResults[i] > 0) {
                drawnCard = myShoe.fastDrawSpecific(val);
                doubleResults[i].action(Action.DOUBLE, drawnCard);
@@ -1099,10 +1084,10 @@ static ArrayList<ArrayList<State>> solveSoftPlayersRecursive(Rules theRules,
    int rowNum = -1;
    int colNum = 0;
    final CardValue pCardOne = CardValue.ACE;
-   for (CardValue pCardTwo : Blackjack.oneToTen) {
+   for (CardValue pCardTwo : CardValue.oneToTen) {
       solvedStates.add(new ArrayList<State>());
       rowNum++;
-      for (CardValue dealerCard : Blackjack.twoToAce) {
+      for (CardValue dealerCard : CardValue.twoToAce) {
          myCards.clear();
          myCards.add(new Card(Suit.CLUBS, pCardOne));
          myCards.add(new Card(Suit.CLUBS, pCardTwo));
@@ -1150,7 +1135,7 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
    State scratch;
    ArrayList<Card> myCards = new ArrayList<Card>();
    int i = 0;
-   for (CardValue q : Blackjack.oneToTen) {
+   for (CardValue q : CardValue.oneToTen) {
       if (cardDrawProbs[q.value() - 1] > 0) {
          myShoe.fasterDrawSpecific(q);
          assert (
@@ -1612,11 +1597,11 @@ static double combinedProbSplitApprox(final double[] bestEVOfFirstSplitHand,
       }
    }
    myShoe.addCard(PCard);
-   for (CardValue firstDrawnCard : Blackjack.oneToTen) {
+   for (CardValue firstDrawnCard : CardValue.oneToTen) {
       myShoe.fasterDrawSpecific(firstDrawnCard);
       probOfSecondCard = myShoe.getAllProbs();
       bestEVOfSecondSplitHand = bestEVOfFirstSplitHand;
-      for (CardValue secondDrawnCard : Blackjack.oneToTen) {
+      for (CardValue secondDrawnCard : CardValue.oneToTen) {
          if ((probNextCard[(firstDrawnCard.value() - 1)] > 0) && (probOfSecondCard[(secondDrawnCard.value() - 1)] > 0)) {
             probThisCombo = probNextCard[(firstDrawnCard.value() - 1)] * probOfSecondCard[secondDrawnCard.value() - 1];
             if (Blackjack.debug()) {

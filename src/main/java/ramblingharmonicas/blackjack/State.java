@@ -1,7 +1,7 @@
-package blackjack;
+package ramblingharmonicas.blackjack;
 
 import java.util.*;
-import blackjack.cards.*;
+import ramblingharmonicas.blackjack.cards.*;
 /**  *
  *
  * Constructors:

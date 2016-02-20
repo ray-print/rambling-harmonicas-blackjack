@@ -1,4 +1,4 @@
-package blackjack.cards;
+package ramblingharmonicas.blackjack.cards;
 
 /**
  * Enumerated card values.
@@ -9,6 +9,18 @@ ACE(1), TWO(2), THREE(3), FOUR(4),
 FIVE(5), SIX(6), SEVEN(7), EIGHT(8), NINE(9), TEN(10), JACK(10),
 QUEEN(10), KING(10);
 final private int myValue;
+
+public static final CardValue[] twoToAce = {TWO, THREE, 
+   FOUR, FIVE, SIX, SEVEN, 
+   EIGHT, NINE, TEN, ACE};
+
+public static final CardValue[] twoToTen = {TWO, THREE, 
+   FOUR, FIVE, SIX, SEVEN, 
+   EIGHT, NINE, TEN};
+
+public static final CardValue[] oneToTen = {ACE, TWO, 
+   THREE, FOUR, FIVE, SIX, 
+   SEVEN, EIGHT, NINE, TEN};
 
 private CardValue(final int myValue) {
    this.myValue = myValue;

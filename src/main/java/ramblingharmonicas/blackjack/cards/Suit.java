@@ -1,4 +1,4 @@
-package blackjack.cards;
+package ramblingharmonicas.blackjack.cards;
 
 public enum Suit {
 SPADES, CLUBS, DIAMONDS, HEARTS;
