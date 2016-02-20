@@ -506,13 +506,9 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
 }
 
 /**
- * NEEDS TESTING, THINK IT FAILS.
+ * Needs testing. Make private.
  * Used with a pristine Shoe when calculating the basic strategy.
- * MAKE PRIVATE
  *
- * @param theRules
- * @param myState
- * @return
  */
 static ArrayList<Answer> calculateAllSplitValues(Rules theRules,
         ArrayList<ArrayList<State>> hardAnswers,
@@ -897,7 +893,7 @@ static ArrayList<ArrayList<State>> solveSoftPlayersRecursive(Rules theRules,
    ArrayList<Card> myCards = new ArrayList<Card>();
    final int actualSplitsAllowed = theRules.getMaxNumberSplitHands();
    theRules.setMaxNumberSplitHands(0);
-   State duh;
+   State currentState;
    ArrayList<ArrayList<State>> solvedStates = new ArrayList<ArrayList<State>>();
    int rowNum = -1;
    int colNum = 0;
@@ -912,14 +908,14 @@ static ArrayList<ArrayList<State>> solveSoftPlayersRecursive(Rules theRules,
          if (dealerCard == null) {
             throw new RuntimeException();
          }
-         duh = new State(myCards, new Card(Suit.CLUBS, dealerCard));
+         currentState = new State(myCards, new Card(Suit.CLUBS, dealerCard));
          if (!possibleDealerBJ) {
-            duh.setDealerBlackjack(false);
+            currentState.setDealerBlackjack(false);
          }
          myShoe.fasterDrawSpecific(pCardOne);
          myShoe.fasterDrawSpecific(pCardTwo);
          myShoe.fasterDrawSpecific(dealerCard);
-         solvedStates.get(rowNum).add(PlayerRecursive(myShoe, duh, theRules));
+         solvedStates.get(rowNum).add(PlayerRecursive(myShoe, currentState, theRules));
          myShoe.addCard(pCardOne);
          myShoe.addCard(pCardTwo);
          myShoe.addCard(dealerCard);
@@ -1224,35 +1220,19 @@ static void solveConsolidationAndReplace(double[] probThisState,
  * is less than 0, it just returns originalSplitEV
  * Helper function for splitSolve.
  *
- * @param theRules
- * @param myCards
- * @param probDealerBJ
- * @param originalSplitEV
- * @param PCard
- * @param DCard
- * @return
- *
  */
 private static double splitApproxIncludingDealerBJ(Rules theRules,
         final double probDealerBJ, final double originalSplitEV, CardValue PCard,
         CardValue DCard) {
    if ((theRules.dealerHoleCard() == true) && (probDealerBJ > 0)) {
-      ArrayList<Card> myCards = new ArrayList<Card>();
-      State scratch;
-      myCards.clear();
-      myCards.add(new Card(Suit.HEARTS, PCard));
-      myCards.add(new Card(Suit.CLUBS, PCard));
-      scratch = new State(myCards, new Card(Suit.CLUBS, DCard));
+      State scratch = new State(PCard, PCard, DCard);
       if (scratch.isInsuranceAdvised()) {
          return (1 - probDealerBJ) * (originalSplitEV - 0.5) + (probDealerBJ) * 0;
       }
-      else {
-         return (1 - probDealerBJ) * (originalSplitEV) + (probDealerBJ) * -1;
-      }
+      return (1 - probDealerBJ) * (originalSplitEV) + (probDealerBJ) * -1;
+
    }
-   else {
-      return originalSplitEV;
-   }
+   return originalSplitEV;
 }
 
 private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
@@ -1515,9 +1495,6 @@ static void consolidateIntoTotalDependent(
  * them.
  * CONTAINS EXCESS BUG CHECKING for debugging purposes.
  *
- * @param handValue
- * @param theStates
- * @return
  */
 private static ArrayList<State> retrieveStatesOfHandValue(final int handValue,
         ArrayList<State> theStates) {
