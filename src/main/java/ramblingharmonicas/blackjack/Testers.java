@@ -2604,13 +2604,12 @@ static public void viewRawResplits() {
 
 }
 
-/**
+/** TODO: Finish deprecating and remove
  * Provides simple testing of split answers. Does no testing on early surrender
  * cases.
  *
  * Add assert back in after mystery bug found on 8 8 A that thinks splitting is
- * a bad
- * idea.
+ * a bad idea.
  *
  * I should be using validateSolvedStrategy instead.
  *

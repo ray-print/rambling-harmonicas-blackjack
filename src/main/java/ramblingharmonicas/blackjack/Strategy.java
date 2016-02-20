@@ -20,12 +20,10 @@ import java.util.*;
 
 /**
  * This class is used as an interface to hide the strategy implementation
- * details.
- *
- * It is used to perform calculations, save them to disk, load them,
+ * details. It is used to perform calculations, save them to disk, load them,
  * and retrieve them.
  *
- * Functions that should be overriden under different file systems:
+ * Functions that can be overriden under different file systems:
  *
  * FileInputStream getFileStream(String fileName)
  * FileOutputStream getFileStream(String fileName)
@@ -37,6 +35,8 @@ import java.util.*;
  * passed a Rule set, findAllAnswers should be called, which will update Strategy's
  * copy of the Rules and loadedRuleSet.
  *
+ * TODO: Factor out all file-related code, or better yet, factor out all code that isn't
+ * file-related, since most of this code is related to saving/loading/doing bulk calculations.
  */
 public class Strategy {
 /**
@@ -170,13 +170,14 @@ private long loadedRuleSet;
 /**
  * Stores the answers of the current Rule Set. Note that this
  * stores values by individual player cards, regardless of the
- * selected Skill.
+ * selected Skill. Also note that the map contains double entries for hands 
+ * that can be split.
  */
 private Map<Integer, Answer> allAnswers;
 
 public final static int NUMBER_ANSWERS = 650;
 /**
- * Set to true when I've solved everything for this rule set. For
+ * Set to true when everything is solved for this rule set. For
  * perfect play, this doesn't count, since I have to recalculate at
  * every step. Set to false if I am passed a new set of rules or a
  * new strategyType.
@@ -217,10 +218,9 @@ public static boolean insuranceGoodIdea(VagueShoe myShoe, Rules theRules,
       myState.setInsuranceAdvised(true);
       return true;
    }
-   else {
-      myState.setInsuranceAdvised(false);
-      return false;
-   }
+
+   myState.setInsuranceAdvised(false);
+   return false;
 }
 
 /**
@@ -251,7 +251,7 @@ public Strategy(Rules theRules, Skill skillLevel) {
    this.theRules = new Rules(theRules);
    this.strategyType = skillLevel;
    this.allSolved = false;
-   this.allAnswers = new HashMap(NUMBER_ANSWERS);
+   this.allAnswers = new HashMap<Integer, Answer>(NUMBER_ANSWERS);
    this.houseEdge = -1000000;
    this.fullAnswers = false;
    this.forceSolve = false;
@@ -338,7 +338,7 @@ private short retrieveRawByteData(DataInputStream byteSource, byte[] data,
    int index = 0;
    try {
       while (index < NUMBER_ANSWERS) {
-         currentByte = byteSource.readByte();//(byte) byteSource.read();
+         currentByte = byteSource.readByte();
          data[index++] = currentByte;
          if ((fileFormat == Strategy.CONSOLIDATED_BY_DECKS_FILES)
                  || (currentByte != Strategy.dummyByte)) {
@@ -346,17 +346,11 @@ private short retrieveRawByteData(DataInputStream byteSource, byte[] data,
          }
       }
       if (fileFormat == Strategy.MANY_SMALL_FILES) {
-         //This is hand-waving to me.
-         //https://stackoverflow.com/questions/736815/2-bytes-to-short-java
-         //ByteBuffer bb = ByteBuffer.allocate(2);
-         //  bb.order(ByteOrder.LITTLE_ENDIAN);
-         //  bb.put( (byte) byteSource.read());
-         //   bb.put( (byte) byteSource.read());
          final short actualCheck = byteSource.readShort();
-         //= bb.getShort(0);
 
          if (checkSum != actualCheck) {
-            System.err.println("Actual checkSum is " + actualCheck + " vs. calculated value " + checkSum);
+            System.err.println("Actual checkSum is " + actualCheck + 
+                    " vs. calculated value " + checkSum);
             throw new IOException("Checksum error. Abandon ship.");
          }
          if (byteSource.read() != -1) {
@@ -384,8 +378,7 @@ public void setMapLoadDeactivated(boolean mapLoadDeactivated) {
  * Its purpose is to allow the rules toggling framework to be used for varied
  * purposes,
  * such as validating all rule sets, calculating all rule sets, consolidating
- * strategy files,
- * etc.
+ * strategy files, etc.
  *
  */
 abstract class ToggleSettings {
@@ -426,9 +419,6 @@ boolean isDisabled(Rules someRules) {
    if (someRules.myDoubleRules.notSplitAces()) {
       return true;
    }
-
-
-
    return false;
 }
 
@@ -449,7 +439,7 @@ abstract void allTogglesDone();
  */
 public static final String fileConsolidationSuffix = "-CONS1";
 
-/**
+/** TODO: Facer out this massive inner class 
  * Used to consolidate Strategy files together to save disk space
  * (some file systems allocate space in 4KB blocks which makes it
  * inefficient to store thousands of files that are much smaller than 4 KB)
@@ -527,11 +517,6 @@ void initialSetup(Rules someRules) {
 @Override
 void insideAction(Rules someRules) {
    boolean viewPostConversion = false;
-   //if (someRules.myHashKey() == 90905319257L)
-   //{   System.out.println("Suspect rule set 90905319257 has been chosen: "
-   //           + someRules);
-   //viewPostConversion = true;
-   //}
    Rules theRulesAfterToggles = new Rules(someRules);
    theRulesAfterToggles.doAutoToggles();
    if (isDisabled(theRulesAfterToggles)) {
@@ -547,25 +532,14 @@ void insideAction(Rules someRules) {
     * I may need this so that the finishedRuleSets Set
     * works properly
     */
-   //if (viewPostConversion)
-   //   System.out.println("Post-conversion, that rule set is: " + theRulesAfterToggles);
-   //if (theRulesAfterToggles.myHashKey() == 90905319257L)
-   //   System.out.println("Suspect rule set 90905319257 is being investigated: "
-   //           + theRulesAfterToggles);
    if (!finishedRuleSets.add(theRulesAfterToggles.myHashKey())) {
       return; //Return if I've already solved for this; otherwise add it.
    }
    final boolean fullAnswers = false;
    if (strategyFileExists(fullAnswers, theRulesAfterToggles, strategyType,
-           Strategy.CONSOLIDATED_BY_DECKS_FILES)) {//if (theRulesAfterToggles.myHashKey() == 90905319257L)
-      // System.out.println("Suspect rule set 90905319257: The strategy file purportedly exists.");
-
+           Strategy.CONSOLIDATED_BY_DECKS_FILES)) {
       return;
    }
-
-   //if (theRulesAfterToggles.myHashKey() == 90905319257L)
-   //   System.out.println("Suspect rule set 90905319257: I am about the solve for this strategy.");
-
 
    byte[][] hit17Data = getByteData(theRulesAfterToggles);
 
@@ -651,7 +625,7 @@ private void writeOneConsolidatedFile(OutputStream fileOut, byte[][] hit17Data,
    int checkSum = 0;
    try {
       outStream = new DataOutputStream(fileOut);
-      checkSum += toWrite = (byte) hit17Data.length; //Is this legal?
+      checkSum += toWrite = (byte) hit17Data.length;
       outStream.writeByte(toWrite);
 
       checkSum += toWrite = (byte) stand17Data.length;
@@ -679,8 +653,6 @@ private void writeOneConsolidatedFile(OutputStream fileOut, byte[][] hit17Data,
       Utilities.attemptClosure(outStream);
       throw io;
    }
-
-
 }
 
 /**
@@ -714,17 +686,11 @@ private byte[] pullByteData(Rules someRules) {
    try {
       strategyData = getFileInputStream(fileNameForAnswers(fullAnswers, someRules, strategyType, Strategy.MANY_SMALL_FILES));
 
-
-
       byteSource = new DataInputStream(strategyData);
       retrieveRawByteData(byteSource, rawStrat, Strategy.MANY_SMALL_FILES);
       if (byteSource.read() != -1) {
          throw new IOException("Too much data retrieved from DataInputStream.");
       }
-
-
-//HERE -- LOAD DATA
-
       strategyData.close();
       return rawStrat;
    }
@@ -733,8 +699,6 @@ private byte[] pullByteData(Rules someRules) {
       System.err.println("Working on this rule set: " + someRules);
       throw new RuntimeException(ioe);
    }
-
-
 
 }
 
@@ -769,12 +733,8 @@ void allTogglesDone() {
    if (verbosity) {
       System.out.println("A round of file consolidation has been completed.");
    }
-
-   //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 }
-
 }
-
 /**
  * This class loads and validates all rule sets. The test fails if a rule set
  * has not been calculated or if it fails validations.
@@ -1017,18 +977,7 @@ void halfDone() {
 
 @Override
 void initialSetup(Rules someRules) {
-
-
-
    initialTime = System.currentTimeMillis();
-   /*
-    try {
-    loadTotalEVMap(true);
-    }
-    catch (IOException ioe)
-    {   throw new RuntimeException(ioe);
-    }
-    */
 }
 
 /**
@@ -1085,8 +1034,8 @@ void insideAction(Rules someRules) {
     */
 
    boolean success;
-   try {//10639085900 doesn't exist. Why.
-
+   try {
+	   
       final boolean fileExists = strategyFileExists(fullAnswers, theRulesAfterToggles, strategyType,
               Strategy.MANY_SMALL_FILES);
 
@@ -1143,18 +1092,6 @@ void insideAction(Rules someRules) {
       throw new RuntimeException(problem);
    }
 
-   /* DEBUGGING
-    if (theRulesAfterToggles.myHashKey() == 1437730096239L)
-    {//1437730096239
-    if (totalEVMap.containsKey(theRulesAfterToggles.myHashKey()))
-    System.err.println("This rule set is IN the map: " + theRulesAfterToggles);
-    else
-    System.err.println("This rule set is not in the map: " + theRulesAfterToggles);
-    saveTotalEVMap();
-    throw new RuntimeException();
-    }
-    */
-
 }
 
 @Override
@@ -1182,12 +1119,10 @@ COMP_DEP(30),
  * cards in your hand.
  */
 PERFECT(40);
-//TODO: Change this to a Skill enum if there are no performance implications
+
 private int mySkill; 
 
 /**
- *
- * @param val
  * @return null if val doesn't correspond to a valid skill level
  */
 static public Skill getSkill(final int val) {
@@ -1235,18 +1170,8 @@ char abbrev() {
 
 }
 
-/**
- * Super simple / simple / standard (=basic) / advanced (=comp-dependent)
- * impossible (=perfect)
- */
 private Skill strategyType;
 
-/**
- * NOT encapsulated, unless enums are magically safe.
- *
- *
- * @return A copy of strategyType.
- */
 public Skill getStrategyType() {
    return strategyType;
 }
@@ -1281,8 +1206,7 @@ public void solve(Rules someRules) throws NoRecommendationException, IOException
 
 /**
  * This is an internal function used every time a new Rule set is passed; it
- * loads
- * the correct strategy or calculates it.
+ * loads the correct strategy or calculates it.
  *
  * This is the keystone function, call it early and often.
  *
@@ -1307,7 +1231,6 @@ private void findAllAnswers(Rules someRules) throws NoRecommendationException,
          loadAnEasyStrategy();
       }
       else {
-         final boolean saveCurrentEVMap = false;
          if (!mapLoadDeactivated && !forceSolve) {
             loadTotalEVMap(false); //This call does nothing if map has already been loaded
          }
@@ -1506,26 +1429,20 @@ Answer findBestAnswer(Shoe myShoe, Rules someRules, State myState)
         throws NoRecommendationException, IOException {
 
    if ((someRules.numPossibleActions(myState, false) < 2) && (!myState.playerBJ())) {
-      //System.err.println(someRules);
-      //State.printStateStatus(myState, "I have no options here."); Both are encapsulated in the exception
-      throw new NoRecommendationException(myState, someRules, "I called findBestAnswer when I have only one possible action.");
+      throw new NoRecommendationException(myState, someRules, 
+    		  "findBestAnswer was called when there is only only one possible action.");
    }
 
-   Answer theAnswer;
    if (strategyType != Skill.PERFECT) {
       findAllAnswers(someRules);
       return retrieveAnswerAdvOrBasic(myState);
    }
-   else {
-      if (someRules.isPossible(Action.SPLIT, myState)) {
-         throw new NoRecommendationException("No perfect solve for split states");
-         //TO DO
-      }
-      State solvedState = Blackjack.PlayerRecursive(
-              new FastShoe(myShoe), myState, someRules);
-      return new Answer(solvedState);
 
+   if (someRules.isPossible(Action.SPLIT, myState)) {
+      throw new NoRecommendationException("No perfect solve for split states");    
    }
+   State solvedState = Blackjack.PlayerRecursive(new FastShoe(myShoe), myState, someRules);
+   return new Answer(solvedState);
 }
 
 //Hmm. Should I load this into memory?
@@ -1552,74 +1469,18 @@ private void loadAnEasyStrategy() throws NoRecommendationException {
       }
       myHand.clear();
    }
-
-
-
-
 }
 
-/**
- * Convenience function for getAbbreviatedRecommendation(State)
- * Assumes the dealer does not have blackjack.
- *
- * @param firstPlayer
- * @param secondPlayer
- * @param dealerCard
- * @return
- */
-public String getAbbreviatedRecommendation(CardValue firstPlayer,
-        CardValue secondPlayer, CardValue dealerCard) throws NoRecommendationException, IOException {
-   return getAbbreviatedRecommendation(new State(firstPlayer, secondPlayer, dealerCard));
-
-}
-
-/**
- * Untested
- * Assumes the dealer not have blackjack. Should only be called when the State
- * has two cards in hand
- * and nothing has happened. Used to display table.
- *
- * @param aState
- * @return
- */
-public String getAbbreviatedRecommendation(State aState) throws NoRecommendationException, IOException {
-   //return getAbbreviatedRecommendation( aState.getFirstCardValue(),
-   //       aState.getSecondCardValue(), aState.getDealerUpCard().getCardValue());
-   //Infinite loops!!
-
-   Answer theAnswer = findBestAnswer(new Shoe(theRules.getNumberOfDecks()), theRules, aState);
-   Action bestAction = theAnswer.getBestAction();
-
-   if ((bestAction == Action.HIT) || (bestAction == Action.STAND) || (bestAction == Action.SPLIT)) {
-      return String.valueOf(bestAction.abbrev());
-   }
-   Action secondBestAction = theAnswer.getSecondBestAction();
-   return String.valueOf(bestAction.abbrev()) + //"/" +
-           String.valueOf(Character.toLowerCase(secondBestAction.abbrev()));
-
-}
-
-/**
- * NOT implemented.
- *
- * @param dealerCard
- * @param firstPlayerCard
- * @param secondPlayerCard
- * @param theRules
- *
- */
 private void loadSimple(final int handTotal, CardValue dealerCard,
         CardValue firstPlayerCard,
         CardValue secondPlayerCard) {
    throw new UnsupportedOperationException();
-
 }
 
 /**
  * Helper function for loadAnEasyStrategy
  * Rules theRules currently not used. Eventually change it based on dealer hole
- * card.
- * (can use loadedRules)
+ * card. (can use loadedRules)
  */
 private void loadVeryEasy(final int handTotal, CardValue dealerCard,
         CardValue firstPlayer,
@@ -1685,7 +1546,8 @@ private void loadVeryEasy(final int handTotal, CardValue dealerCard,
    //Keep else-iffing. 12-16 inclusive are left
    else {
       if (!isSoft) {
-         if ((dealerCard == CardValue.ACE) || (dealerCard.value() >= 7)) { //Hard 12-16 vs. dealer 7-A
+         if ((dealerCard == CardValue.ACE) || (dealerCard.value() >= 7)) { 
+        	 //Hard 12-16 vs. dealer 7-A
             bestAction = Action.HIT;
             secondBestAction = Action.SURRENDER;
          }
@@ -1709,8 +1571,9 @@ private void loadVeryEasy(final int handTotal, CardValue dealerCard,
       //at last, do all this
 
       if ((bestAction == secondBestAction) && (handTotal != 21)) {
-         System.err.println("Strategy.loadVeryEasy: I recommend the same action, viz., " + bestAction
-                 + " for cards " + firstPlayer + " and " + secondPlayer + " vs. a dealer " + dealerCard);
+         System.err.println("Strategy.loadVeryEasy: I recommend the same action, viz., "
+      + bestAction + " for cards " + firstPlayer + " and " + secondPlayer +
+      " vs. a dealer " + dealerCard);
          throw new IllegalStateException();
       }
       solvedAnswer = new Answer(bestAction, secondBestAction, firstPlayer, secondPlayer, dealerCard);
@@ -1793,9 +1656,7 @@ public Action findBestAction(State myState) throws NoRecommendationException, IO
 }
 
 /**
- *
  * Not tested.
- *
  *
  * @param myShoe The Shoe is only used if the skill is set to
  * Perfect. All computation is done anew for every Perfect hand, so
@@ -1822,21 +1683,9 @@ public Action findBestAction(Shoe myShoe, Rules theRules,
    }
    else if (theRules.isPossible(theAnswer.getSecondBestAction(),
            myState)) {
-      //DEBUGGING
-        /* if ( myState.firstCardIs(CardValue.EIGHT) && myState.getSecondCardValue() == CardValue.EIGHT)
-       { if (myState.getDealerUpCard().getCardValue() == CardValue.ACE)
-       { try {Thread.sleep(1000); } catch (Exception e) {}
-       System.out.println(theRules.toString() + myState.toString() + theAnswer.toString());
-
-       }
-       }   */
-
       return theAnswer.getSecondBestAction();
    }
-   else //Just calculate?? I shouldn't really get here
-   {
-      throw new NoRecommendationException();
-   }
+   throw new NoRecommendationException();
 }
 
 /**
@@ -1884,14 +1733,6 @@ private boolean isPrecalculated() {
       }
    }
    final boolean fileExists = strategyFileExists(fullAnswers, theRules, strategyType, fileRetrievalFormat);
-
-   /*
-    if (!fileExists && Blackjack.debug())
-    { //The file doesn't exist.
-    // IllegalStateException ise = new IllegalStateException();
-    // ise.printStackTrace();
-    }
-    */
    return fileExists;
 }
 
@@ -1903,7 +1744,6 @@ boolean strategyFileExists(boolean fullAnswers, Rules theRules, Skill mySkill,
       someRules = new Rules(theRules);
       someRules.setBlackjackPayback(1.5);
       filename = fileNameForAnswers(fullAnswers, someRules, mySkill, fileRetrievalFormat);
-
    }
    else {
       throw new UnsupportedOperationException();
@@ -1911,26 +1751,10 @@ boolean strategyFileExists(boolean fullAnswers, Rules theRules, Skill mySkill,
 
    }
    return strategyFileExists(filename);
-
-
 }
 
 protected boolean strategyFileExists(String filename) {
-   File possibleFile = getStrategyFile(filename);
-   if (possibleFile.exists()) {  //System.out.println("isPrecalculated: I believe that the file " + filename + " exists.");
-      return true;
-   }
-   else {
-      /*
-       System.err.println("I can't locate this rule set: " + theRules);
-       System.err.println("The file name is " + filename);
-       System.err.println("My skill is " + mySkill);
-       IllegalStateException ise = new IllegalStateException();
-       ise.printStackTrace();
-       */
-      return false;
-
-   }
+   return getStrategyFile(filename).exists();
 }
 
 /**
@@ -1953,7 +1777,8 @@ private File getStrategyFile(String filename) {
  * @throws FileNotFoundException
  *
  */
-protected InputStream getFileInputStream(String fileName) throws IOException//FileNotFoundException
+protected InputStream getFileInputStream(String fileName) throws IOException
+//FileNotFoundException
 {
    return new FileInputStream(directory + File.separator + fileName);
 }
@@ -1967,7 +1792,8 @@ protected InputStream getFileInputStream(String fileName) throws IOException//Fi
  * @return
  * @throws FileNotFoundException
  */
-protected OutputStream getFileOutputStream(String fileName) throws IOException //FileNotFoundException
+protected OutputStream getFileOutputStream(String fileName) throws IOException 
+//FileNotFoundException
 {
    return new FileOutputStream(directory + File.separator + fileName);
 }
@@ -2021,7 +1847,8 @@ private void loadAnswersFromFile() throws IOException {
       //Have to change this line if I ever solve for total-dependent
 
       allSolved = true;
-      //System.out.println("File " + fileNameForAnswers(fullAnswers) + " has apparently been loaded.");
+      //System.out.println("File " + fileNameForAnswers(fullAnswers) + " has apparently "
+      // 		+ "been loaded.");
       //System.out.println("Size of my map: "+ allAnswers.size() );
    }
    catch (StreamCorruptedException corruption) {
@@ -2096,8 +1923,6 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
 
 // - 1 b/c numHit17Strats is always at least 1, and I need an index position
 
-
-
 //Read hit 17 data. Return immediately when found if validataData is false.
          if (theRules.hitOn17() && (indexPosition > numHit17Strats - 1)) {
             indexPosition = numHit17Strats - 1;
@@ -2113,9 +1938,7 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
                   if (!Utilities.attemptClosure(byteSource)) {
                      throw new IOException("Stream closure failed.");
                   }
-
                   return scratchData;
-
                }
             }
          }
@@ -2135,7 +1958,6 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
                      throw new IOException("Stream closure failed.");
                   }
                   return scratchData;
-
                }
             }
          }
@@ -2143,9 +1965,7 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
             throw new IOException("NPE: Raw Strategy data never found.");
          }
 
-
-
-         final int actualCheckSum;// = byteSource.readInt();
+         final int actualCheckSum;
          byte[] intData = new byte[4];
          byteSource.read(intData, 0, 4);
          actualCheckSum = (Utilities.convertBytesToInteger(intData))[0];
@@ -2153,7 +1973,6 @@ private byte[] retrieveRawStrategyData(InputStream answerFile,
          if (actualCheckSum != checkSum) {
             System.err.println("Calculated checksum is " + checkSum + "; recorded checksum is " + actualCheckSum);
             throw new IOException("Checksum mismatch.");
-
          }
 
          if (!Utilities.attemptClosure(byteSource)) {
@@ -2259,7 +2078,6 @@ private void calculateBasicStrategy() throws NoRecommendationException {
    //Everything is solved.
 
 
-
    if ((strategyType == Skill.TOTAL_DEP)) {
       Blackjack.consolidateIntoTotalDependent(hardAnswers, theRules);
    }
@@ -2347,7 +2165,6 @@ public boolean store() throws NoRecommendationException, IOException {
  *
  * This will only save the house edge if the strategy type is ADVANCED.
  *
- * I'm planning to use this only by me, to store answers.
  *
  * @param actingSolo True if this is a one-off function call. False if it's
  * being done
@@ -2363,7 +2180,9 @@ public boolean store() throws NoRecommendationException, IOException {
  * true (since in that
  * case it wouldn't be able to save to a file)
  */
-boolean solveAndStore(Rules someRules, boolean actingSolo) throws NoRecommendationException, IOException //,ClassNotFoundException, IOException
+boolean solveAndStore(Rules someRules, boolean actingSolo)
+		throws NoRecommendationException, IOException 
+		//,ClassNotFoundException, IOException
 {
    if (mapLoadDeactivated) {
       System.err.println("Strategy.solveAndStore: I cannot solve and store a data set when the total EV map "
@@ -2373,7 +2192,8 @@ boolean solveAndStore(Rules someRules, boolean actingSolo) throws NoRecommendati
    final int actualAccuracy = someRules.getAccuracy();
    someRules.setAccuracy(Rules.CACHE_ACCURACY);
    if (actingSolo) {
-      loadTotalEVMap(true); //Will load map if map is empty. Unless the file is empty, in which case,
+      loadTotalEVMap(true);
+      //Will load map if map is empty. Unless the file is empty, in which case,
    }  //it'll load nothing.
 
    findAllAnswers(someRules);
@@ -2431,7 +2251,7 @@ public final static String smallStore = "s";
  * When correctly implemented, this will force a Strategy to recalculate every
  * time
  * instead of looking in a stored file. Currently, it just forces
- * isPrecalculated to return false.
+ * isPrecalculated to return false, which may be just as good.
  */
 private boolean forceSolve;
 /**
@@ -2453,14 +2273,8 @@ static final public int CONSOLIDATED_BY_DECKS_FILES = 2;
  */
 private boolean calculationDeactivated = false;
 
-/**
- *
- * @param calcDeactivated
- * @return
- */
 public boolean setCalculationDeactivated(boolean calcDeactivated) {
    final boolean currentCalcStatus = calculationDeactivated;
-
    calculationDeactivated = calcDeactivated;
    return currentCalcStatus;
 }
@@ -2524,12 +2338,10 @@ private static String fileNameForAnswers(boolean fullStore, Rules someRules,
       fileName.append(fileConsolidationSuffix);
    }
    fileName.append(mySkill.abbrev()).append(String.valueOf(effectiveRules.myHashKey())).append(".ser");
-   //if (fileName.toString().equals("bjs-CONS1a90905319257.ser"))
-   //       System.out.println("These are the rules for file name " + fileName + ": " + effectiveRules);
    return fileName.toString();
 }
 
-private String fileNameForAnswers() {//if (this.fileRetrievalFormat == Strategy.CONSOLIDATED_BY_DECKS_FILES)
+private String fileNameForAnswers() {
    return fileNameForAnswers(fullAnswers, theRules, strategyType, fileRetrievalFormat);
 }
 
@@ -2605,19 +2417,14 @@ private boolean saveToFile() {
       someRules.setBlackjackPayback(1.5);
       filename = fileNameForAnswers(fullAnswers, someRules, strategyType, fileRetrievalFormat);
    }
-//Convert loadedRuleSet to string.
-//System.out.println("Attempting to save " + filename + " to file.");
+
    boolean success = true;
-//{
-   //  return new File(directory +File.separator + filename);
-//}
+
    makeDataDirectory();
 
    OutputStream fileOut = null;
-//ObjectOutputStream hashStream = null;
    try {
       fileOut = getFileOutputStream(filename);
-      //new FileOutputStream( directory + File.separator + filename); //THROWS EXCEPTION
 
       //FORMAT: One short representing the size of the map.
       // The data, either all Answers or all bytes depending on the selection
@@ -2632,10 +2439,7 @@ private boolean saveToFile() {
             success = false;
          }
       }
-
-
       fileOut.close();
-      //System.out.println(filename + " has been saved to file.");
       return success;
    }
    catch (FileNotFoundException exceptional) {
@@ -2710,11 +2514,10 @@ private boolean smallFileMaker(OutputStream fileOut) {
                dealer = Answer.cardValueToByte(dealerCard);
                myKey = Answer.answerHash(first, second, dealer, false); //Non-split key
                //first second, dealer, all byte.
-               anAnswer = (Answer) allAnswers.get(myKey);
+               anAnswer = allAnswers.get(myKey);
                assert (anAnswer != null);
 
-               //DEBUGGING
-               //System.out.println("Saving this answer: " + anAnswer);
+
 
                toWrite = anAnswer.getConsolidatedActions();
                dataStream.writeByte(toWrite);
@@ -2739,8 +2542,6 @@ private boolean smallFileMaker(OutputStream fileOut) {
             }
          }
       }
-      //dataStream.writeDouble(houseEdge);
-      //totalEVMap.put(loadedRuleSet, houseEdge);
       dataStream.writeShort(checkSum);
 
       dataStream.close();
@@ -2751,7 +2552,7 @@ private boolean smallFileMaker(OutputStream fileOut) {
       if (dataStream != null) {
          try {
             System.err.println("Data stream is not null, but there was a problem after that.");
-            dataStream.close(); //Data stream could be opened, but not
+            dataStream.close(); 
             return false;
 
          }
@@ -2781,25 +2582,12 @@ private boolean smallFileMaker(OutputStream fileOut) {
  * @throws NoRecommendationException
  */
 private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
-   /*DEBUGGING START
-    boolean errorState = false;
-    if (myState.firstCardIs(CardValue.ACE) && myState.getSecondCardValue() == CardValue.ACE)
-    { if (myState.getDealerUpCard().getCardValue() == CardValue.SIX)
-    errorState = true;
-    }
-    DEBUGGING END */
-
    float bestEV = -5000;
    Answer splitAnswer = null;
-   Answer normalAnswer = (Answer) allAnswers.get(myState.getAnswerHash(false));
+   Answer normalAnswer = allAnswers.get(myState.getAnswerHash(false));
    if (normalAnswer == null) {
       NoRecommendationException empty = new NoRecommendationException(myState, theRules, "Can't find"
               + " answer in loaded map (code: " + myState.getAnswerHash(false));
-      if (Blackjack.debug()) {
-         System.err.println("Can't find answer in loaded map for this State:"
-                 + "----------------------" + myState.toString() + "\nAnd these rules:\n" + theRules);
-      }
-
       throw empty;
    }
    boolean isComplete = normalAnswer.isComplete();
@@ -2860,7 +2648,7 @@ private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
  *
  */
 Answer pullAnswer(int key) throws NoSuchElementException {
-   Answer response = (Answer) allAnswers.get(key);
+   Answer response = allAnswers.get(key);
    if (response == null) {
       System.out.println("No match for key: + " + key + " in map.");
       throw new NoSuchElementException();
@@ -2927,12 +2715,12 @@ private void loadTotalEVMap(final boolean saveCurrentMap) throws IOException {
        totalEVMapSkill = this.strategyType;
        } to HERE commented out. If it's loaded, then I'm happy. */
    }
-   else //The map is empty. I'm going to either load it or return if
+   
+   //The map is empty. I'm going to either load it or return if
    //the map file doesn't exist. In either case, I need to indicate what type
    //of Skill the map is.
-   {
-      totalEVMapSkill = this.strategyType;
-   }
+   totalEVMapSkill = this.strategyType;
+   
    //System.out.println("Past the empty check in loadTotalEVMap");
    //assert (totalEVMap.size() == 0): "Strategy.loadTotalEVMap called when the existing map was non-zero.";
    InputStream myFIS = null;
@@ -3006,6 +2794,17 @@ public void consolidateAllFiles(boolean verbosity) {
 }
 
 /**
+ * TODO: Fix this, it is gross. Refactor to:
+ * -Create a Rules constructor which takes as arguments each different Rule setting
+ * (it'd take an array)
+ * -Create a Rules function which validates the currently passed rule set
+ * -Then generate a array (linearly, not nested like this) for each different
+ * combination.
+ * -For the final combination, validate it using the new rules function, then
+ * if it passes create that Rule set.
+ * (This would be far far easier in Javascript :( )
+ * 
+ * 
  * Used to cycle through all rule possibilities for the given number of decks.
  * Chains calls to toggleRulesInts and then toggleDoubleBooleans. Uses hash
  * accuracy.
@@ -3111,13 +2910,11 @@ protected String fileNameForMap(Skill mySkill) {
     }
     */
    return filePrefix + Skill.COMP_DEP.abbrev() + totalEVMapName + ".ser";
-   //return filePrefix + mySkill.abbrev() + totalEVMapName + ".ser"; preferable
 
 }
 
 private boolean saveTotalEVMap() {
    return saveTotalEVMap(strategyType);
-
 }
 
 /**
@@ -3137,14 +2934,6 @@ private boolean saveTotalEVMap(Skill mySkill) {
    aFile = new File(directory);
    aFile.mkdir();
    //I assume here that this will write over whatever I had before.
-
-   /*
-    *   final String fullFileName = directory + File.separator + fileNameForMap();
-    File possibleFile = new File(fullFileName);
-    if (!possibleFile.exists())
-    return; //Don't have to load, it doesn't exist.
-    System.out.println("Past the exist check in loadTotalEVMap");
-    */
 
    ObjectOutputStream mapStream = null;
    try {
@@ -3234,7 +3023,8 @@ private void toggleDoubleBooleans(Rules someRules, ToggleSettings settings) {
          for (someRules.myDoubleRules.setNotOnAces(true); flags[2] < 2;
                  flags[2]++, someRules.myDoubleRules.setNotOnAces(false)) {
             for (someRules.myDoubleRules.setNotPostSplit(true); flags[3] < 2;
-                    flags[3]++, someRules.myDoubleRules.setNotPostSplit(false)) {  //assert (!someRules.getAutoToggles()): someRules;
+                    flags[3]++, someRules.myDoubleRules.setNotPostSplit(false)) {  
+            	//assert (!someRules.getAutoToggles()): someRules;
                for (someRules.myDoubleRules.setNotSplitAces(true); flags[4] < 2;
                        flags[4]++, someRules.myDoubleRules.setNotSplitAces(false)) {
                   for (someRules.myDoubleRules.setOnlyNineTenEleven(true); flags[5] < 2;
@@ -3265,7 +3055,7 @@ private void toggleDoubleBooleans(Rules someRules, ToggleSettings settings) {
  * Use the getter otherwise
  *
  */
-private void calculateHouseEdge(/*Rules theRules*/) throws NoRecommendationException {
+private void calculateHouseEdge() throws NoRecommendationException {
 
    if (allAnswers.isEmpty()) {
       throw new IllegalStateException("Illegal State: the hash map is currently empty, so I can't "
@@ -3291,9 +3081,7 @@ private void calculateHouseEdge(/*Rules theRules*/) throws NoRecommendationExcep
                currentAnswer = retrieveAnswerAdvOrBasic(scratch);
                assert (currentAnswer.isComplete());
                totalEV += probability * currentAnswer.getBestEV();
-               if (Blackjack.debug()) {
-                  probSum += probability;
-               }
+               assert ( (probSum += probability) > 0);
             }
          }
       }
@@ -3320,10 +3108,6 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
       //the hashmap may have two answers in this case.
       theAnswer = twoAnswersInMap(myState);
       if (theAnswer == null) {
-
-         if (Blackjack.debug()) {
-            throw new NullPointerException();
-         }
          throw new NoRecommendationException("NPE -- no answer in map for " + myState);
       }
    }
@@ -3332,13 +3116,8 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
       theAnswer = (Answer) allAnswers.get(myState.getAnswerHash(false));
       if (theAnswer == null) {
          State.printStateStatus(myState, "In retrieveAnswerAdvOrBasic");
-         if (Blackjack.debug()) {
-            throw new NullPointerException();
-         }
-         throw new NoRecommendationException("NPE");
-
+          throw new NoRecommendationException("NullPointerException");
       }
-
    }
    return theAnswer;
 }

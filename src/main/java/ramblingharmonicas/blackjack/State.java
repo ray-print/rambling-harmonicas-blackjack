@@ -66,109 +66,109 @@ public static void usedForCalculation(final boolean usedForCalculation) {
  * @return String summary of State variables
  */
 private static String getStateString(State myState) {
-   StringBuilder mofo = new StringBuilder();
+   StringBuilder sb = new StringBuilder();
    String ln = System.getProperty("line.separator");
-   mofo.append(ln);
+   sb.append(ln);
    ArrayList<ArrayList<Card>> myHands = myState.getMyHands();
    ArrayList<ArrayList<Action>> myActions = myState.getActions();
    final int totalNumberOfHands = myState.getTotalHands() + 1;
    boolean[] busted = myState.areWeBusted();
-   mofo.append("I ");
+   sb.append("I ");
    if (myState.isInsuranceTaken()) {
-      mofo.append("took ");
+      sb.append("took ");
    }
    else {
-      mofo.append("did not take ");
+      sb.append("did not take ");
    }
-   mofo.append("insurance; I was ");
+   sb.append("insurance; I was ");
    if (myState.isInsuranceAdvised()) {
-      mofo.append("advised ");
+      sb.append("advised ");
    }
    else {
-      mofo.append("not advised ");
+      sb.append("not advised ");
    }
-   mofo.append("to do so.").append(ln);
-   mofo.append("I am on hand #").append(myState.getCurrentHand()).append(" of ").append(myState.getTotalHands()).append(", with ").append(myState.numberCardsInHand()).append(" cards in hand.").append(ln);
+   sb.append("to do so.").append(ln);
+   sb.append("I am on hand #").append(myState.getCurrentHand()).append(" of ").append(myState.getTotalHands()).append(", with ").append(myState.numberCardsInHand()).append(" cards in hand.").append(ln);
    if (!myState.isBust()) {
-      mofo.append("The current hand is worth ").append(myState.handTotal()).append(ln);
+      sb.append("The current hand is worth ").append(myState.handTotal()).append(ln);
    }
    if (myState.isBust()) {
-      mofo.append("The current hand is bust.").append(ln);
+      sb.append("The current hand is bust.").append(ln);
    }
    else {
-      mofo.append("The current hand is not bust.").append(ln);
+      sb.append("The current hand is not bust.").append(ln);
    }
-   mofo.append("The busted array is ").append(State.MAX_NUMBER_HANDS).append(" element(s) long:");
+   sb.append("The busted array is ").append(State.MAX_NUMBER_HANDS).append(" element(s) long:");
    for (boolean k : busted) {
-      mofo.append(" ").append(k);
+      sb.append(" ").append(k);
    }
-   mofo.append(ln).append(ln);
+   sb.append(ln).append(ln);
    for (int i = 0; i < totalNumberOfHands; i++) {
-      mofo.append("My #").append(i + 1).append(" hand is: ");
+      sb.append("My #").append(i + 1).append(" hand is: ");
       for (int j = 0; j < myHands.get(i).size(); j++) {
-         mofo.append(myHands.get(i).get(j)).append("  ");
+         sb.append(myHands.get(i).get(j)).append("  ");
       }
-      mofo.append(ln).append("The hand is ");
+      sb.append(ln).append("The hand is ");
       if (!myState.areHandsDone().get(i)) {
-         mofo.append("not ");
+         sb.append("not ");
       }
-      mofo.append("done.");
-      mofo.append(ln).append("The hand total is ").append(Utilities.handTotal(myHands.get(i)));
-      mofo.append(ln).append("The following actions were taken on the hand:");
+      sb.append("done.");
+      sb.append(ln).append("The hand total is ").append(Utilities.handTotal(myHands.get(i)));
+      sb.append(ln).append("The following actions were taken on the hand:");
       for (int j = 0; j < myActions.get(i).size(); j++) {
-         mofo.append(myActions.get(i).get(j)).append("  ");
+         sb.append(myActions.get(i).get(j)).append("  ");
       }
-      mofo.append(ln).append(ln);
+      sb.append(ln).append(ln);
       if (busted[i]) {
-         mofo.append("I am bust.");
+         sb.append("I am bust.");
       }
       else {
-         mofo.append("I am not bust.");
+         sb.append("I am not bust.");
       }
    }
-   mofo.append("The dealer has a/an ").append(myState.getDealerUpCard().toString()).append(".").append(ln);
-   mofo.append("My expected value is ").append(myState.getExpectedValue()).append(". ").append(ln);
-   mofo.append("I do ");
+   sb.append("The dealer has a/an ").append(myState.getDealerUpCard().toString()).append(".").append(ln);
+   sb.append("My expected value is ").append(myState.getExpectedValue()).append(". ").append(ln);
+   sb.append("I do ");
    if (!myState.playerBJ()) {
-      mofo.append("not ");
+      sb.append("not ");
    }
-   mofo.append("have a blackjack.");
+   sb.append("have a blackjack.");
    if (myState.dealerBlackJackChecked()) {
-      mofo.append("The dealer does ");
+      sb.append("The dealer does ");
       if (!myState.dealerHasBJ()) {
-         mofo.append(" not ");
+         sb.append(" not ");
       }
-      mofo.append("have a blackjack.").append(ln);
+      sb.append("have a blackjack.").append(ln);
    }
    else {
-      mofo.append("The dealer has not yet checked for blackjack.").append(ln);
+      sb.append("The dealer has not yet checked for blackjack.").append(ln);
    }
    try {
       Action bestAction = myState.getPreferredAction();
-      mofo.append("The best action has been defined as a ").append(bestAction.toString()).append(ln);
+      sb.append("The best action has been defined as a ").append(bestAction.toString()).append(ln);
    }
    catch (IllegalStateException q) {
-      mofo.append("The best action has not been defined.").append(ln);
+      sb.append("The best action has not been defined.").append(ln);
    }
    try {
       Action secondBestAction = myState.getSecondBestAction();
-      mofo.append("The second best action has been defined as a ").append(secondBestAction.toString()).append(ln);
+      sb.append("The second best action has been defined as a ").append(secondBestAction.toString()).append(ln);
    }
    catch (IllegalStateException s) {
-      mofo.append("The second best action has not been defined.").append(ln);
+      sb.append("The second best action has not been defined.").append(ln);
    }
-   mofo.append("My second best EV is: ").append(myState.getSecondBestEV()).append(ln);
+   sb.append("My second best EV is: ").append(myState.getSecondBestEV()).append(ln);
    if ((myState.numberCardsInHand() < 2) || myState.isBust())  ; //Either of these will lead to exceptions
    else {
-      mofo.append("My no-split answer hash is: ").append(myState.getAnswerHash(false)).append(ln);
+      sb.append("My no-split answer hash is: ").append(myState.getAnswerHash(false)).append(ln);
    }
 
    if (myState.numberCardsInHand() < 2) ;
    else if ((myState.getFirstCardValue() == myState.getSecondCardValue()) && myState.numberCardsInHand() == 2) {
-      mofo.append("My split answer hash is: ").append(myState.getAnswerHash(true)).append(ln);
+      sb.append("My split answer hash is: ").append(myState.getAnswerHash(true)).append(ln);
    }
 
-   return mofo.toString();
+   return sb.toString();
 }
 
 public static void printStateStatus(State myState, String str) {

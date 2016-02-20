@@ -123,8 +123,6 @@ public double fastProbabilityOf(final CardValue thisCard) {
    else if (cardValueCache[ thisCard.value()] == 0) {
       return -100000;
    }
-
-   //Java requires explicit upcasting. Fucking dumb.
    return ((double) (cardValueCache[ thisCard.value()]) / ((double) totalCards));
 }
 
@@ -417,7 +415,7 @@ public void reshuffle(int numberOfDecks) {
 }
 
 /**
- * THROWS SHUFFLE NEEDED EXCEPTION.
+ * 
  * If the GameMode is not set to free play, then shuffle after every hand.
  * ONLY CALL THIS FUNCTION AFTER FIRST CALLING THE OTHER DRAW-APP
  * FUNCTION; pass the drawn Card as an argument here. Otherwise it
@@ -462,9 +460,7 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
          if (previouslyDrawnCard.getCardValue() == CardValue.ACE) {
             return drawAllExcept(previouslyDrawnCard.getCardValue());
          }
-         else {
-            return drawSpecific(CardValue.ACE);
-         }
+         return drawSpecific(CardValue.ACE);
       case ALL_SPLITS:
          return drawSpecific(previouslyDrawnCard.getCardValue());
       case FREE_PLAY:
@@ -481,9 +477,6 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
       case ALL_SOFT_AND_HARD:
          //Anything but splits. UNTESTED
          return drawAllExcept(previouslyDrawnCard.getCardValue());
-
-
-
       /* MOTHBALLED
        case DEALER_2_6: //pull 2-6. Other card irrelevant.
        return drawAppropriate (BETWEEN_2_AND_6);
@@ -500,25 +493,14 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
        }
        return drawBetween(Blackjack.TWOCARD +1, maxValue);
        */
-
-
       default:
          throw new UnsupportedOperationException(myMode.toString());
    }
-
-
-
-
-
 }
 
 /**
  * Draws first card in shoe of specified value. About seven times faster than
  * drawSpecific.
- *
- *
- * @param thisCard
- * @return
  *
  */
 @Override
@@ -547,7 +529,7 @@ public Card fastDrawSpecific(final CardValue thisCard) {
 }
 
 /**
- * Utterly untested
+ * TODO: Test this
  *
  * @param Card to be added.
  */
@@ -556,8 +538,6 @@ public void addCard(final Card thisCard) {
    myCards.add(new Card(thisCard));
    cardValueCache[(thisCard.value())]++;
    totalCards++;
-
-
 }
 
 /**
@@ -572,101 +552,3 @@ public int[] getCardValueCache() {
 }
 
 }
-
-//UNUSED CODE BLOCK BELOW
-/**
- * Only used by copy constructor.
- * Must test copy constructor to make sure it makes a deep, not shallow copy.
- *
- *
- * @return
- *
- * private Card [] toArray ()
- * { Card [] myArray = myCards.toArray(new Card[myCards.size()]);
- * return myArray;  *
- * }
- * /**
- * DOES NOT COPY cardValueCache!!
- *
- *
- * @param original
- *
- * public Shoe (Shoe original)
- * { //original.deepclone();
- * // Card [] myArray = original.myCards.toArray(new Card[myCards.size()]);
- * // original.myCards
- * //Use deepclone instead, viz.: Shoe cloney = myShoe.deepclone(); ????
- * myCards.addAll(Arrays.asList( original.toArray()));
- * System.out.println("Does not copy cardValueCache in Shoe::Shoe(Shoe)");
- * }
- *
- *
- *
- * /**
- * Utterly untested.
- *
- *
- * @param thisCard The card value that is to be drawn from the shoe.
- * @param excluded The card value that cannot be drawn from the shoe.
- * @return The probability of drawing the specified CardValue from the Shoe,
- * given that all
- * cards with the excluded CardValue cannot be drawn. Returns -1 if the
- * CardValue is not present
- * in the shoe or if the Shoe is empty.
- * @throws IllegalArgumentException if the two passed CardValues are the same.
- *
- * public double probabilityOfExcluding(final CardValue thisCard, final
- * CardValue excluded)
- * {if ( myCards.isEmpty())
- * return -1;
- * if (thisCard.value() == excluded.value())
- * throw new IllegalArgumentException("Shoe.probabilityOfExcluding(CardValue,
- * CardValue) called"
- * + " with cards of the same value.");
- *
- * int i, sum = 0, excludedsum = 0;
- * for (i=0; i< myCards.size(); i++)
- * {//System.out.println (myCards.get(i).value() + " " + thisCard.value() );
- *
- * if (myCards.get(i).value() == thisCard.value() )
- * sum++;
- * if (myCards.get(i).value() == excluded.value() )
- * excludedsum++;
- * }
- * if (sum == 0) return -1;
- * //Java requires explicit upcasting. Fucking dumb.
- * return (double) sum / (double)(myCards.size() -excludedsum );  *
- * }
- *
- *
- *
- *
- *
- *    /** Returns probability that a card of a certain value is drawn.
- * However, if there is no card of that value in the deck,
- * or the deck is empty, it returns -1. [Since double are not precise, I'm
- * choosing this in preference to 0.]
- *
- * The suit is irrelevant; 10, J, Q, and K are considered identical.
- * Should be made private.
- * I tested this and it worked ok; I created shoes of 1 deck and 4 decks
- * and it returned the correct probability for all card values.
- *
- * Don't use this, use fastProbabilityOf instead.
- *
- * public double probabilityOf(final CardValue thisCard)
- * { if ( myCards.isEmpty())
- * return -1;
- *
- * int i, sum = 0;
- * for (i=0; i< myCards.size(); i++)
- * {
- *
- * if (myCards.get(i).value() == thisCard.value() )
- * sum++;
- * }
- * if (sum == 0) return -1;
- * //Java requires explicit upcasting. Fucking dumb.
- * return (double) sum / (double)myCards.size();
- * }
- */
