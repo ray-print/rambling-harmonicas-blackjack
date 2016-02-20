@@ -12,9 +12,7 @@ import joptsimple.ValueConverter;
 import ramblingharmonicas.blackjack.cards.*;
 import ramblingharmonicas.blackjack.rules.Surrender;
 
-
 //TODO: Refactor to move some functionality to Utilities or Strategy or some new class(es).
-//TODO: Factor out cache into separate file
 public class Blackjack {
 	
 static public long dealerIterations = 0;
@@ -35,19 +33,6 @@ final static int JACKCARD = 9;
 final static int QUEENCARD = 9;
 final static int KINGCARD = 9;
 private static boolean DEBUGGING = true;
-private static Map<String, float[]> dealerProbabilitiesCache;
-private static long hits = 0;
-private static long misses = 0;
-private static boolean cacheInitialized = false;
-
-//Move these to Testers.java
-public static final double TWO_PERCENT_ERROR = 0.02;
-public static final double MAXIMUM_ABSOLUTE_ERROR = 3.0E-4; 
-public static final double FIVE_PERCENT_ERROR = 0.05; 
-public static final double ONE_PERCENT_ERROR = 0.01;
-public static final double EPSILON = 1.0E-4; // = 0.01 %
-public static final double SMALLEST_EPSILON = 1.0E-6;
-
 
 public static void main (String [] args) throws NoRecommendationException, IOException {
 	Rules theRules = parseArguments(args); 
@@ -207,101 +192,6 @@ private static OptionParser createOptionsParser() {
 	return parser;
 }
 /**
- * Call this before trying to access the cache. If the cache has already been
- * initialized, this function will do nothing and return.
- */
-public static void initCache() {
-   if (cacheInitialized) {
-      return;
-   }
-   dealerProbabilitiesCache = new HashMap(
-           (cacheStatus == FULL_CACHE) ? 
-               INIT_FULL_CACHE_SIZE : 
-               (  (cacheStatus == SMALL_CACHE) ? SMALL_CACHE_SIZE : 0) );
-   cacheInitialized = true;
-}
-
-public static void incrementHits() {
-   hits++;
-}
-
-public static void incrementMisses() {
-   misses++;
-   /* TODO: Use a logger for this
-   if (Blackjack.debug()) {
-      final int size = dealerProbabilitiesCache.size();
-      if (size == 0) {
-         return;
-      }
-      if ((size % 100000) == 0) {
-         printCacheStatus();
-      }
-   }*/
-}
-
-public static long getHits() {
-   return hits;
-}
-
-public static long getMisses() {
-   return misses;
-}
-
-//TODO: Use an enum for this
-final public static int SMALL_CACHE = 10;
-final public static int FULL_CACHE = 100;
-final public static int NO_CACHE = -1;
-private static int cacheStatus = FULL_CACHE;
-final public static int INIT_FULL_CACHE_SIZE = 300000;
-final public static int SMALL_CACHE_SIZE = 30000;
-
-/**
- * Store values in the cache which go up to this far in the shoe (12 cards
- * drawn)
- *
- */
-final public static int CACHE_DEPTH = 12;
-
-/**
- * TODO: use enum for this
- * @return Current kind of cache being used.
- */
-public static int getCacheStatus() {
-   return cacheStatus;
-}
-
-/**
- *  TODO: use enum for this
- *
- * @param cacheCode
- */
-public static void setCache(int cacheCode) {
-   switch (cacheCode) {
-      case FULL_CACHE:
-      case NO_CACHE:
-      case SMALL_CACHE:
-         cacheStatus = cacheCode;
-         break;
-      default:
-         throw new IllegalArgumentException("Cache status must be either "
-                 + "NO_CACHE, SMALL_CACHE, or FULL_CACHE");
-   }
-}
-
-/**
- * Clears the dealer probability cache and reinitializes it.
- *
- *
- */
-public static void clearCache() {
-   if (dealerProbabilitiesCache != null) {
-      dealerProbabilitiesCache.clear();
-   }
-   cacheInitialized = false;
-   initCache();
-}
-
-/**
  *
  * @return True if debugging is enabled, false otherwise
  * @deprecated Use asserts for doing assertions; for logging, a separate
@@ -392,63 +282,6 @@ public static boolean dealNecessary(State finishedState, Rules theRules) {
 }
 
 /**
- * Creates a key for the dealer probability cache based on the shoe, rules, and
- * dealer up card.
- *
- * This function should create a different key if any of the following change:
- * Dealer up card
- * Hit/stand on 17
- * The shoe contents
- * The presence or absence of a dealer hole card, but only if the dealer up card
- * is an ace or ten.
- * Accuracy of the rules
- *
- * @param myShoe The current shoe
- * @param dealerCardIndex This is in the INDEX of a standard dealer card array.
- * 0 = Ace. That cost hours.
- * @param theRules The current rules.
- * @return
- */
-static String getKeyForMap(FastShoe myShoe, final int dealerCardIndex,
-        Rules theRules) {
-   StringBuilder builder = new StringBuilder();
-   if (theRules.hitOn17() == true) {
-      builder.append("H");
-   }
-   else {
-      builder.append("S");
-   }
-   builder.append(myShoe.myStringKey());
-   assert ((dealerCardIndex >= Blackjack.ACECARD) && 
-           (dealerCardIndex <= Blackjack.TENCARD));
-   builder.append(dealerCardIndex);   // 0-9.
-
-   /*
-    if (theRules.dealerHoleCard() )
-    building.append("H");
-    else building.append("N");
-    */
-
-   if ((dealerCardIndex == Blackjack.ACECARD)
-           || (dealerCardIndex == Blackjack.TENCARD)) {
-      if (theRules.dealerHoleCard()) {
-         builder.append("H");
-      }
-      else {
-         builder.append("N");
-      }
-   }
-   else {
-      builder.append("I"); //For irrelevant
-   }
-
-   builder.append(theRules.getAccuracy());
-//This doesn't appear to have an impact.
-
-   return builder.toString();
-}
-
-/**
  * Call this when the player's actions are done to finalize the
  * state. Tested under four different, fairly complicated
  * scenarios. This is done right before comparing EVs of the
@@ -470,39 +303,38 @@ static State resolveHands(State finishedState, FastShoe myShoe, Rules theRules) 
       int[] dealerCards = new int[10];
       float[] dealerProbabilities; 
 
-      String keyForMap = getKeyForMap(myShoe, finishedState.getDealerUpCard().value() - 1, theRules);
+      String keyForMap = DealerCache.getKeyForMap(myShoe, finishedState.getDealerUpCard().value() - 1, theRules);
       Utilities.zero(dealerCards);
 
       dealerCards[ finishedState.getDealerUpCard().value() - 1] = 1;
 
-      final int myCacheStatus = getCacheStatus();
+      final DealerCache.Status myCacheStatus = DealerCache.getCacheStatus();
       // Should clear out the cache on certain rule changes: different 
       // number of decks, the dealer can hit or stand on soft 17, 
       // perhaps hole/no hole card.
       // The Cache is only to be used with a full shoe
 
-      initCache(); 
-      if ((myCacheStatus != NO_CACHE) && dealerProbabilitiesCache.containsKey(keyForMap)) {
-         Blackjack.incrementHits();
-         dealerProbabilities = (float[]) dealerProbabilitiesCache.get(keyForMap);
+      DealerCache.initCache(); 
+      if ((myCacheStatus != DealerCache.Status.NO_CACHE) && 
+    		  DealerCache.dealerProbabilitiesCache.containsKey(keyForMap)) {
+         assert DealerCache.incrementHits();
+         dealerProbabilities = DealerCache.dealerProbabilitiesCache.get(keyForMap);
          finishedState.calculateEV(dealerProbabilities, theRules);
       }
       else {
          try {
-            double[] solvedDealerProbs = DealerRecursive(
-                    dealerCards, myShoe, theRules);
-            Blackjack.incrementMisses();
-            if ((myCacheStatus != NO_CACHE)
-                    && (((theRules.getNumberOfDecks() * 52) - Blackjack.CACHE_DEPTH) <= myShoe.numberOfCards())) {
+            double[] solvedDealerProbs = DealerRecursive(dealerCards, myShoe, theRules);
+            assert DealerCache.incrementMisses();
+            if ((myCacheStatus != DealerCache.Status.NO_CACHE)
+                    && (((theRules.getNumberOfDecks() * 52) - DealerCache.CACHE_DEPTH) <= myShoe.numberOfCards())) {
 
-               if (dealerProbabilitiesCache.size() < SMALL_CACHE_SIZE) {
-                  dealerProbabilitiesCache.put(keyForMap, Utilities.doublesToFloat(solvedDealerProbs));
+               if (DealerCache.dealerProbabilitiesCache.size() < DealerCache.Status.SMALL_CACHE.getSize()) {
+                  DealerCache.dealerProbabilitiesCache.put(keyForMap, Utilities.doublesToFloat(solvedDealerProbs));
                }
-               else if (myCacheStatus == FULL_CACHE) {
-                  dealerProbabilitiesCache.put(keyForMap, Utilities.doublesToFloat(solvedDealerProbs));
+               else if (myCacheStatus == DealerCache.Status.FULL_CACHE) {
+                  DealerCache.dealerProbabilitiesCache.put(keyForMap, Utilities.doublesToFloat(solvedDealerProbs));
                }
             }
-
 
             finishedState.calculateEV(solvedDealerProbs, theRules);
          }
@@ -595,20 +427,6 @@ protected static void setApproxProbabilities(
       builder.append("\nHandvalue is " + handValue + ". isSoft is " + isSoft);
       throw new AssertionError(builder.toString());
    }
-}
-
-/**
- * Prints the current dealer probability cache status: Size,
- * misses/hit ratio, and how deep into the shoe the cache will venture.
- *
- *
- */
-public static void printCacheStatus() {
-   initCache();
-   System.out.println("Current cache status--------------------------------------");
-   System.out.println("Size of cache: " + Blackjack.dealerProbabilitiesCache.size());
-   System.out.println("Cache depth: " + Blackjack.CACHE_DEPTH);
-   System.out.println("Misses: " + Blackjack.getMisses() + ". Hits: " + Blackjack.getHits() + ". Ratio (hits/total): " + (double) Blackjack.getHits() / (double) (Blackjack.getMisses() + Blackjack.getHits()));
 }
 
 /**
@@ -993,7 +811,7 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
    if (secondBestAction == null) {
       if ((theRules.numPossibleActions(myState, false) != 1) && (myState.numberCardsInHand() < playerMaxHandSize)) {
          State.printStateStatus(myState, "Second action doom.");
-         Blackjack.printCacheStatus();
+         DealerCache.printCacheStatus();
          System.out.println(bestAction + " is my preferred action.");
          System.out.println("I have " + actionResults.size() + " elements in action and hitting is" + (hitPossible ? "" : "not") + " possible .");
          System.out.println("\n\n\n");

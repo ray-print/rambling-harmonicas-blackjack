@@ -251,8 +251,8 @@ public boolean equals(Object obj) {
 
 
    final float otherBestEV = other.getBestEV();
-   if ((otherBestEV < (this.bestEV * (1 + Blackjack.EPSILON)))
-           && (otherBestEV > (this.bestEV * (1 - Blackjack.EPSILON)))) {
+   if ((otherBestEV < (this.bestEV * (1 + Constants.EPSILON)))
+           && (otherBestEV > (this.bestEV * (1 - Constants.EPSILON)))) {
       return false;
    }
 

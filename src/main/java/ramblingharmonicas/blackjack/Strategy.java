@@ -986,7 +986,7 @@ private void printStatus(Rules theRulesAfterToggles) {
       System.out.println(numberSolves + " strategies solved." + "wrapperSolveAndStore entered "
               + wrapperSolveEntries + " times. " + numberSavedFiles + " files saved to disk.");
       System.out.println(elapsed + " minutes elapsed.");
-      Blackjack.printCacheStatus();
+      DealerCache.printCacheStatus();
       System.out.println("------------------------------");
       if (elapsed > 300) { //
          saveTotalEVMap();
@@ -3080,7 +3080,7 @@ void toggleBaseRulesBooleans(final int NumberOfDecks, ToggleSettings settings) {
       }
       flags[1] = 0;
       settings.halfDone();
-      Blackjack.clearCache(); //After I switch hit/stand on 17.
+      DealerCache.clearCache(); //After I switch hit/stand on 17.
    }
 
    //The final step -- save map into file. Unless I'm testing.
@@ -3299,13 +3299,8 @@ private void calculateHouseEdge(/*Rules theRules*/) throws NoRecommendationExcep
       }
    }
 
-   if (Blackjack.debug()) {
-      assert ((probSum < 1 + Blackjack.EPSILON) && (probSum > 1 - Blackjack.EPSILON));
-   }
-
+   assert ((probSum < 1 + Constants.EPSILON) && (probSum > 1 - Constants.EPSILON));
    this.houseEdge = -1 * totalEV;
-
-
 }
 
 /**

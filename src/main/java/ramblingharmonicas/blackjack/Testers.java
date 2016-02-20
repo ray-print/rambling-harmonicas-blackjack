@@ -976,7 +976,7 @@ private static void testOneSolvedStrategy(CardValue dealerCard,
 
 public static void allFastTests() {
    //Faster tests -- those which don't require solving the strategy.
-   Blackjack.setCache(Blackjack.FULL_CACHE);
+   DealerCache.setCache(DealerCache.Status.FULL_CACHE);
    final long startTime = System.currentTimeMillis();
    testInsuranceGoodIdea();
    Testers.testResolveHands();
@@ -1064,21 +1064,21 @@ private static void shoeCopyConstructorTest(int numberDecks) throws ShuffleNeede
    final double numDecks = numberDecks;
 
    assert (firstShoe.fastProbabilityOf(CardValue.NINE)
-           < ((double) (4D * numDecks) / (double) (52D * numDecks - 4D)) + Blackjack.EPSILON) :
+           < ((double) (4D * numDecks) / (double) (52D * numDecks - 4D)) + Constants.EPSILON) :
            firstShoe.fastProbabilityOf(CardValue.NINE) + " calculated, expected"
-           + (((4D * numDecks) / (52D * numDecks - 4D)) + Blackjack.EPSILON);
+           + (((4D * numDecks) / (52D * numDecks - 4D)) + Constants.EPSILON);
 
 
 
    assert (firstShoe.fastProbabilityOf(CardValue.ACE)
-           > ((4D * numDecks) / (52D * numDecks - 4D)) - Blackjack.EPSILON);
+           > ((4D * numDecks) / (52D * numDecks - 4D)) - Constants.EPSILON);
 
    assert (secondShoe.fastProbabilityOf(CardValue.NINE)
-           < ((4D * numDecks - 4D) / (52D * numDecks - 4D) + Blackjack.EPSILON));
+           < ((4D * numDecks - 4D) / (52D * numDecks - 4D) + Constants.EPSILON));
 
    if (numberDecks != 1) {
       assert (secondShoe.fastProbabilityOf(CardValue.NINE)
-              > ((4D * numDecks - 4D) / (52D * numDecks - 4D) - Blackjack.EPSILON));
+              > ((4D * numDecks - 4D) / (52D * numDecks - 4D) - Constants.EPSILON));
    }
    else {
       assert (secondShoe.fastProbabilityOf(CardValue.NINE) < 0);
@@ -1102,8 +1102,8 @@ public static void testState() {
    myState.action(Action.HIT, new Card(Suit.SPADES, CardValue.ACE));
 
    myState.action(Action.STAND); //You have 18, dealer has an ace.
-   assert (myState.getTotalBetAmount() < 1.5 + Blackjack.EPSILON);
-   assert (myState.getTotalBetAmount() > 1.5 - Blackjack.EPSILON);
+   assert (myState.getTotalBetAmount() < 1.5 + Constants.EPSILON);
+   assert (myState.getTotalBetAmount() > 1.5 - Constants.EPSILON);
    assert (myState.getHandResult(0, 17, false) == State.WIN);
    // hand 0, dealer total 17, no dealer BJ
    assert (myState.getHandResult(0, 18, false) == State.PUSH);
@@ -1120,8 +1120,8 @@ public static void testState() {
    otherState.action(Action.HIT, new Card(Suit.HEARTS,
            CardValue.NINE));
 
-   assert (otherState.getTotalBetAmount() < 3 + Blackjack.EPSILON);
-   assert (otherState.getTotalBetAmount() > 3 - Blackjack.EPSILON);
+   assert (otherState.getTotalBetAmount() < 3 + Constants.EPSILON);
+   assert (otherState.getTotalBetAmount() > 3 - Constants.EPSILON);
    assert (otherState.getHandResult(1, 25, false) == State.LOSE);
    assert (otherState.getHandResult(1, 21, true) == State.LOSE);
    try {
@@ -1159,8 +1159,8 @@ public static void testState() {
    aState.action(Action.INSURANCE);
    aState.action(Action.STAND);
 
-   assert (aState.getTotalBetAmount() < 1.5 + Blackjack.EPSILON);
-   assert (aState.getTotalBetAmount() > 1.5 - Blackjack.EPSILON);
+   assert (aState.getTotalBetAmount() < 1.5 + Constants.EPSILON);
+   assert (aState.getTotalBetAmount() > 1.5 - Constants.EPSILON);
 
    assert (aState.getHandResult(0, 25, false) == State.BLACKJACK);
    assert (aState.getHandResult(0, 21, true) == State.PUSH);
@@ -1244,8 +1244,8 @@ static void testRulesConstructors() {
  * @param otherRules
  */
 static private void testRulesCopyConstructor(Rules theRules, Rules otherRules) {
-   assert (theRules.getBlackJackPayback() < otherRules.getBlackJackPayback() + Blackjack.EPSILON);
-   assert (theRules.getBlackJackPayback() > otherRules.getBlackJackPayback() - Blackjack.EPSILON);
+   assert (theRules.getBlackJackPayback() < otherRules.getBlackJackPayback() + Constants.EPSILON);
+   assert (theRules.getBlackJackPayback() > otherRules.getBlackJackPayback() - Constants.EPSILON);
    assert (theRules.getCharlie() == otherRules.getCharlie());
    assert (theRules.dealerHoleCard() == otherRules.dealerHoleCard());
    assert (theRules.getDealerMaxHandSize() == otherRules.getDealerMaxHandSize());
@@ -1807,8 +1807,8 @@ private static void advancedTestResolveHands() {
            theRules);
 
 
-   assert (alwaysCloned.getTotalBetAmount() < 2.5 + Blackjack.EPSILON);
-   assert (alwaysCloned.getTotalBetAmount() > 2.5 - Blackjack.EPSILON) :
+   assert (alwaysCloned.getTotalBetAmount() < 2.5 + Constants.EPSILON);
+   assert (alwaysCloned.getTotalBetAmount() > 2.5 - Constants.EPSILON) :
            "The total bet amount claims it is " + alwaysCloned.getTotalBetAmount();
 
    value = alwaysCloned.getExpectedValue();
@@ -1850,7 +1850,7 @@ private static void advancedTestResolveHands() {
    // 3 18 4 19 5 20 6 21
    //System.out.println(calculatedValue + " is the calculated value.");
 
-   assert ((calculatedValue - Blackjack.EPSILON < value) && (value < calculatedValue + Blackjack.EPSILON)) :
+   assert ((calculatedValue - Constants.EPSILON < value) && (value < calculatedValue + Constants.EPSILON)) :
            value + " is the result; the expected value is " + calculatedValue;
 
 
@@ -2056,15 +2056,15 @@ static void testResolveHands() {
    expectedEV += -1 * (1 - dealerProbs[0]);
 
    //20 hand. Lose on 21. Nothing on 20. Win otherwise.
-   assert (dealerProbs[1] < Blackjack.EPSILON);
+   assert (dealerProbs[1] < Constants.EPSILON);
    double notWin = dealerProbs[dealerProbs.length - 1];  // = 6
    expectedEV += -1 * notWin;
    notWin += dealerProbs[dealerProbs.length - 2];
    expectedEV += 1 * (1 - notWin);
 
 
-   assert (aState.getExpectedValue() < expectedEV + Blackjack.EPSILON);
-   assert (aState.getExpectedValue() > expectedEV - Blackjack.EPSILON);
+   assert (aState.getExpectedValue() < expectedEV + Constants.EPSILON);
+   assert (aState.getExpectedValue() > expectedEV - Constants.EPSILON);
 
 
    advancedTestResolveHands();
@@ -2382,9 +2382,9 @@ public static void testShoe() {
    final int[] internalCVC = Deck.getCardValueCache();
    for (CardValue i : CardValue.values()) {
       assert ((Deck.fastProbabilityOf(i)
-              < ((double) internalCVC[i.value()] / (double) cardsInDeck) + Blackjack.EPSILON)
+              < ((double) internalCVC[i.value()] / (double) cardsInDeck) + Constants.EPSILON)
               && (Deck.fastProbabilityOf(i)
-              > ((double) internalCVC[i.value()] / (double) cardsInDeck - Blackjack.EPSILON)));
+              > ((double) internalCVC[i.value()] / (double) cardsInDeck - Constants.EPSILON)));
    }
 
    Shoe myShoe = new Shoe(1);
@@ -2495,28 +2495,28 @@ static public void testResplitEVs() {
               new Card(Suit.CLUBS, CardValue.TWO));
       value = myStrategy.findBestEV(theRules, aState);
 
-      assert (value > (1 + Blackjack.FIVE_PERCENT_ERROR) * -0.12446) : value + " for best action: "
+      assert (value > (1 + Constants.FIVE_PERCENT_ERROR) * -0.12446) : value + " for best action: "
               + myStrategy.findBestAction(theRules, aState);
 
-      assert (value < (1 - Blackjack.FIVE_PERCENT_ERROR) * -0.12446) : value;
+      assert (value < (1 - Constants.FIVE_PERCENT_ERROR) * -0.12446) : value;
 
       aState = new State(new Card(Suit.CLUBS, CardValue.EIGHT),
               new Card(Suit.CLUBS, CardValue.EIGHT),
               new Card(Suit.CLUBS, CardValue.TWO));
-      assert (myStrategy.findBestEV(theRules, aState) < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.097472);
-      assert (myStrategy.findBestEV(theRules, aState) > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.097472);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 + Constants.FIVE_PERCENT_ERROR) * 0.097472);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 - Constants.FIVE_PERCENT_ERROR) * 0.097472);
 
       aState = new State(new Card(Suit.CLUBS, CardValue.FOUR),
               new Card(Suit.CLUBS, CardValue.FOUR),
               new Card(Suit.CLUBS, CardValue.SIX));
-      assert (myStrategy.findBestEV(theRules, aState) < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.199142);
-      assert (myStrategy.findBestEV(theRules, aState) > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.199142);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 + Constants.FIVE_PERCENT_ERROR) * 0.199142);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 - Constants.FIVE_PERCENT_ERROR) * 0.199142);
 
       aState = new State(new Card(Suit.CLUBS, CardValue.NINE),
               new Card(Suit.CLUBS, CardValue.NINE),
               new Card(Suit.CLUBS, CardValue.SIX));
-      assert (myStrategy.findBestEV(theRules, aState) < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.44897);
-      assert (myStrategy.findBestEV(theRules, aState) > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.44897);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 + Constants.FIVE_PERCENT_ERROR) * 0.44897);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 - Constants.FIVE_PERCENT_ERROR) * 0.44897);
 
       //Now change the rules.
       theRules.myDoubleRules.setNotPostSplit(true);
@@ -2524,18 +2524,18 @@ static public void testResplitEVs() {
       aState = new State(new Card(Suit.CLUBS, CardValue.SEVEN),
               new Card(Suit.CLUBS, CardValue.SEVEN),
               new Card(Suit.CLUBS, CardValue.TWO));
-      assert (myStrategy.findBestEV(theRules, aState) > (1 + Blackjack.FIVE_PERCENT_ERROR) * -0.179005) : myStrategy.findBestEV(theRules, aState);
-      assert (myStrategy.findBestEV(theRules, aState) < (1 - Blackjack.FIVE_PERCENT_ERROR) * -0.179005);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 + Constants.FIVE_PERCENT_ERROR) * -0.179005) : myStrategy.findBestEV(theRules, aState);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 - Constants.FIVE_PERCENT_ERROR) * -0.179005);
 
       aState = new State(new Card(Suit.CLUBS, CardValue.EIGHT),
               new Card(Suit.CLUBS, CardValue.EIGHT),
               new Card(Suit.CLUBS, CardValue.TWO));
       value = myStrategy.findBestEV(theRules, aState);
 
-      assert (value < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.01726) :
+      assert (value < (1 + Constants.FIVE_PERCENT_ERROR) * 0.01726) :
               value + " for best action: " + myStrategy.findBestAction(theRules, aState);
 
-      assert (value > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.01726) : value + " for best action: "
+      assert (value > (1 - Constants.FIVE_PERCENT_ERROR) * 0.01726) : value + " for best action: "
               + myStrategy.findBestAction(theRules, aState);
       // These two numbers are from http://www.bjstrat.net/cgi-bin/cdca.cgi
       //
@@ -2544,14 +2544,14 @@ static public void testResplitEVs() {
       aState = new State(new Card(Suit.CLUBS, CardValue.THREE),
               new Card(Suit.CLUBS, CardValue.THREE),
               new Card(Suit.CLUBS, CardValue.SIX));
-      assert (myStrategy.findBestEV(theRules, aState) < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.0905487);
-      assert (myStrategy.findBestEV(theRules, aState) > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.0905487);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 + Constants.FIVE_PERCENT_ERROR) * 0.0905487);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 - Constants.FIVE_PERCENT_ERROR) * 0.0905487);
 
       aState = new State(new Card(Suit.CLUBS, CardValue.NINE),
               new Card(Suit.CLUBS, CardValue.NINE),
               new Card(Suit.CLUBS, CardValue.SIX));
-      assert (myStrategy.findBestEV(theRules, aState) < (1 + Blackjack.FIVE_PERCENT_ERROR) * 0.389554);
-      assert (myStrategy.findBestEV(theRules, aState) > (1 - Blackjack.FIVE_PERCENT_ERROR) * 0.389554);
+      assert (myStrategy.findBestEV(theRules, aState) < (1 + Constants.FIVE_PERCENT_ERROR) * 0.389554);
+      assert (myStrategy.findBestEV(theRules, aState) > (1 - Constants.FIVE_PERCENT_ERROR) * 0.389554);
 
 
 
@@ -2718,8 +2718,8 @@ static public void testDealerHCP() {
    State solvedState =
            Testers.testPlayerRecursive(DCard, firstPCard, secondPCard, theRules, myShoe, false);
    assert (solvedState.getPreferredAction() == Action.DOUBLE) : "Correct action not picked";
-   assert ((solvedState.getExpectedValue() < 0.18192 + Blackjack.EPSILON)
-           && (solvedState.getExpectedValue() > 0.18192 - Blackjack.EPSILON)) :
+   assert ((solvedState.getExpectedValue() < 0.18192 + Constants.EPSILON)
+           && (solvedState.getExpectedValue() > 0.18192 - Constants.EPSILON)) :
            "Expected value not calculated correctly for player 9-2 vs. dealer Ace:"
            + solvedState.getExpectedValue();
 
@@ -3278,7 +3278,7 @@ private static void wrapperCheckTotalEV(double expectedEV, Rules theRules,
       if (verbosity) {
          NumberFormat s = new DecimalFormat();
          s.setMaximumFractionDigits(6);
-         Blackjack.printCacheStatus();
+         DealerCache.printCacheStatus();
          System.out.println("House edge: " + s.format(totalEV) + " calculated and " + s.format(expectedEV) + " expected (" + s.format(100 * Math.abs(totalEV - expectedEV) / Math.min(totalEV, expectedEV)) + "% error) for these rules:" + theRules);
          System.out.println("This test took " + (System.currentTimeMillis() - initial) + " ms.");
          System.out.println("--------------------------------------------------");
@@ -3295,12 +3295,12 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
    final boolean percentErrorPass;
    final boolean testPass;
    if (expectedHouseEdge > 0) {
-      percentErrorPass = ((totalEV < expectedHouseEdge * (1 + Blackjack.FIVE_PERCENT_ERROR)) && (totalEV > expectedHouseEdge * (1 - Blackjack.FIVE_PERCENT_ERROR)));
-      testPass = (percentErrorPass || ((totalEV < expectedHouseEdge + Blackjack.MAXIMUM_ABSOLUTE_ERROR) && (totalEV > expectedHouseEdge - Blackjack.MAXIMUM_ABSOLUTE_ERROR)));
+      percentErrorPass = ((totalEV < expectedHouseEdge * (1 + Constants.FIVE_PERCENT_ERROR)) && (totalEV > expectedHouseEdge * (1 - Constants.FIVE_PERCENT_ERROR)));
+      testPass = (percentErrorPass || ((totalEV < expectedHouseEdge + Constants.MAXIMUM_ABSOLUTE_ERROR) && (totalEV > expectedHouseEdge - Constants.MAXIMUM_ABSOLUTE_ERROR)));
    }
    else {
-      percentErrorPass = ((-1 * totalEV < -1 * expectedHouseEdge * (1 + Blackjack.FIVE_PERCENT_ERROR)) && (-1 * totalEV > -1 * expectedHouseEdge * (1 - Blackjack.FIVE_PERCENT_ERROR)));
-      testPass = (percentErrorPass || ((-1 * totalEV < -1 * expectedHouseEdge + Blackjack.MAXIMUM_ABSOLUTE_ERROR) && (-1 * totalEV > -1 * expectedHouseEdge - Blackjack.MAXIMUM_ABSOLUTE_ERROR)));
+      percentErrorPass = ((-1 * totalEV < -1 * expectedHouseEdge * (1 + Constants.FIVE_PERCENT_ERROR)) && (-1 * totalEV > -1 * expectedHouseEdge * (1 - Constants.FIVE_PERCENT_ERROR)));
+      testPass = (percentErrorPass || ((-1 * totalEV < -1 * expectedHouseEdge + Constants.MAXIMUM_ABSOLUTE_ERROR) && (-1 * totalEV > -1 * expectedHouseEdge - Constants.MAXIMUM_ABSOLUTE_ERROR)));
    }
    if (!testPass) {
 
@@ -3341,25 +3341,25 @@ static public void doAll(boolean verbosity, boolean savingStatus) {
    totalEVOneDeckStand17NoHole(verbosity);
 
    //Miscellaneous
-   Blackjack.clearCache();
+   DealerCache.clearCache();
    if (verbosity) {
       System.out.println("All single deck tests passed.");
    }
-   Blackjack.clearCache();
+   DealerCache.clearCache();
 
 
    totalEVTwoDeckHit17HoleCard(verbosity);
    if (verbosity) {
       System.out.println("All double deck tests passed.");
    }
-   Blackjack.clearCache();
+   DealerCache.clearCache();
 
    totalEVFourDeckStand17NoHole(verbosity);
    totalEVFourDeckStand17HoleCard(verbosity);
    if (verbosity) {
       System.out.println("All four deck tests passed.");
    }
-   Blackjack.clearCache();
+   DealerCache.clearCache();
 
 
 
@@ -3367,7 +3367,7 @@ static public void doAll(boolean verbosity, boolean savingStatus) {
    if (verbosity) {
       System.out.println("All eight deck tests passed.");
    }
-   Blackjack.clearCache();
+   DealerCache.clearCache();
 
    //need a stand-hole and a hit no-hole
    //10-14 check resplits

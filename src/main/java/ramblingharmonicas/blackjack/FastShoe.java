@@ -527,7 +527,7 @@ double[] getDealerHCP(int dealerUpCardIndex) {
             assert false : "Card marked as being possible to draw when it's not: cardindex " + i;
          }
       }
-      assert (sum < (1 + Blackjack.EPSILON)) && (sum > 1 - Blackjack.EPSILON);
+      assert (sum < (1 + Constants.EPSILON)) && (sum > 1 - Constants.EPSILON);
    }
 
 

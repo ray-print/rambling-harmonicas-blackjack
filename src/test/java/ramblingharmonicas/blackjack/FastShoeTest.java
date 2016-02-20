@@ -86,11 +86,11 @@ public class FastShoeTest {
 		      if (cv == CardValue.TEN) {
 		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
 		        		 aShoe.fastProbabilityOf(Blackjack.TENCARD),
-		        		 Blackjack.SMALLEST_EPSILON);
+		        		 Constants.SMALLEST_EPSILON);
 		         break;
 		      }
 		      assertEquals ( (4D * numDecks) / numberCards, aShoe.fastProbabilityOf(cv),
-		    		  Blackjack.SMALLEST_EPSILON); 
+		    		  Constants.SMALLEST_EPSILON); 
 		   }
 	}
 	
@@ -99,11 +99,11 @@ public class FastShoeTest {
 		for (CardValue cv : CardValue.twoToTen) {
 			if (cv != CardValue.TEN) {
 				assertEquals ( 4D / (52D - 16D), aShoe.probabilityOfExcluding(cv,
-	                 CardValue.TEN), Blackjack.SMALLEST_EPSILON); 
+	                 CardValue.TEN), Constants.SMALLEST_EPSILON); 
 	        } 
 			else {
 	        	assertEquals ( 16D / (52D - 4D), aShoe.probabilityOfExcluding(cv, 
-	        		CardValue.ACE), Blackjack.SMALLEST_EPSILON);
+	        		CardValue.ACE), Constants.SMALLEST_EPSILON);
 	        }
 		}
 	}
@@ -134,7 +134,7 @@ public class FastShoeTest {
 	      }
 	      expectedProbability = (startingCards * (startingCards -1) * (startingCards -2) 
 	              / ((totalCards) * (totalCards - 1D) * (totalCards - 2D)));
-	      assertEquals(expectedProbability, probability, Blackjack.SMALLEST_EPSILON);
+	      assertEquals(expectedProbability, probability, Constants.SMALLEST_EPSILON);
 	   }
 	}
 
@@ -142,11 +142,11 @@ public class FastShoeTest {
 	public void testProbOfExcluding() {
 		for (int card : aceToEight) {
 			assertEquals(0.08333333, aShoe.fastProbOfExcluding(card,  card+1),
-					Blackjack.SMALLEST_EPSILON);
+					Constants.SMALLEST_EPSILON);
 		}
 		for (int card : aceToNine) {
 			assertEquals(0.11111111, aShoe.fastProbOfExcluding(card,  Blackjack.TENCARD), 
-					Blackjack.SMALLEST_EPSILON);
+					Constants.SMALLEST_EPSILON);
 		}
 	}
 	
