@@ -2221,7 +2221,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
    for (int i = 0; i < 1000; i++) {
 
       drawnCard = myShoe.drawAppropriate(DrawMode.ALL_HARD, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.ALL_HARD, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_HARD, drawnCard);
       if ((drawnCard.getCardValue() == CardValue.ACE)
               || (secondDrawnCard.getCardValue() == CardValue.ACE)) {
          throw new RuntimeException("drawAppropriate drew the wrong card.");
@@ -2232,7 +2232,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
       //Strategy.GameMode.ALL_HARD
 
       drawnCard = myShoe.drawAppropriate(DrawMode.HARD_12_16, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.HARD_12_16, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.HARD_12_16, drawnCard);
       if ((drawnCard.getCardValue() == CardValue.ACE)
               || (secondDrawnCard.getCardValue() == CardValue.ACE)) {
          throw new RuntimeException("drawAppropriate drew an ace on Shoe.HARD_TOTAL_12_16.");
@@ -2247,7 +2247,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
 
 
       drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SOFT, drawnCard);
       if ((drawnCard.getCardValue() != CardValue.ACE)
               && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
          throw new RuntimeException("Ace not drawn to soft hand in drawAppropriate.");
@@ -2256,7 +2256,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
       myShoe.addCard(drawnCard);
 
       drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT_AND_HARD, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT_AND_HARD, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SOFT_AND_HARD, drawnCard);
       if (drawnCard.value() == secondDrawnCard.value()) {
          throw new RuntimeException(
                  "The same two CVs were drawn in drawAppropiate to DrawMode.ALL_SOFT_AND_HARD:"
@@ -2266,7 +2266,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
       myShoe.addCard(drawnCard);
 
       drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SPLITS, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.ALL_SPLITS, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SPLITS, drawnCard);
       if (drawnCard.value() != secondDrawnCard.value()) {
          throw new RuntimeException("Split cards not of identical value in drawAppropriate:"
                  + drawnCard.toString() + " and " + secondDrawnCard.toString());
@@ -2276,7 +2276,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
 
 
       drawnCard = myShoe.drawAppropriate(DrawMode.SOFT_OVER_16, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.SOFT_OVER_16, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.SOFT_OVER_16, drawnCard);
       if ((drawnCard.getCardValue() != CardValue.ACE) && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
          throw new RuntimeException("SOFT_OVER_16 did not return an Ace in drawAppropriates:"
                  + drawnCard.toString() + " and " + secondDrawnCard.toString());
@@ -2292,7 +2292,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
       myShoe.addCard(drawnCard);
 
       drawnCard = myShoe.drawAppropriate(DrawMode.SOFT_UNDER_16, true, theRules);
-      secondDrawnCard = myShoe.drawAppropriate(DrawMode.SOFT_UNDER_16, drawnCard);
+      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.SOFT_UNDER_16, drawnCard);
       if ((drawnCard.getCardValue() != CardValue.ACE) && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
          throw new RuntimeException("SOFT_UNDER_16 did not return an Ace in drawAppropriates:"
                  + drawnCard.toString() + " and " + secondDrawnCard.toString());
@@ -2309,13 +2309,13 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
 
       /* MOTHBALLED
 
-       drawnCard = myShoe.drawAppropriate(Shoe.HAND_TOTAL_UNDER_9, true,theRules );
+       drawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_9, true,theRules );
        if ( (drawnCard.value() < 2) || (drawnCard.value() > 6) )
-       throw new RuntimeException("drawAppropriate draw a " + drawnCard.toString() + ", not 2-7.");
+       throw new RuntimeException("drawSecondPlayerCard draw a " + drawnCard.toString() + ", not 2-7.");
 
-       secondDrawnCard = myShoe.drawAppropriate(Shoe.HAND_TOTAL_UNDER_9, drawnCard);
+       secondDrawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_9, drawnCard);
        if ( (secondDrawnCard.value() < 2) || (secondDrawnCard.value() > 6) )
-       throw new RuntimeException("drawAppropriate(2-args) draw a " + drawnCard.toString() + ", not 2-7.");
+       throw new RuntimeException("drawSecondPlayerCard(2-args) draw a " + drawnCard.toString() + ", not 2-7.");
 
        if  (  (drawnCard.value() + secondDrawnCard.value() ) > 8)
        throw new RuntimeException("Hand total wrong on Shoe.HAND_TOTAL_UNDER_9: " +
@@ -2345,13 +2345,13 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
       /*
 
 
-       drawnCard = myShoe.drawAppropriate(Shoe.HAND_TOTAL_UNDER_12, true,theRules );
+       drawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_12, true,theRules );
        if ( (drawnCard.value() < 2) || (drawnCard.value() > 9) )
-       throw new RuntimeException("drawAppropriate draw a " + drawnCard.toString() + ", not 2-9.");
-       secondDrawnCard = myShoe.drawAppropriate(Shoe.HAND_TOTAL_UNDER_12, drawnCard);
+       throw new RuntimeException("drawSecondPlayerCard draw a " + drawnCard.toString() + ", not 2-9.");
+       secondDrawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_12, drawnCard);
        if ( (secondDrawnCard.value() < 2) || (secondDrawnCard.value() > 9) )
        {
-       throw new RuntimeException("drawAppropriate(2-args) draw a " + secondDrawnCard.toString() + ", of value "
+       throw new RuntimeException("drawSecondPlayerCard(2-args) draw a " + secondDrawnCard.toString() + ", of value "
        + secondDrawnCard.value() + "; not of value 2-9.");
        }
        if  (  (drawnCard.value() + secondDrawnCard.value() ) >= 12)

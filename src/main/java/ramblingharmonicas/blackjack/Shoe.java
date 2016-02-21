@@ -5,10 +5,7 @@ import java.security.SecureRandom;
 
 /**
  * Contains all cards in a dealing shoe.
- *
- *
- * Future development: I can draw a random card; I can reset it to whatever I
- * want.
+ * 
  */
 public class Shoe implements VagueShoe {
 private ArrayList<Card> myCards = new ArrayList<Card>();
@@ -16,10 +13,6 @@ private int[] cardValueCache = new int[11];
 private int totalCards;
 /**
  * This random number generator is overkill; change it if it's going too slow.
- * Alternately, create another thread whose sole job is to generate random
- * numbers,
- * then use a synchronized queue. That'd be cool!
- * Appears to fail miserably on an Android.
  */
 private SecureRandom generator = new SecureRandom();
 
@@ -29,12 +22,6 @@ public int numberOfCards() {
 
 }
 
-/**
- * Constructs a shoe with the specified number of decks.
- * For example, Shoe(2) would create a new shoe with 2 decks.
- *
- *
- */
 public Shoe(int numberOfDecks) {
    initializeAll(numberOfDecks);
 }
@@ -59,33 +46,20 @@ private void initializeAll(int numberOfDecks) {
 
 }
 
-/**
- * UNTESTED
- *
- *
- * @return a deep clone of the Shoe.
- */
+//TODO: Test this function
 public Shoe deepClone() {
-
    Card[] myArray = myCards.toArray(new Card[myCards.size()]);
    Shoe myClone = new Shoe(myArray, this.cardValueCache, this.totalCards);
-
    return myClone;
-
 }
 
 /**
  * Constructs shoe from array of Cards
- * UNTESTED. Used by deepclone.
- * MAY NOT CORRECTLY COPY cardValueCache -- depends on how Java stores arrays.
- *
- * @param cardArray
  */
-private Shoe(Card[] cardArray, int[] cardValCache, int totalCards) {//super(cardValCache);
+private Shoe(Card[] cardArray, int[] cardValCache, int totalCards) {
    myCards.addAll(Arrays.asList(cardArray));
    this.totalCards = totalCards;
    System.arraycopy(cardValCache, 0, this.cardValueCache, 0, cardValCache.length);
-
 }
 
 @Override
@@ -93,27 +67,21 @@ public String toString() {
    StringBuilder s = new StringBuilder();
    s.append("The shoe contains a/an: ");
    for (int i = 0; i < totalCards; i++) {
-      s.append(myCards.get(i).getCardValue()).append(" of ").append(myCards.get(i).getSuit());
-
+      s.append(myCards.get(i).getCardValue()).append(" of ")
+              .append(myCards.get(i).getSuit()).append("; ");
    }
    s.append("for a total of ").append(totalCards).append(" cards.");
    return s.toString();
 }
 
-@Override
-public void printContents() {
-   System.out.println(this);
-
-}
-
 /**
+ * TODO: Use FastShoe throughout for calculation, then deprecate this.
  * Uses caching to (hopefully) speed up this process.
  * Tested in FastShoe for 13 cards, values all correct. Untested in Shoe
  *
  * @param thisCard
  * @return The probability of drawing this CardValue. Returns a negative number
- * if no cards
- * with that CardValue are in the shoe.
+ * if no cards with that CardValue are in the shoe.
  */
 @Override
 public double fastProbabilityOf(final CardValue thisCard) {
@@ -127,39 +95,21 @@ public double fastProbabilityOf(final CardValue thisCard) {
 }
 
 /**
- *
- *
- * @param thisCard
- * @return
- */
-public double fastProbabilityOf(final Card thisCard) {
-   if (totalCards == 0) {
-      return -100000;
-   }
-   else if (cardValueCache[ thisCard.value()] == 0) {
-      return -100000;
-   }
-
-   //Java requires explicit upcasting.
-   return ((double) (cardValueCache[ thisCard.value()]) / ((double) totalCards));
-}
-
-/**
  * Pulls from the deck a semi-random card matching this CardValue; tens, jacks,
  * queens and kings are indistinguishable.
  *
  * @return Returns the card drawn.
- * @exception throws an IllegalArgumentException if there are no cards in the
- * shoe or
- * no cards of the specified value in the shoe. Use probabilityOf first to
- * check for these possibilities.
+ * @exception ShuffleNeededException if there are no cards in the
+ * shoe or no cards of the specified value in the shoe. To avoid this, you can
+ * use probabilityOf first to check that the card exists, and shuffle the deck.
  *
  * Untested.
  * @args CardValue thisCard is the value of card to be pulled
  */
 public Card drawSpecific(final CardValue thisCard) throws ShuffleNeededException {
    if (myCards.isEmpty()) {
-      throw new ShuffleNeededException("Shoe.drawSpecific(CardValue) called with no cards left in the shoe.");
+      throw new ShuffleNeededException("Shoe.drawSpecific(CardValue) called "
+              + "with no cards left in the shoe.");
    }
    //locate all cards that match that value, pick one of them, if one of them exists.
    int i;
@@ -171,48 +121,33 @@ public Card drawSpecific(final CardValue thisCard) throws ShuffleNeededException
    }
 
    if (locations.isEmpty()) {
-      throw new ShuffleNeededException("Shoe.drawSpecific(CardValue) called for a CardValue not present"
-              + " in the shoe.");
+      throw new ShuffleNeededException("Shoe.drawSpecific(CardValue) called "
+              + "for a CardValue not present in the shoe.");
    }
 
-   //pick random number between 0 and locations.size() - 1. Use it to select an index
+   //pick random number between 0 and locations.size() - 1. Use it to select an 
+   // index
    // in the locations array. Pick that element of the array, and draw that card.
-   // int randomIndex = generator.nextInt(locations.size());
-   // int cardRemovedLocation = locations.get(randomIndex);
-   // System.out.println ("For card value " + thisCard + ", cardRemovedLocation is " + cardRemovedLocation);
-   // myCards.remove (cardRemovedLocation);  (this is identical to the below line.)
 
-
-   Card pulledCard = myCards.get((int) locations.get(generator.nextInt(locations.size())));
-   myCards.remove(pulledCard/* (int) locations.get(generator.nextInt(locations.size())) */);
+   Card pulledCard = myCards.get((int) 
+           locations.get(generator.nextInt(locations.size())));
+   myCards.remove(pulledCard);
    cardValueCache[(thisCard.value())]--;
    totalCards--;
    return pulledCard;
-
 }
 
-/**
- * UNTESTED.
- *
- *
+/** TODO: Add test
  * @return A random card from this Shoe, which has been pulled from the Shoe.
  */
-public Card drawRandom() { //OK. This exception is way too much of a pain to deal with.
+public Card drawRandom() throws ShuffleNeededException{
    if (totalCards == 0) {
-      ShuffleNeededException sne = new ShuffleNeededException("No cards left in shoe.");
-      if (Blackjack.debug()) {
-         throw new RuntimeException(sne);
-      }
-      sne.printStackTrace();
-      //OR just reinitialize????
-      return null; //Probably will cause a NPE later.
+      throw new ShuffleNeededException("No cards left in shoe.");
    }
    final int index = (int) (generator.nextDouble() * (double) myCards.size());
    //As long as Java always rounds down when typecasting, I'm good.
    Card pulledCard = myCards.get(index);
-   // I assume it doesn't matter that the deck is always in perfect order.
    myCards.remove(index);
-   //does myCard still exist?
    cardValueCache[(pulledCard.value())]--;
 
    totalCards--;
@@ -220,7 +155,7 @@ public Card drawRandom() { //OK. This exception is way too much of a pain to dea
 }
 
 /**
- * This function is untested.
+ * TODO: Add test
  *
  * @param excluded
  * @return
@@ -254,10 +189,10 @@ private Card drawAllExcept(CardValue... excluded) throws ShuffleNeededException 
 }
 
 /**
- ** Draws the first card for the player if player is set to true, otherwise
+ * Draws the first card for the player if player is set to true, otherwise
  * draws the dealer card.
+ * 
  * Auto-shuffles as needed.
- *
  *
  * @param myMode current DrawMode
  * See the DrawMode class for more information on what the DrawModes mean.
@@ -268,14 +203,19 @@ private Card drawAllExcept(CardValue... excluded) throws ShuffleNeededException 
  *
  * @throws ShuffleNeededException if a valid card is not in the shoe
  *
- * See other function for list of untested, unimplemented, and mothballed.
+ * TODO: Add tests for:
+ * ALL_SOFT_AND_HARD(8);
+ * SOFT_UNDER_16(5),
+ * SOFT_OVER_16(6),
+ * DEALER_2_6
+ * DEALER_7_A
  */
-public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules) throws ShuffleNeededException {
+public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules) 
+        throws ShuffleNeededException {
    if (!player) {
       switch (myMode) {
          case DEALER_2_6:
             return drawBetween(Blackjack.TWOCARD + 1, Blackjack.SIXCARD + 1);
-
          case DEALER_7_A:
             double sum = 0;
             final double relativeProbOfAce;
@@ -283,7 +223,8 @@ public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules) thr
                sum += cardValueCache[i];
             }
             if (sum != 0) {
-               relativeProbOfAce = ((double) cardValueCache[Blackjack.ACECARD + 1]) / sum;
+               relativeProbOfAce = ((double)
+                       cardValueCache[Blackjack.ACECARD + 1]) / sum;
             }
             else {
                relativeProbOfAce = 1;
@@ -299,7 +240,8 @@ public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules) thr
             return drawRandom();
 
          default:
-            throw new UnsupportedOperationException("This DrawMode not supported for the dealer: " + myMode.toString());
+            throw new UnsupportedOperationException("This DrawMode not "
+                    + "supported for the dealer: " + myMode.toString());
       }
    }
 
@@ -312,50 +254,34 @@ public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules) thr
       case HARD_12_16:
          //Any non-ace card
          return drawBetween(Blackjack.TWOCARD + 1, Blackjack.TENCARD + 1);
-
       case ALL_SOFT:
          if (cardValueCache[Blackjack.ACECARD + 1] == 0) {
-            throw new ShuffleNeededException("No aces left -- can't draw a soft hand.");
+            throw new ShuffleNeededException("No aces left -- "
+                    + "can't draw a soft hand.");
          }
          return drawBetween(Blackjack.TWOCARD + 1, Blackjack.TENCARD + 1);
-
-
       case HARD_UNDER_12: // A card between 2 and 9.
          return drawBetween(Blackjack.TWOCARD + 1, Blackjack.NINECARD + 1);
       case SOFT_UNDER_16:
          return drawBetween(Blackjack.TWOCARD + 1, Blackjack.FIVECARD + 1);
       case SOFT_OVER_16:
          return drawBetween(Blackjack.SIXCARD + 1, Blackjack.TENCARD + 1);
-      // MOTHBALLED
-         /*
-
-
-
-       case HAND_TOTAL_UNDER_9: //pull 2-6.
-       return drawBetween(Blackjack.TWOCARD +1, Blackjack.SIXCARD +1);
-       */
-
       default:
          throw new UnsupportedOperationException(myMode.toString());
    }
-
-
-
 }
 
 /**
  * Draws a card between the low card value (Ace = 1) and the high card value
  * (10),
  * inclusive; does this by randomly picking cards until the right one is found.
- * MAKE ME PRIVATE AFTER TESTING
  *
- * @param lowCardValue
- * @param highCardValue
  * @return
  * @throws ShuffleNeededException, IllegalArgumentException
  *
  */
-private Card drawBetween(final int lowCardValue, final int highCardValue) throws ShuffleNeededException { //Check possibility
+private Card drawBetween(final int lowCardValue, final int highCardValue) 
+        throws ShuffleNeededException {
    if (lowCardValue > highCardValue) {
       throw new IllegalArgumentException();
    }
@@ -370,58 +296,45 @@ private Card drawBetween(final int lowCardValue, final int highCardValue) throws
    }
 
    if (impossibleDraw) {
-      this.printContents();
-
-      throw new ShuffleNeededException("There are no cards between value " + lowCardValue
+      System.out.println(this);
+      throw new ShuffleNeededException
+              ("There are no cards between value " + lowCardValue
               + "and " + highCardValue + " left in the shoe.");
    }
 
 
    if (lowCardValue == highCardValue) {
       return drawSpecific(CardValue.cardValueFromInt(lowCardValue));
-
    }
 
    boolean badPull = true;
    Card pulledCard = null;
    while (badPull) {
       pulledCard = drawRandom();
-      if ((pulledCard.value() < lowCardValue) || (pulledCard.value() > highCardValue)) {
+      if ((pulledCard.value() < lowCardValue) ||
+              (pulledCard.value() > highCardValue)) {
          this.addCard(pulledCard);    //Add the card back to the deck
       }
       else {
          badPull = false;
       }
    }
-   if (pulledCard == null) {
-      throw new NullPointerException();
-   }
-
    return pulledCard;
 }
 
-/**
- * Use me sparingly.
- *
- * @param numberOfDecks
- *
- */
-public void reshuffle(int numberOfDecks) {
+public void shuffle(int numberOfDecks) {
    Utilities.zero(cardValueCache);
    myCards.clear();
    totalCards = 0;
    initializeAll(numberOfDecks);
-
 }
 
 /**
  * 
  * If the GameMode is not set to free play, then shuffle after every hand.
- * ONLY CALL THIS FUNCTION AFTER FIRST CALLING THE OTHER DRAW-APP
- * FUNCTION; pass the drawn Card as an argument here. Otherwise it
- * won't work.
- *
- *
+ * This should only be called after drawing the first player card with 
+ * Shoe.drawAppropriate; pass the drawn Card as an argument here.
+ * 
  * @param cardPullCode
  * @param previouslyDrawnCard
  * @return
@@ -429,17 +342,13 @@ public void reshuffle(int numberOfDecks) {
  *
  * Untested -- ALL_SOFT_AND_HARD
  * Not implemented -- Soft under 16, soft over 16
- * Mothballed -- 2-6, 7-A, Hand total under 9.
  */
-public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws ShuffleNeededException {
-   Card drawnCard = null;
+public Card drawSecondPlayerCard(DrawMode myMode, Card previouslyDrawnCard) 
+        throws ShuffleNeededException {
    int maxValue, minValue;
-   boolean flag = false;
-   int errorCondition = 0;
    switch (myMode) {
       case ALL_HARD:
          return drawAllExcept(CardValue.ACE, previouslyDrawnCard.getCardValue());
-
       case HARD_12_16:
          maxValue = 16 - previouslyDrawnCard.value();
          if (maxValue > 10) {
@@ -447,13 +356,11 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
          }
          minValue = 12 - previouslyDrawnCard.value();
          if ((minValue > 10) || (minValue < 2)) {
-            System.out.println("Draw appropriate called with "
-                    + "bad card argument or pull code: an ace can't be drawn to a hard hand.");
-            assert (false);
-            minValue = 10;
+            throw new IllegalArgumentException("Draw appropriate called with "
+            + "bad card argument or pull code: an ace can't be drawn to a "
+                    + "hard hand.");
          }
          return drawBetween(minValue, maxValue);
-
       case SOFT_OVER_16:
       case SOFT_UNDER_16:
       case ALL_SOFT:
@@ -465,34 +372,15 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
          return drawSpecific(previouslyDrawnCard.getCardValue());
       case FREE_PLAY:
          return drawRandom();
-
       case HARD_UNDER_12: // First card was between 2 and 9.
          maxValue = 11 - previouslyDrawnCard.value();
          if (maxValue > 10) {
-            System.out.println("drawAppropriate(int,Card) called with invalid card.");
-            assert (false);
-            maxValue = 10;
+            throw new IllegalArgumentException("drawAppropriate(int,Card) "
+                    + "called with invalid card: " + previouslyDrawnCard);
          }
          return drawBetween(Blackjack.TWOCARD + 1, maxValue);
       case ALL_SOFT_AND_HARD:
-         //Anything but splits. UNTESTED
          return drawAllExcept(previouslyDrawnCard.getCardValue());
-      /* MOTHBALLED
-       case DEALER_2_6: //pull 2-6. Other card irrelevant.
-       return drawAppropriate (BETWEEN_2_AND_6);
-       case DEALER_7_A: //pull 7-A. Other card irrelevant.
-       return drawAppropriate (BETWEEN_7_AND_A);
-
-       case HAND_TOTAL_UNDER_9: //First card was a pull between 2-7.
-       maxValue = 8 - previouslyDrawnCard.value();
-       if (maxValue <= 1)
-       {
-       System.out.println("drawAppropriate(int,Card) called with invalid card.");
-       assert(false);
-       maxValue = 2;
-       }
-       return drawBetween(Blackjack.TWOCARD +1, maxValue);
-       */
       default:
          throw new UnsupportedOperationException(myMode.toString());
    }
@@ -501,18 +389,15 @@ public Card drawAppropriate(DrawMode myMode, Card previouslyDrawnCard) throws Sh
 /**
  * Draws first card in shoe of specified value. About seven times faster than
  * drawSpecific.
- *
  */
 @Override
 public Card fastDrawSpecific(final CardValue thisCard) {
    if (myCards.isEmpty()) {
-      throw new RuntimeException("Shoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
+      throw new ShuffleNeededException("Shoe.fastDrawSpecific(CardValue) "
+              + "called with no cards left in the shoe.");
    }
-   //locate all cards that match that value, pick one of them, if one of them exists.
+   //locate all cards that match that value, pick one of them, if one exists.
    int i;
-   //      ArrayList<Integer> locations = new ArrayList<Integer>();
-
-
    for (i = 0; i < myCards.size(); i++) {
       if (myCards.get(i).value() == thisCard.value()) {
          Card pulledCard = myCards.get(i);
@@ -523,9 +408,8 @@ public Card fastDrawSpecific(final CardValue thisCard) {
 
       }
    }
-   throw new RuntimeException("Shoe.fastdrawSpecific(CardValue) called for a CardValue not present"
-           + " in the shoe.");
-
+   throw new ShuffleNeededException("Shoe.fastdrawSpecific(CardValue) called "
+           + "for a CardValue not present in the shoe.");
 }
 
 /**
@@ -541,7 +425,7 @@ public void addCard(final Card thisCard) {
 }
 
 /**
- * UNTESTED. If arraycopy actually does a deep clone then I should be good.
+ * UNTESTED.
  *
  * @return Contents of the Card Value Cache. Used by FastShoe to make a clone.
  */

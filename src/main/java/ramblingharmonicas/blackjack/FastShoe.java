@@ -92,23 +92,13 @@ public int numberOfCards() {
    return totalCards;
 }
 
-/**
- * Use toString
- *
- * @deprecated
- */
-@Override
-@Deprecated
-public void printContents() {
-   System.out.println(this);
-}
-
 @Override
 public String toString() {
    StringBuilder s = new StringBuilder();
    final String ln = System.getProperty("line.separator");
 
-   s.append("This fast shoe contains a total of ").append(this.numberOfCards()).append(" cards: ").append(ln);
+   s.append("This fast shoe contains a total of ")
+           .append(this.numberOfCards()).append(" cards: ").append(ln);
 
    for (int i = 1; i < cardValueCache.length; i++) {
       s.append(cardValueCache[i]).append(" cards of value ").append(i).append(ln);

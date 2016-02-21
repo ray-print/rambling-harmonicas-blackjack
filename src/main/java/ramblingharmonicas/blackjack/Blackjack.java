@@ -6,9 +6,6 @@ import java.util.*;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import joptsimple.ValueConversionException;
-import joptsimple.ValueConverter;
 import ramblingharmonicas.blackjack.cards.*;
 import ramblingharmonicas.blackjack.rules.Surrender;
 
