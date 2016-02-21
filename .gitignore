@@ -1,6 +1,7 @@
-#Mac
+#Mac / OS
 .DS_Store
 Thumbs.db
+*.swp
 
 #Java
 *.class
@@ -21,8 +22,11 @@ nbactions.xml
 nbbuld/
 nbdist/
 nbproject/*
+.nb-gradle-properties
 !nbproject/project.properties
 !nbporject/project.xml
+/.nb-gradle/profiles/private/
+/.nb-gradle/private/
 
 # Eclipse
 # -------
@@ -33,3 +37,4 @@ nbproject/*
 /subprojects/*/bin
 atlassian-ide-plugin.xml
 /.externalToolBuilders
+
