@@ -506,7 +506,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          System.out.println("StrategyTest.testConsolidateHardAndOmniBus: Here is a rule set, "
                  + " and its total-dependent strategy, which I am testing.");
          System.out.println(someRules);
-         aStrategy.print();
+         aStrategy.print(true);
       }
       someState = new State(CardValue.EIGHT, CardValue.THREE, CardValue.ACE);
       assert (aStrategy.findBestAction(someState) == Action.DOUBLE);    //-> Hit comp-dep
@@ -532,7 +532,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          System.out.println("StrategyTest.testConsolidateHardAndOmniBus: Here is a rule set, "
                  + " and its total-dependent strategy, which I am testing.");
          System.out.println(someRules);
-         aStrategy.print();
+         aStrategy.print(true);
       }
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.SIX);
       assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE); //Hit comp-dep
@@ -669,7 +669,7 @@ private static void testTotalConsolidatedForConsolidation(boolean verbosity,
                        + " hand total is to " + bestAction[handTotal] + ".");
                System.err.println("The dealer has a " + dealerCard + " in hand.");
                System.out.println("Here are my strategy tables:");
-               aStrategy.print();
+               aStrategy.print(true);
                throw new NoRecommendationException();
             }
             if (secondBestAction[handTotal] != scratchSecond) {
@@ -678,7 +678,7 @@ private static void testTotalConsolidatedForConsolidation(boolean verbosity,
                        + scratchSecond + ". However, the recommended action in another state with the same"
                        + " hand total is to " + secondBestAction[handTotal] + ".");
                System.out.println("Here are my strategy tables:");
-               aStrategy.print();
+               aStrategy.print(true);
                System.err.println("The dealer has a " + dealerCard + " in hand.");
                throw new NoRecommendationException();
 
@@ -849,7 +849,7 @@ private static void testOneSolvedStrategy(CardValue dealerCard,
          System.err.println("I chose to surrender when the dealer had less than an 8 up.");
          System.err.println(theAnswer);
          State.printStateStatus(myState, "");
-         aStrategy.print();
+         aStrategy.print(true);
          //re.printStackTrace(); No need, it'll never be caught.
          throw new NoRecommendationException();
 
@@ -3311,7 +3311,7 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
       }
       catch (Exception e) {
       }
-      myStrats.print();
+      myStrats.print(true);
       try {
          Thread.sleep(100);
       }
@@ -3321,7 +3321,7 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
    }
    if (!percentErrorPass && verbosity) {
       System.out.println("Off by more than 5 % on this test. Split strategy table: ");
-      myStrats.print();
+      myStrats.print(true);
    }
    return percentErrorPass;
 }

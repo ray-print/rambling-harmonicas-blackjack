@@ -1060,7 +1060,7 @@ void insideAction(Rules someRules) {
             System.err.println("I did not solve and store successfully. Throwing exception.");
             System.err.println("Here is the failed Rule set: " + theRulesAfterToggles.toString());
             System.err.println("Here is my strategy currently: ");
-            print();
+            print(true);
             saveTotalEVMap();
             throw new RuntimeException();
          }
@@ -1181,6 +1181,9 @@ public void setStrategyType(Skill strategyType) {
    allSolved = false;
 }
 
+public void solve() throws NoRecommendationException, IOException {
+   solve(theRules);
+}   
 /**
  * UNTESTED
  * This function should load the Rules into the strategy.
@@ -3128,7 +3131,7 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
  * TODO: Standardize and note whether dealer A up card expected values include the possibility of
  * dealer blackjack or not.
  */
-public void print() {
+public void print(final boolean showSecondBest) {
    if (!isAllSolved()) {
       System.err.println("This strategy has not been solved yet.");
       return;
@@ -3142,9 +3145,9 @@ public void print() {
    System.out.println(theRules); //TODO: Create a prettier version of toString and use that
 
    StringBuilder sb = new StringBuilder();
-   sb.append(getHardTable(true));
-   sb.append(getSoftTable(true));
-   sb.append(getSplitTable(true));
+   sb.append(getHardTable(showSecondBest));
+   sb.append(getSoftTable(showSecondBest));
+   sb.append(getSplitTable(showSecondBest));
    System.out.println(sb);
    if (strategyType != Skill.COMP_DEP) {
 	  // TODO: Figure out how far the program is from solving for total-dependent strategy and arbitrary strategies

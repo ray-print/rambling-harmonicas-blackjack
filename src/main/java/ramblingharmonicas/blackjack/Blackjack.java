@@ -32,22 +32,24 @@ final static int KINGCARD = 9;
 private static boolean DEBUGGING = true;
 
 public static void main (String [] args) throws NoRecommendationException, IOException {
-	Rules theRules = parseArguments(args); 
-	if (theRules == null) {
+	Strategy myStrategy = parseArguments(args); 
+	if (myStrategy == null) {
 	   return;
 	}
 
-	Strategy someStrat = new Strategy(theRules, Strategy.Skill.COMP_DEP);
-	someStrat.solve(theRules);
-	someStrat.print();
+	myStrategy.solve();
+	myStrategy.print(false); 
 }
 
-private static Rules parseArguments(String [] args) {
+private static Strategy parseArguments(String [] args) {
 	OptionParser parser = createOptionsParser();
 	try {
 		Rules theRules = createRules(parser, args);
-		//TODO: have it return a Strategy.
-		return theRules;
+		//TODO: The command line can pass on info about whether
+        //to print the best/second best EV, force calculations or load them, use total-dep strategy,
+        //etc., add that functionality and make a createStrategy function similar to createRules
+       	Strategy someStrat = new Strategy(theRules, Strategy.Skill.COMP_DEP);
+		return someStrat;
 	}
 	catch (OptionException exception) {
 		System.out.println(exception);
