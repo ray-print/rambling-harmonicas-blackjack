@@ -5,6 +5,6 @@ public interface VagueShoe {
 
 void addCard(Card aCard);
 Card fastDrawSpecific(CardValue myCardValue);
-double fastProbabilityOf(CardValue aCardValue);
+double probabilityOf(CardValue aCardValue);
 int numberOfCards();
 }

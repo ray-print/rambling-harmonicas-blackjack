@@ -66,10 +66,10 @@ public class FastShoeTest {
 	@Test
 	public void testProbabilityOf() {
 		for (int card : aceToNine) {
-			assert aShoe.fastProbabilityOf(card) ==
+			assert aShoe.probabilityOf(card) ==
 					(double) (4 * numDecks) / (double) (52 * numDecks);
 		}
-		assert aShoe.fastProbabilityOf(Blackjack.TENCARD) ==
+		assert aShoe.probabilityOf(Blackjack.TENCARD) ==
 					(double) (16 * numDecks) / (double) (52 * numDecks);
 	}
 
@@ -85,11 +85,11 @@ public class FastShoeTest {
 		   for (CardValue cv : CardValue.twoToTen) {
 		      if (cv == CardValue.TEN) {
 		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
-		        		 aShoe.fastProbabilityOf(Blackjack.TENCARD),
+		        		 aShoe.probabilityOf(Blackjack.TENCARD),
 		        		 Constants.SMALLEST_EPSILON);
 		         break;
 		      }
-		      assertEquals ( (4D * numDecks) / numberCards, aShoe.fastProbabilityOf(cv),
+		      assertEquals ( (4D * numDecks) / numberCards, aShoe.probabilityOf(cv),
 		    		  Constants.SMALLEST_EPSILON); 
 		   }
 	}
@@ -116,7 +116,7 @@ public class FastShoeTest {
 		for (int i = 0; i < 4 * numDecks; i++) {
 			aShoe.fasterDrawSpecific(Blackjack.TWOCARD);
 		}
-		assert aShoe.fastProbabilityOf(Blackjack.TWOCARD) < 0;
+		assert aShoe.probabilityOf(Blackjack.TWOCARD) < 0;
 	}
 
 	@Test

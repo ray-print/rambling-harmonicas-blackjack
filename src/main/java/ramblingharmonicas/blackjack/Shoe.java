@@ -84,7 +84,7 @@ public String toString() {
  * if no cards with that CardValue are in the shoe.
  */
 @Override
-public double fastProbabilityOf(final CardValue thisCard) {
+public double probabilityOf(final CardValue thisCard) {
    if (totalCards == 0) {
       return -100000;
    }

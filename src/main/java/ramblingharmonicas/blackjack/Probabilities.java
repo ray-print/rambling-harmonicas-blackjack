@@ -16,7 +16,7 @@ static double largeHandProbability(CardValue dealerCard, int numberOfCards,
         final FastShoe myDeck, final Rules theRules) {
    int cardsInHand = 1;
    ArrayList<Card> myCards = new ArrayList<Card>();
-   final double probabilityInitialCard = myDeck.fastProbabilityOf(dealerCard);
+   final double probabilityInitialCard = myDeck.probabilityOf(dealerCard);
    myDeck.fastDrawSpecific(dealerCard);
    myCards.add(new Card(Suit.CLUBS, dealerCard));
    //System.out.println("The probability of the initial card draw was " + probabilityInitialCard);
@@ -103,7 +103,7 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
 
          i = 0;
          for (CardValue val : oneToTen) {
-            Probabilities[i++] = myDeck.fastProbabilityOf(val);
+            Probabilities[i++] = myDeck.probabilityOf(val);
          }
 
 
@@ -113,7 +113,7 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
 //Regular case: I know nothing about what the next card is, other than that it's random and in the shoe.
       i = 0;
       for (CardValue val : oneToTen) {
-         Probabilities[i++] = myDeck.fastProbabilityOf(val);
+         Probabilities[i++] = myDeck.probabilityOf(val);
       }
    }
 
@@ -266,14 +266,14 @@ static double DealerRecursiveSandBox(final ArrayList<Card> myCards,
       else {
          i = 0;
          for (CardValue val : oneToTen) {
-            Probabilities[i++] = myDeck.fastProbabilityOf(val);
+            Probabilities[i++] = myDeck.probabilityOf(val);
          }
       }
    }
    else {
       i = 0;
       for (CardValue val : oneToTen) {
-         Probabilities[i++] = myDeck.fastProbabilityOf(val);
+         Probabilities[i++] = myDeck.probabilityOf(val);
       }
    }
 
@@ -352,7 +352,7 @@ static void dealerProbabilities(int numberOfDecks) {
 static void testDealerRecursiveSandBox(int numberOfDecks) {
    ArrayList<Card> myCards = new ArrayList<Card>();
    FastShoe myShoe = new FastShoe(numberOfDecks);
-   final double myProb = myShoe.fastProbabilityOf(CardValue.FIVE);
+   final double myProb = myShoe.probabilityOf(CardValue.FIVE);
    Card pulledCard = myShoe.fastDrawSpecific(CardValue.FIVE);
    myCards.add(pulledCard);
    Rules theRules = new Rules();

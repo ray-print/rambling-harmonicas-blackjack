@@ -208,7 +208,7 @@ public static boolean insuranceGoodIdea(VagueShoe myShoe, Rules theRules,
    double probability;
    Card dealerCard = myState.getDealerUpCard();
    if (dealerCard.value() == CardValue.ACE.value()) {
-      probability = myShoe.fastProbabilityOf(CardValue.TEN);
+      probability = myShoe.probabilityOf(CardValue.TEN);
    }
    else {
       throw new IllegalStateException("Insurance with non-ace dealer up cards unsupported.");

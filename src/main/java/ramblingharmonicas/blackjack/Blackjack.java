@@ -626,10 +626,10 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       }
       if (dealerHoleCard) {
          if (dealerCard.value() == CardValue.TEN.value()) {
-            probDealerBJ = myShoe.fastProbabilityOf(CardValue.ACE);
+            probDealerBJ = myShoe.probabilityOf(CardValue.ACE);
          }
          else if (dealerCard.value() == CardValue.ACE.value()) {
-            probDealerBJ = myShoe.fastProbabilityOf(CardValue.TEN);
+            probDealerBJ = myShoe.probabilityOf(CardValue.TEN);
          }
          dealerBJWithHoleCard = new State(myState);
          dealerBJWithHoleCard.setDealerBlackjack(true);
@@ -1307,10 +1307,10 @@ static double splitSolve(Rules theRules, CardValue PCard, CardValue DCard,
    double probDealerBJ;
    if (possibleDealerBJ) {
       if (DCard == CardValue.TEN) {
-         probDealerBJ = myShoe.fastProbabilityOf(CardValue.ACE);
+         probDealerBJ = myShoe.probabilityOf(CardValue.ACE);
       }
       else if (DCard == CardValue.ACE) {
-         probDealerBJ = myShoe.fastProbabilityOf(CardValue.TEN);
+         probDealerBJ = myShoe.probabilityOf(CardValue.TEN);
       }
       else {
          probDealerBJ = -1000;

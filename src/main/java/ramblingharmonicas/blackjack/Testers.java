@@ -1063,25 +1063,25 @@ private static void shoeCopyConstructorTest(int numberDecks) throws ShuffleNeede
    firstShoe.drawSpecific(CardValue.TWO);
    final double numDecks = numberDecks;
 
-   assert (firstShoe.fastProbabilityOf(CardValue.NINE)
+   assert (firstShoe.probabilityOf(CardValue.NINE)
            < ((double) (4D * numDecks) / (double) (52D * numDecks - 4D)) + Constants.EPSILON) :
-           firstShoe.fastProbabilityOf(CardValue.NINE) + " calculated, expected"
+           firstShoe.probabilityOf(CardValue.NINE) + " calculated, expected"
            + (((4D * numDecks) / (52D * numDecks - 4D)) + Constants.EPSILON);
 
 
 
-   assert (firstShoe.fastProbabilityOf(CardValue.ACE)
+   assert (firstShoe.probabilityOf(CardValue.ACE)
            > ((4D * numDecks) / (52D * numDecks - 4D)) - Constants.EPSILON);
 
-   assert (secondShoe.fastProbabilityOf(CardValue.NINE)
+   assert (secondShoe.probabilityOf(CardValue.NINE)
            < ((4D * numDecks - 4D) / (52D * numDecks - 4D) + Constants.EPSILON));
 
    if (numberDecks != 1) {
-      assert (secondShoe.fastProbabilityOf(CardValue.NINE)
+      assert (secondShoe.probabilityOf(CardValue.NINE)
               > ((4D * numDecks - 4D) / (52D * numDecks - 4D) - Constants.EPSILON));
    }
    else {
-      assert (secondShoe.fastProbabilityOf(CardValue.NINE) < 0);
+      assert (secondShoe.probabilityOf(CardValue.NINE) < 0);
    }
 }
 
@@ -1815,7 +1815,7 @@ private static void advancedTestResolveHands() {
 
 
    //OK. To calculate first do insurance:
-   double probOfTen = myShoe.fastProbabilityOf(CardValue.TEN);
+   double probOfTen = myShoe.probabilityOf(CardValue.TEN);
    double calculatedValue = 0;
    calculatedValue = probOfTen * 1 + (1 - probOfTen) * -0.5;
    //System.out.println("Insurance is worth " + calculatedValue);
@@ -2371,7 +2371,7 @@ public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeede
  * more)
  *
  *
- * Tests fastProbabilityOf and drawAppropriates, nothing else.
+ * Tests probabilityOf and drawAppropriates, nothing else.
  *
  */
 public static void testShoe() {
@@ -2381,9 +2381,9 @@ public static void testShoe() {
    assert (cardsInDeck == Deck.numberOfCards());
    final int[] internalCVC = Deck.getCardValueCache();
    for (CardValue i : CardValue.values()) {
-      assert ((Deck.fastProbabilityOf(i)
+      assert ((Deck.probabilityOf(i)
               < ((double) internalCVC[i.value()] / (double) cardsInDeck) + Constants.EPSILON)
-              && (Deck.fastProbabilityOf(i)
+              && (Deck.probabilityOf(i)
               > ((double) internalCVC[i.value()] / (double) cardsInDeck - Constants.EPSILON)));
    }
 

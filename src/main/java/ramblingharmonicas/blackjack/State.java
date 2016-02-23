@@ -10,169 +10,50 @@ import ramblingharmonicas.blackjack.cards.*;
  * is done. (Excluding dealer blackjack in hole-card games, this does not store,
  * track, or solve for the dealer's hand. See the Utilities class for that.)
  * When the dealer's hand has been solved, call State.calculateEV with the
- * correct
- * information, and it will set the expected value for this State.
- * Alternatively,
- * getHandResult can be used to get the per-hand result, when the player has
+ * correct information, and it will set the expected value for this State.
+ * Alternatively, getHandResult can be used to get the per-hand result, when the player has
  * multiple hands.
- *
- *  * For computation, max_number_hands should be 3.
- * When used manually, it should be set higher.
  *
  */
 public class State {
 /**
  * Maximum allowable hands.
- * TODO: Fix this and finish optimization of State.
- * State should have a single variable called optimize. If optimize is true, it should
- * set a variety of options -- specifically, State should use no ArrayLists/enums,
- * switching to plain arrays and constants. Optimize being true should also disable
- * all functions which use those (have them all throw errors). This requires a separate
- * set of functions which take/use arrays and enums.
+ * TODO: Default this to 100 so that clients can use it safely, but make sure that 
+ * usedForCalculation is called before any calculations are done.
  */
 static private int MAX_NUMBER_HANDS = 3;
+
+//TODO: Make these an enum.
 static public final int PUSH = 10;
 static public final int SURRENDER = 11;
 static public final int WIN = 12;
 static public final int LOSE = 13;
 static public final int BLACKJACK = 14;
-static public final int UNBET = 15;
-static public final int SURRENDER_WON_CHIPS = 16;
-static public final int SURRENDER_LOST_CHIPS = 17;
-static public final int INSURANCE_WON = 18;
-static public final int INSURANCE_LOST = 19;
-static public final int SPLIT_BET = 20;
-
 /**
- *
+ * TODO: Finish optimization of State.
+ * If usedForCalculation is true, it should
+ * set a variety of options -- specifically, State should use no ArrayLists/enums,
+ * switching to plain arrays and constants. Optimize being true should also disable
+ * all functions which use those (have them all throw errors). This requires a separate
+ * set of functions which take/use arrays and enums.
  * @param usedForCalculation If true, this sets the max number of hands in
  * State to 3. If false, it sets the max number of hands to 20. Note this is
  * static.
- * It should be set
  */
 public static void usedForCalculation(final boolean usedForCalculation) {
    if (usedForCalculation) {
       MAX_NUMBER_HANDS = 3;
    }
    else {
-      MAX_NUMBER_HANDS = 20;
+      MAX_NUMBER_HANDS = 100;
    }
 }
 
 /**
- * A static toString.
- *
- * @param myState
- * @return String summary of State variables
+ * @deprecated ...what is the point of this function
  */
-private static String getStateString(State myState) {
-   StringBuilder sb = new StringBuilder();
-   String ln = System.getProperty("line.separator");
-   sb.append(ln);
-   ArrayList<ArrayList<Card>> myHands = myState.getMyHands();
-   ArrayList<ArrayList<Action>> myActions = myState.getActions();
-   final int totalNumberOfHands = myState.getTotalHands() + 1;
-   boolean[] busted = myState.areWeBusted();
-   sb.append("I ");
-   if (myState.isInsuranceTaken()) {
-      sb.append("took ");
-   }
-   else {
-      sb.append("did not take ");
-   }
-   sb.append("insurance; I was ");
-   if (myState.isInsuranceAdvised()) {
-      sb.append("advised ");
-   }
-   else {
-      sb.append("not advised ");
-   }
-   sb.append("to do so.").append(ln);
-   sb.append("I am on hand #").append(myState.getCurrentHand()).append(" of ").append(myState.getTotalHands()).append(", with ").append(myState.numberCardsInHand()).append(" cards in hand.").append(ln);
-   if (!myState.isBust()) {
-      sb.append("The current hand is worth ").append(myState.handTotal()).append(ln);
-   }
-   if (myState.isBust()) {
-      sb.append("The current hand is bust.").append(ln);
-   }
-   else {
-      sb.append("The current hand is not bust.").append(ln);
-   }
-   sb.append("The busted array is ").append(State.MAX_NUMBER_HANDS).append(" element(s) long:");
-   for (boolean k : busted) {
-      sb.append(" ").append(k);
-   }
-   sb.append(ln).append(ln);
-   for (int i = 0; i < totalNumberOfHands; i++) {
-      sb.append("My #").append(i + 1).append(" hand is: ");
-      for (int j = 0; j < myHands.get(i).size(); j++) {
-         sb.append(myHands.get(i).get(j)).append("  ");
-      }
-      sb.append(ln).append("The hand is ");
-      if (!myState.areHandsDone().get(i)) {
-         sb.append("not ");
-      }
-      sb.append("done.");
-      sb.append(ln).append("The hand total is ").append(Utilities.handTotal(myHands.get(i)));
-      sb.append(ln).append("The following actions were taken on the hand:");
-      for (int j = 0; j < myActions.get(i).size(); j++) {
-         sb.append(myActions.get(i).get(j)).append("  ");
-      }
-      sb.append(ln).append(ln);
-      if (busted[i]) {
-         sb.append("I am bust.");
-      }
-      else {
-         sb.append("I am not bust.");
-      }
-   }
-   sb.append("The dealer has a/an ").append(myState.getDealerUpCard().toString()).append(".").append(ln);
-   sb.append("My expected value is ").append(myState.getExpectedValue()).append(". ").append(ln);
-   sb.append("I do ");
-   if (!myState.playerBJ()) {
-      sb.append("not ");
-   }
-   sb.append("have a blackjack.");
-   if (myState.dealerBlackJackChecked()) {
-      sb.append("The dealer does ");
-      if (!myState.dealerHasBJ()) {
-         sb.append(" not ");
-      }
-      sb.append("have a blackjack.").append(ln);
-   }
-   else {
-      sb.append("The dealer has not yet checked for blackjack.").append(ln);
-   }
-   try {
-      Action bestAction = myState.getPreferredAction();
-      sb.append("The best action has been defined as a ").append(bestAction.toString()).append(ln);
-   }
-   catch (IllegalStateException q) {
-      sb.append("The best action has not been defined.").append(ln);
-   }
-   try {
-      Action secondBestAction = myState.getSecondBestAction();
-      sb.append("The second best action has been defined as a ").append(secondBestAction.toString()).append(ln);
-   }
-   catch (IllegalStateException s) {
-      sb.append("The second best action has not been defined.").append(ln);
-   }
-   sb.append("My second best EV is: ").append(myState.getSecondBestEV()).append(ln);
-   if ((myState.numberCardsInHand() < 2) || myState.isBust())  ; //Either of these will lead to exceptions
-   else {
-      sb.append("My no-split answer hash is: ").append(myState.getAnswerHash(false)).append(ln);
-   }
-
-   if (myState.numberCardsInHand() < 2) ;
-   else if ((myState.getFirstCardValue() == myState.getSecondCardValue()) && myState.numberCardsInHand() == 2) {
-      sb.append("My split answer hash is: ").append(myState.getAnswerHash(true)).append(ln);
-   }
-
-   return sb.toString();
-}
-
 public static void printStateStatus(State myState, String str) {
-   System.out.println(str + getStateString(myState));
+   System.out.println(str + myState.toString());
 }
 
 /**
@@ -1727,9 +1608,109 @@ static byte getEffectiveCard(State aState, int cardNumber) {
 
 @Override
 public String toString() {
-   return getStateString(this);
+   StringBuilder sb = new StringBuilder();
+   String ln = System.getProperty("line.separator");
+   sb.append(ln);
+   ArrayList<ArrayList<Action>> myActions = getActions();
+   final int totalNumberOfHands = getTotalHands() + 1;
+   sb.append("I ");
+   if (isInsuranceTaken()) {
+      sb.append("took ");
+   }
+   else {
+      sb.append("did not take ");
+   }
+   sb.append("insurance; I was ");
+   if (isInsuranceAdvised()) {
+      sb.append("advised ");
+   }
+   else {
+      sb.append("not advised ");
+   }
+   sb.append("to do so.").append(ln);
+   sb.append("I am on hand #").append(getCurrentHand()).append(" of ")
+           .append(getTotalHands()).append(", with ").append(numberCardsInHand())
+           .append(" cards in hand.").append(ln);
+   if (!isBust()) {
+      sb.append("The current hand is worth ").append(handTotal()).append(ln);
+   }
+   if (isBust()) {
+      sb.append("The current hand is bust.").append(ln);
+   }
+   else {
+      sb.append("The current hand is not bust.").append(ln);
+   }
+   sb.append("The busted array is ").append(State.MAX_NUMBER_HANDS).append(" element(s) long:");
+   for (boolean k : busted) {
+      sb.append(" ").append(k);
+   }
+   sb.append(ln).append(ln);
+   for (int i = 0; i < totalNumberOfHands; i++) {
+      sb.append("My #").append(i + 1).append(" hand is: ");
+      for (int j = 0; j < myHands.get(i).size(); j++) {
+         sb.append(myHands.get(i).get(j)).append("  ");
+      }
+      sb.append(ln).append("The hand is ");
+      if (!areHandsDone().get(i)) {
+         sb.append("not ");
+      }
+      sb.append("done.");
+      sb.append(ln).append("The hand total is ").append(Utilities.handTotal(myHands.get(i)));
+      sb.append(ln).append("The following actions were taken on the hand:");
+      for (int j = 0; j < myActions.get(i).size(); j++) {
+         sb.append(myActions.get(i).get(j)).append("  ");
+      }
+      sb.append(ln).append(ln);
+      if (busted[i]) {
+         sb.append("I am bust.");
+      }
+      else {
+         sb.append("I am not bust.");
+      }
+   }
+   sb.append("The dealer has a/an ").append(getDealerUpCard().toString()).append(".").append(ln);
+   sb.append("My expected value is ").append(getExpectedValue()).append(". ").append(ln);
+   sb.append("I do ");
+   if (!playerBJ()) {
+      sb.append("not ");
+   }
+   sb.append("have a blackjack.");
+   if (dealerBlackJackChecked()) {
+      sb.append("The dealer does ");
+      if (!dealerHasBJ()) {
+         sb.append(" not ");
+      }
+      sb.append("have a blackjack.").append(ln);
+   }
+   else {
+      sb.append("The dealer has not yet checked for blackjack.").append(ln);
+   }
+   try {
+      Action bestAction = getPreferredAction();
+      sb.append("The best action has been defined as a ").append(bestAction).append(ln);
+   }
+   catch (IllegalStateException q) {
+      sb.append("The best action has not been defined.").append(ln);
+   }
+   try {
+      sb.append("The second best action has been defined as a ").append(secondBestAction)
+              .append(ln);
+   }
+   catch (IllegalStateException s) {
+      sb.append("The second best action has not been defined.").append(ln);
+   }
+   sb.append("My second best EV is: ").append(getSecondBestEV()).append(ln);
+   if ((numberCardsInHand() < 2) || isBust())  ; //Either of these will lead to exceptions
+   else {
+      sb.append("My no-split answer hash is: ").append(getAnswerHash(false)).append(ln);
+   }
 
+   if (numberCardsInHand() < 2) ;
+   else if ((getFirstCardValue() == getSecondCardValue()) && numberCardsInHand() == 2) {
+      sb.append("My split answer hash is: ").append(getAnswerHash(true)).append(ln);
+   }
 
+   return sb.toString();
 }
 
 /**
