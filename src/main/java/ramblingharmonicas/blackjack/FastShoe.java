@@ -358,7 +358,6 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
       return probabilityOf(drawnCard);
    }
 
-   int i;
    double probability = 0;
    CardValue undrawable;
    if (DCard.getCardValue().value() == CardValue.TEN.value()) {

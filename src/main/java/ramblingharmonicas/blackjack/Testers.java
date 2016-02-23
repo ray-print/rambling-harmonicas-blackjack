@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * TODO: Move all tests in this file into JUnit. 
+ ***** TODO: Move all tests in this file into JUnit.  ****************
  * TODO: Move all code which solves and then stores data sets into separate file.
  * TODO: Move all non-tests into Blackjack.java
  *
@@ -982,7 +982,6 @@ public static void allFastTests() {
    Testers.testResolveHands();
    Testers.testCards();
    Testers.testOverloadedDealer(); //Utilities functions
-   Testers.testOverLoadFastShoe(1);
    Testers.testShoe();
    Testers.dealerClassTest();
    Testers.testDealerHCP();
@@ -2406,54 +2405,6 @@ public static void testShoe() {
 }
 
 /**
- * Tests the fast shoe key used in the dealer probability cache.
- * This could use vast improving. Specifically, a recursive solution
- * to go to an arbitrary depth, and a permutation formula to solve
- * for the total number of expected keys at a given depth.
- */
-public static void testFastShoeKey() {
-   int number;
-   final int DECK_CHOICES = 61;
-   Set<String> allTheKeys = new TreeSet<String>();
-   for (int i = 1; i < DECK_CHOICES; i++) {
-      FastShoe myShoe = new FastShoe(i);
-      for (int cv1 = 0; cv1 < 10; cv1++) {
-         myShoe.fasterDrawSpecific(cv1);
-         allTheKeys.add(myShoe.myStringKey());
-         for (int cv2 = 0; cv2 < 10; cv2++) {
-            myShoe.fasterDrawSpecific(cv2);
-            allTheKeys.add(myShoe.myStringKey());
-            /*
-             for (int cv3 =0; cv3<10; cv3++)
-             {
-             myShoe.fasterDrawSpecific(cv3);
-             allTheKeys.add(myStringKey());
-             myShoe.addCard(cv3);
-             }  */
-            myShoe.addCard(cv2);
-         }
-         myShoe.addCard(cv1);
-
-      }
-   }
-   final int twoRemovedKeys = 55 * (DECK_CHOICES - 1);
-   final int oneRemovedKeys = 10 * (DECK_CHOICES - 1);
-   assert (allTheKeys.size() == (oneRemovedKeys + twoRemovedKeys)) :
-           "There are this many keys: " + allTheKeys.size();
-   //55 permutations while removing 2 cards
-
-}
-
-/**
- * This calls testFastShoeKey.
- * Functions that haven't been tested here:
-
- */
-public static void testOverLoadFastShoe(int numDecks) {
-   testFastShoeKey();
-}
-
-/**
  * Tests the rules hash for all values. See rules hash key function for more
  * information.
  *
@@ -2958,10 +2909,6 @@ public static void testConstructors() {
 
 }
 
-/**
- *
- * @author Watongo
- */
 public static class testTotalEV {
 private static boolean saveAll = false;
 
