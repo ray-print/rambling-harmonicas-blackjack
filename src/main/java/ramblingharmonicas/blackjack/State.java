@@ -86,16 +86,10 @@ private boolean insuranceAdvised;
  *
  * @param insuranceAdvised
  */
-void setInsuranceAdvised(boolean insuranceAdvised) {   ////I assume this is called by some other function which does the
-   //actual work
+void setInsuranceAdvised(boolean insuranceAdvised) {   
    this.insuranceAdvised = insuranceAdvised;
 }
 
-/**
- * To save time, eventually should be changed to a normal array, not an
- * ArrayList.
- *
- */
 private ArrayList<Boolean> handDone = new ArrayList<Boolean>();
 /**
  * Stores whether or not a given hand is busted.
@@ -111,11 +105,10 @@ private boolean dealerBJChecked = false;
 private boolean insuranceTaken = false;
 
 /**
- * There is a function that tells you whether or not you should take
- * insurance. This, despite its name, does not do so, unless you've already
- * ran that function. I think it's insuranceGoodIdea.
- *
- *
+ * Strategy.insuranceGoodIdea tells you whether or not you should take
+ * insurance. This function, despite its name, does not do so, unless you've already
+ * ran that function.
+ * TODO: Refactor to make this less confusing
  * @return
  */
 public boolean isInsuranceAdvised() {
@@ -126,13 +119,6 @@ public boolean isInsuranceTaken() {
    return insuranceTaken;
 }
 
-/**
- * Use .action(Action) instead for its error checking when taking insurance
- *
- * @param insuranceTaken
- *
- *
- */
 private void setInsuranceTaken(boolean insuranceTaken) {
    this.insuranceTaken = insuranceTaken;
 }
@@ -149,16 +135,13 @@ private Action preferredAction = Action.ERROR;
  * stand.
  * In that case, this will stay at Action.ERROR, and it won't be an error.
  * In most cases, however, it would be an error for this to remain ERROR after
- * calculations have been finisiehd.
+ * calculations have been finished.
  */
 private Action secondBestAction = Action.ERROR;
 
-/**
+/** This function can only be used if State.setDealerBlackjack has been called first.
  *
- * @return
- * @throws IllegalStateException if the dealer blackjack has not been checked.
- * Always
- * call DealerBlackJackChecked() first.
+ * @throws IllegalStateException if the dealer blackjack status has not been set yet.
  */
 public boolean dealerHasBJ() {
    if (dealerBJChecked == false) {
@@ -181,7 +164,7 @@ public boolean dealerBlackJackChecked() {
 }
 
 /**
- * Testing of this function would be good.
+ * TODO: Test this function
  * Tells the State function that the dealer does or does not have a blackjack.
  * Ends play on all hands if the dealer does have a blackjack.
  *
@@ -217,22 +200,18 @@ public boolean setDealerBlackjack(boolean blackJack) {
  *
  * @return
  */
-ArrayList<ArrayList<Card>> getMyHands() {//return new ArrayList<ArrayList<Card>>(myHands); does NOT work. Creates a shallow clone.
-
+ArrayList<ArrayList<Card>> getMyHands() {
    ArrayList<ArrayList<Card>> clone = new ArrayList<ArrayList<Card>>();
    int i, j;
 
    for (i = 0; i < totalHands + 1; i++) {
-      clone.add(new ArrayList<Card>()); //Create a new row for every row in original array
+      clone.add(new ArrayList<Card>()); 
       for (j = 0; j < myHands.get(i).size(); j++) {
          clone.get(i).add(new Card(myHands.get(i).get(j)));
       }
-      // System.out.println("Yippee, in getMyHands! The row being added is: ");
-
    }
-
+   
    return clone;
-
 }
 
 /**
@@ -321,16 +300,14 @@ public State(final Card firstPlayerCard, final Card secondPlayerCard,
    ArrayList<Card> myHand = new ArrayList<Card>();
    myHand.add(firstPlayerCard);
    myHand.add(secondPlayerCard);
-
    setBaseState(myHand, dealerCard);
-
 }
 
 /**
  *
  * Throws exception if the initial hand size is not equal to 2 or if the
  * arguments are null.
- * Deprecated because other functions do not need to know -- and it's annoying
+ * Deprecated because other functions should not know -- and it's annoying
  * for them to have
  * to know -- about the internal representation of each hand.
  *
@@ -362,14 +339,11 @@ private void setBaseState(ArrayList<Card> startingHand, final Card dealerCard) {
       cloned.add(new Card(i));
    }
 
-   /*       System.out.println("Cloned contains");
-    for (int j = 0; j < cloned.size(); j++)
-    System.out.println("A " + cloned.get(j).value() + " of " + cloned.get(j).suit()  ); */
    busted = new boolean[MAX_NUMBER_HANDS];
 
    myHands.add(cloned);
    this.dealerUpCard = new Card(dealerCard);
-   playerActions.add(new ArrayList<Action>()); // add a new, empty row to this array
+   playerActions.add(new ArrayList<Action>());
    handDone.add(false);
    busted[0] = false;
 
@@ -405,78 +379,44 @@ private boolean amIBust() {
       busted[currentHand] = true;
       return true;
    }
-   else {
-      return false;
-   }
-
+   return false;
 
 }
 
 /**
- * This function modified to reuse the Utility function.
  *
- * Returns hand value of current hand.. Aces count 11 if they can, 1 if they
+ * Returns hand value of current hand. Aces count 11 if they can, 1 if they
  * can't.
- * Tested on a variety of hands, including hands with 3 aces, hands with 5 cards
- * in them, hands with a variety of values, etc.
  */
 public int handTotal() {
    return Utilities.handTotal(myHands.get(currentHand));
-   /*
-    int sum = 0;
-    int numOfAces = 0;
-    for (int i = 0; i < myHands.get(currentHand).size(); i++) {
-    sum += myHands.get(currentHand).get(i).value();
-    if (myHands.get(currentHand).get(i).value() == 1) {
-    numOfAces++;
-    sum += 10;
-    }
-    }
-    if (sum <= 21)
-    return sum;
-    else {
-    while ((sum > 21) && (numOfAces > 0)) {
-    sum -= 10;
-    numOfAces--;
-    }
-    if (sum > 21) {
-    assert (false) : "My current hand is " + currentHand
-    + ". I'm bust. handtotal shouldn't be called when bust.";
-    }
-
-    return sum;
-    }
-    */
-
 }
 
 /**
  * Takes the specified action. May lead to strange results if the action is
  * impossible.
  * Before this is called, it should be verified that the action is indeed
- * possible --
- * call Rules.isPossible(Action, State) to check.
+ * possible -- call Rules.isPossible(Action, State) to check.
  *
  * Upon action completion, this will correctly marks the hand as done or not
  * done.
  *
  * Note that split actions stack. Meaning, if I have a hand, and I split it, and
  * I split it again,
- * the first two actions in that hand listed as splits.
+ * the first two actions in that hand are listed as splits.
  *
  *
- * @throws IllegalStateException If being told to take insurance, this will
- * throw an exception if:
+ * @throws IllegalStateException 
+ * -If the player's hand is marked as being done, or
+ * -If being told to take insurance, and:
  *
- * The player has 3+ cards in hand
- * The player has already split
- * The dealer has already checked for blackjack or
+ * The player has 3+ cards in hand OR
+ * The player has already split OR
+ * The dealer has already checked for blackjack OR
  * Insurance has already been taken.
  *
- * If the player's hand is marked as being done, this will throw an exception
- *
  */
-public void action(final Action myAction) { //Possible: Split; surrender; Stand; possibly insurance.
+public void action(final Action myAction) {
    if (handDone.get(currentHand)) {
       throw new IllegalStateException("State.action(Action,) should not be "
               + " called if the current hand is already done.");
@@ -498,20 +438,17 @@ public void action(final Action myAction) { //Possible: Split; surrender; Stand;
                     + busted.length + "This is my state: " + toString());
          }
          playerActions.get(currentHand).add(Action.SPLIT);
-         //or should I only add this once for multi-splits?
+         //Create new hand
          totalHands++;
-         playerActions.add(new ArrayList<Action>()); //add new Action row. With no elements in it.
+         playerActions.add(new ArrayList<Action>()); 
 
-         myHands.add(new ArrayList<Card>()); //add new hand row
+         myHands.add(new ArrayList<Card>());
          myHands.get(totalHands).add(myHands.get(currentHand).get(1));
+         
          //Adds the second card to the newly created hand, at the end of the hand array.
          myHands.get(currentHand).remove(1);
-         //Removes it from the first.
-         handDone.add(false); //the new hand has a done/not done state.
-         busted[totalHands] = false; //It is not busted.
-
-         //if (myHands.get(currentHand).get(0).getCardValue() == CardValue.ACE)
-         // timesSplitAces++;
+         handDone.add(false);
+         busted[totalHands] = false;
          break;
       case INSURANCE:
          if (insuranceTaken) {
@@ -533,9 +470,9 @@ public void action(final Action myAction) { //Possible: Split; surrender; Stand;
          setInsuranceTaken(true);
          break;
       default:
-         throw new IllegalArgumentException("State.action(Action) called with invalid action: " + myAction);
+         throw new IllegalArgumentException("State.action(Action) called with invalid action: " 
+                 + myAction);
    }
-
 
 }
 
@@ -549,13 +486,6 @@ public void action(final Action myAction) { //Possible: Split; surrender; Stand;
  * as being done.
  * This task (checking if the hand is done) should be done by whichever function
  * called it.
- *
- * Tested several times with a variety of cards. Seems to throw exceptions as
- * listed.
- * Hit and double seem to correctly mark the hand as done, and put the card in
- * hand, and
- * isBust performs correctly afterwards.
- *
  *
  * @param myAction Adds this action to the action list of the current hand.
  * @param myCard Adds this card to the current hand.
@@ -582,7 +512,6 @@ public void action(final Action myAction, final Card myCard) {
       handDone.set(currentHand, Boolean.TRUE); //After you double, the hand is done.
    }
 
-
 }
 
 /**
@@ -597,7 +526,7 @@ public void action(final Action myAction, final Card myCard) {
  * This task (checking if the hand is done) should be done by whichever function
  * called it.
  *
- * This function should really just call action(Action, Card) to avoid code
+ * TODO: This function should really just call action(Action, Card) to avoid code
  * duplication.
  *
  * @param myAction Adds this action to the action list of the current hand.
@@ -624,7 +553,7 @@ Card action(final Action myAction, final Card myCard, FastShoe myShoe) {
    }
 
    if (myAction == Action.DOUBLE) {
-      handDone.set(currentHand, Boolean.TRUE); //After you double, the hand is done.
+      handDone.set(currentHand, Boolean.TRUE);
    }
    return myCard;
 
@@ -652,8 +581,6 @@ public void postSplitDraw(Card myCard) {
    }
 
    myHands.get(currentHand).add(myCard);
-
-
 }
 
 /**
@@ -661,20 +588,11 @@ public void postSplitDraw(Card myCard) {
  * Note that the second and subsequent hands do NOT have a split listed as the
  * first action.
  * This version of the function is NOT called in PRecursive, I reckon.
- * Probably UNTESTED.
- *
- * @param myCard
- * @param myShoe
- *
- *
+ * TODO: Add test for this if not present
  */
 void postSplitDraw(Card myCard, FastShoe myShoe) {
-
    postSplitDraw(myCard);
    myShoe.fasterDrawSpecific(myCard.getCardValue());
-
-
-
 }
 
 /**
@@ -683,10 +601,10 @@ void postSplitDraw(Card myCard, FastShoe myShoe) {
  *
  */
 public int getCurrentHand() {
-   return currentHand; // When you split a hand, you might have more than one hand.
+   return currentHand; 
 }
 
-/**
+/** TODO: Fix this, it's unnecessarily confusing. (It should return the total number of hands.)
  * @return The total number of player hands, minus one. For example, if the
  * player has one hand,
  * this will return zero.
@@ -696,15 +614,10 @@ public int getTotalHands() {
 }
 
 /**
- * Untested.
- * 1 card returns a value of 1.
- *
  * @return Number of cards in current hand.
- *
  */
 public int numberCardsInHand() {
    return myHands.get(currentHand).size();
-
 }
 
 /**
@@ -730,16 +643,12 @@ public double getExpectedValue() {
  * The expected value of this hand when the course of action followed by
  * SecondBestAction
  * has been taken.
- *
- * @return
  */
 double getSecondBestEV() {
    return secondBestEV;
 }
 
 /**
- *
- *
  * @return Deep clone of busted array.
  */
 public boolean[] areWeBusted() {
@@ -756,13 +665,10 @@ public boolean[] areWeBusted() {
  */
 @Deprecated
 public ArrayList<Boolean> areHandsDone() {
-   // return new ArrayList<Boolean>(handDone); effing shallow clones.
    ArrayList<Boolean> clone = new ArrayList<Boolean>();
    for (int i = 0; i < totalHands + 1; i++) {
-      clone.add((Boolean) (boolean) handDone.get(i)); //Hopefully, if I manually typecast this
-   }   //down to a boolean, it'll copy the value and I'll end up with a deep clone.
-   //if not just use if it's true set it to true, if not to false.
-
+      clone.add((Boolean) (boolean) handDone.get(i)); 
+   }  
    return clone;
 }
 
@@ -781,12 +687,8 @@ boolean isHandDone() {
 }
 
 /**
- *
- *
  * @return The last action taken in current hand. Returns null if no
  * action was taken.
- *
- * Should be tested more thoroughly.
  */
 public Action lastAction() {
    if (playerActions.get(currentHand).isEmpty()) {
@@ -801,28 +703,22 @@ public Action lastAction() {
  * @return Last action taken in the hand referred to by handIndex. Null if no
  * action was taken.
  * @throws IllegalArgumentException if handIndex is negative, or refers to a
- * hand that doesn't
- * exist (is greater than totalHands)
+ * hand that doesn't exist (is greater than totalHands)
  */
 public Action lastAction(int handIndex) {
    if ((handIndex > totalHands) || (handIndex < 0)) {
       throw new IllegalArgumentException("State.lastAction: handIndex is not valid: " + handIndex);
    }
    final int lastElemIndex = playerActions.get(handIndex).size() - 1;
-   Action lastAction;
    if (lastElemIndex == -1) {
       return null;
    }
-   else {
-      return playerActions.get(handIndex).get(lastElemIndex);
-   }
+   
+   return playerActions.get(handIndex).get(lastElemIndex);
+   
 }
 
 /**
- * Untested.
- *
- *
- * @param aCard the CardValue to be tested
  * @return True if the player's current hand has the specified card value in it.
  */
 boolean contains(final CardValue aCard) {
@@ -831,12 +727,7 @@ boolean contains(final CardValue aCard) {
          return true;
       }
    }
-
-
    return false;
-
-
-
 }
 
 /**
@@ -850,10 +741,7 @@ boolean firstCardIs(final CardValue myCardValue) {
    if (myCardValue.value() == myHands.get(currentHand).get(0).value()) {
       return true;
    }
-   else {
-      return false;
-   }
-
+   return false;
 }
 
 public Card getFirstCard() {
@@ -882,11 +770,7 @@ public CardValue getSecondCardValue() {
 }
 
 /**
- * Untested and has a bad design.
- *
- *
- *
- * @return
+ * @exception IllegalStateException if preferredAction has not been set yet.
  */
 Action getPreferredAction() {
    if (preferredAction == null) {
@@ -894,7 +778,7 @@ Action getPreferredAction() {
               + "been set yet, but State.getPreferredAction() was called.");
    }
 
-   return Action.deepClone(preferredAction);
+   return preferredAction;
 }
 
 /**
@@ -904,16 +788,16 @@ Action getPreferredAction() {
  * @param bestAction
  */
 protected void setPreferredAction(Action bestAction) {
-   preferredAction = Action.deepClone(bestAction);
+   preferredAction = bestAction;
 }
 
 protected void setSecondBestAction(Action secondBestAction) {
-   this.secondBestAction = Action.deepClone(secondBestAction);
+   this.secondBestAction = secondBestAction;
 
 }
 
 Action getSecondBestAction() {
-   return Action.deepClone(secondBestAction);
+   return secondBestAction;
 }
 
 private double secondBestEV = -50000;
@@ -924,36 +808,26 @@ void setSecondBestEV(double secondBestEV) {
 }
 
 /**
- * Seems to perform as expected. Should only be called after a split hand has
- * done its
- * last action.
- *
- *
- *
+ * Should only be called after a split hand has done its last action.
  * @return False if there's no next hand.
  */
 public boolean nextHand() {
    if (currentHand == totalHands) {
       return false;
    }
-   else {
-      currentHand++;
-      return true;
-   }
 
+   currentHand++;
+   return true;
 }
 
 /**
  * Should be used solely to evaluate the total EV when the player is finished.
- *
- *
- *
- * @return
  */
 protected void resetCurrentHand() {
    for (int i = 0; i < totalHands + 1; i++) {
       if (!handDone.get(i)) {
-         throw new IllegalStateException("Function State.resetCurrentHand called before all hands were finished.");
+         throw new IllegalStateException("Function State.resetCurrentHand called before all "
+                 + "hands were finished.");
       }
    }
    currentHand = 0;
@@ -973,13 +847,12 @@ protected void setEV(double number) {
    }
    assert !(number > 50) : "expected Value is not over 50, that's impossible.";
 
-
    expectedValue = number;
 }
 
 /**
  * Used to overwrite EV. Called by approx split function.
- *
+ * TODO: Is there a more elegant way to do this?
  *
  * @param number
  */
@@ -991,11 +864,7 @@ protected void overWriteEV(double number) {
 }
 
 /**
- * Untested.
- *
- *
- *
- * @return
+ * @return True if all hands have been played; false otherwise.
  */
 public boolean allDone() {
    for (int i = 0; i < totalHands + 1; i++) {
@@ -1005,14 +874,13 @@ public boolean allDone() {
    }
 
    return true;
-
 }
 
 /**
  * Calculates the EV.
  *
  * Do NOT call me when the dealer has some kind of hand (other than blackjack).
- * Do NOT call me in a no-hole-card game with dealer blackjack., unless the
+ * Do NOT call me in a no-hole-card game with dealer blackjack, unless the
  * blackjack is irrelevant
  * because you've lost all your hands via some other method.
  * Call me when:
@@ -1022,8 +890,7 @@ public boolean allDone() {
  *
  * At the end, currentHand will be the same as totalHands.
  *
- * UNTESTED, reworked on 5-14-14.
- * Utterly untested, and requires 8+ tests for blackjacks alone.
+ * Needs serious testing.
  */
 public void calculateEV(Rules theRules) {
    resetCurrentHand(); //Checks for done status, too.
@@ -1162,10 +1029,8 @@ public void calculateEV(final int dealerHandTotal, Rules theRules,
             else { //There was no deal.
                //Which is OK if the player has a blackjack and the dealer does not.
                if (dealerHasBJ()) {
-                  if (Blackjack.debug()) {
-                     throw new RuntimeException("Logic error in calculateEV");
-                  }
-                  System.err.println("CalculateEV claims that the dealer does and doesn't have blackjack.");
+                  throw new IllegalStateException("Logic error in calculateEV: "
+                          + "CalculateEV claims that the dealer does and doesn't have blackjack.");
                }
                calculateEV(theRules);
                return;
@@ -1208,7 +1073,8 @@ public int getHandResult(int handIndex, int dealerHandTotal, boolean dealerBJ) {
    Action lastAction = lastAction(handIndex); 
 
    if (dealerBJ && (dealerHandTotal != 21)) {
-      throw new IllegalArgumentException("The dealer cannot have blackjack if her hand total is " + dealerHandTotal);
+      throw new IllegalArgumentException("The dealer cannot have blackjack if her hand total is "
+              + dealerHandTotal);
    }
 
    if (lastAction == Action.SURRENDER) {
@@ -1281,13 +1147,12 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
       //multiple losing hands, in which case this logic wouldn't work.
 
       if (dealerBJ) //Mutually exclusive: Early surrender; Insurance/Player blackjack.
-      { //assert false: "Debugging -- Dealer should not have blackjack.";
+      { 
          if (playerActions.get(currentHand).size() == 1) //I have done a previous action.
          {
             if (lastAction() == Action.SURRENDER) //early surrender. Before insurance
             {
                theAnswer += -0.5;
-               // handResults.add(State.SURRENDER);
             }
          }
          else //No surrender, hence insurance is possible.
@@ -1295,10 +1160,9 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
             if (insuranceTaken) {
                theAnswer += 1;
             }
-            if (playerBJ()) ;//Mutual blackjack. Push. 0 is 0.
-            //handResults.add(State.PUSH);
+            if (playerBJ()) 
+               ;//Mutual blackjack. Push. 0 is 0.
             else {
-               // handResults.add(State.LOSE);
                theAnswer += -1;
             }
          }
@@ -1307,12 +1171,10 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
          return;
       }
       else if (playerBJ()) {
-         //assert false: "Debugging -- Player should not have blackjack.";
          if (insuranceTaken) {
             theAnswer += -0.5; //The dealer does not have blackjack, so you lose this bet.
          }
          theAnswer += theRules.getBlackJackPayback();
-         // handResults.add(State.BLACKJACK);
          setEV(theAnswer);
          return;
       }
@@ -1322,7 +1184,6 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
       previousAction = lastAction();
 
       if (busted[currentHand]) {
-         //handResults.add(State.LOSE);
          if (previousAction == Action.HIT) {
             theAnswer += -1;
          }
@@ -1339,17 +1200,17 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
             theAnswer += (1 - dealerProbabilities[1]) * -0.5;
          }
       }
-      else if (previousAction == Action.SURRENDER) {  //handResults.add(State.SURRENDER);
+      else if (previousAction == Action.SURRENDER) {  
          theAnswer += -0.5;
       }
-      else if ((previousAction == Action.STAND) || (previousAction == Action.DOUBLE)) //Possible actions left: Stood or doubled. In either case, I'm alive!!
+      else if ((previousAction == Action.STAND) || (previousAction == Action.DOUBLE)) 
+         //Possible actions left: Stood or doubled. In either case, I'm alive!!
       {  //At this point, the only way the dealer can have BJ is if it's a no-hole card game,
          //Because I checked for hole-card BJs earlier.
          if (playerBJ()) {
-            theAnswer += (1 - dealerProbabilities[1]) * theRules.getBlackJackPayback(); //you win unless he has blackjack
+            theAnswer += (1 - dealerProbabilities[1]) * theRules.getBlackJackPayback(); 
+            //you win unless he has blackjack
             theAnswer += dealerProbabilities[1] * 0; //No payout for dealer blackjack.
-
-
          }
          else {
             // I know there is no player blackjack. Dealer may still have BJ if it's no-hole.
@@ -1357,14 +1218,15 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
             intermediateAnswer = 0;
             assert (dealerProbabilities.length == 7);
             intermediateAnswer += dealerProbabilities[1] * -1; //dealer blackjack (no hole)
-            //BEEP THIS IS WRONG???
+            //Rumors of some bug around here?
 
             intermediateAnswer += dealerProbabilities[0] * +1;  //dealer bust
             for (int i = 2; i < dealerProbabilities.length; i++) {
                if ((i + 15) > handValue) {
                   intermediateAnswer += dealerProbabilities[i] * -1;
                }
-               else if ((i + 15) == handValue) ; //push, no change
+               else if ((i + 15) == handValue) 
+                  ; //push, no change
                else {
                   intermediateAnswer += dealerProbabilities[i] * 1;
                }
@@ -1391,49 +1253,19 @@ protected void calculateEV(final double[] dealerProbabilities, Rules theRules) {
 
 
    setEV(theAnswer);
-   // DEBUGGING
-   /*
-    if (this.firstCardIs(CardValue.FOUR) && (this.getSecondCardValue() == CardValue.SEVEN) &&
-    (this.getDealerUpCard().getCardValue() == CardValue.ACE) &&
-    (myHands.get(0).size() == 2)
-
-    )
-    {
-    Testers.printStateStatus(this, "In calculateEV, this is what I'm thinking to do (after setting EV)");
-    System.out.println("Dealer probabilities:");
-    for (int ii= 0; ii < dealerProbabilities.length; ii++)
-    System.out.print(dealerProbabilities[ii] + "     ");
-
-    }
-    */
-
 }
 
 /**
- *
  * @return True if your current hand is worth 21; it has two cards in it; and
  * you only have one hand.
- * Hopefully, none of these facts will change in the future; I need to hardwire
- * that inability
- * to change into the program somehow.
  */
 public boolean playerBJ() { //Your first hand has two cards
    if ((myHands.get(0).size() == 2) && (totalHands == 0) && (handTotal() == 21)) {
       return true;
    }
-   //HandTotal now won't throw an exception, because it's tested AFTER the hand size has been checked.
-   //I also know that I only have one hand, so it must refer to that first hand.
-   else {
-      return false;
-   }
+   return false;   
 }
 
-/**
- * UNTESTED!!!! TEST ME!
- *
- * @return
- *
- */
 public int getNumberSplitAces() {
    if (myHands.get(0).get(0).getCardValue() != CardValue.ACE) {
       return 0;
@@ -1442,13 +1274,12 @@ public int getNumberSplitAces() {
 
 }
 
-/**
- * @return Whether or not this hand came from a previously split hand.
- * This function is untested.
+/** TODO: Simplify this function, clarify that it's meant to test if a split was the last
+ * action a player took.
  */
 boolean testPostSplit() {
    if (playerActions.get(0).isEmpty()) {
-      return false; //I haven't done anything at all yet.
+      return false;
    }
    if (totalHands == 0) {
       return false;
@@ -1464,13 +1295,11 @@ boolean testPostSplit() {
 
 
    return true;
-
 }
 
 /**
- * Should be a duplicate of the hash function belonging to the private Answer
- * Class.
- * Good rewrite: Make this a utilities function, not belonging to any object.
+ * TODO: Should be a duplicate of the hash function belonging to the private Answer
+ * Class. Make this a utilities function, not belonging to any object.
  * But it can be called by this function (after the error checking) and the
  * Answer function.
  *
@@ -1487,14 +1316,13 @@ boolean testPostSplit() {
  */
 protected int getAnswerHash(boolean splitAnswerDesired) {
    if (splitAnswerDesired && (this.numberCardsInHand() != 2)) {
-      System.err.println("My calling function wanted me to get a split answer, but I have more than 2"
-              + " cards in hand.");
+      System.err.println("My calling function wanted me to get a split answer, but I have more than"
+              + " 2 cards in hand.");
       assert false;
    }
    final byte effectiveFirstCard = State.getEffectiveCard(this, 1);
    final byte effectiveSecondCard = State.getEffectiveCard(this, 2);
    final byte dealerCard = State.getEffectiveCard(this, 0);
-
 
    //Return the Answer involving splits if desired. Even if a split is possible,
    //if it's not one of the top two actions, it won't be findable in the hashmap.
@@ -1504,25 +1332,12 @@ protected int getAnswerHash(boolean splitAnswerDesired) {
               dealerCard, splitAnswerDesired);
    }
    catch (IllegalArgumentException p) {
-      p.printStackTrace();
-      //The next line causes an infinite loop error, as I repeatedly try to get hashes
-      //Testers.printStateStatus(this, "Answer hash error.");
       System.err.print("Split hash desired, but splitting isn't even possible.");
-
-      assert false;
-      return Answer.answerHash(effectiveFirstCard,
-              effectiveSecondCard,
-              dealerCard, false);
+      throw p;
    }
 }
 
-/**
- * Totally untested, but a 1-line function leading to Utilities.isSoft
- *
- *
- * @return
- */
-public boolean isSoft() {
+public boolean handIsSoft() {
    return Utilities.isSoft(myHands.get(currentHand));
 }
 
@@ -1541,12 +1356,8 @@ public boolean isSoft() {
  */
 static byte getEffectiveCard(State aState, int cardNumber) {
    if ((cardNumber < 0) || (cardNumber > 2)) {
-      System.err.println("State.getEffectiveCard called with cardNumber: " + cardNumber);
-
-      throw new IllegalArgumentException();
-      //Kick the problem to the answer constructor
-      //throw new NoRecommendationException(aState, null,"State.getEffectiveCard called with cardNumber: " + cardNumber );
-
+      throw new IllegalArgumentException("State.getEffectiveCard called with cardNumber: " + 
+              cardNumber);
    }
    if (cardNumber == 0) {
       return Answer.cardValueToByte(aState.getDealerUpCard().getCardValue());
@@ -1565,7 +1376,7 @@ static byte getEffectiveCard(State aState, int cardNumber) {
    }
    else if (numberCardsInHand > 2) {
 
-      if (aState.isSoft()) {
+      if (aState.handIsSoft()) {
          effectiveFirstCard = Answer.cardValueToByte(CardValue.ACE);
          CardValue q = CardValue.cardValueFromInt(handTotal - 11);
          effectiveSecondCard = Answer.cardValueToByte(q);
@@ -1586,12 +1397,7 @@ static byte getEffectiveCard(State aState, int cardNumber) {
 
    }
    else {
-      System.err.println("I have " + numberCardsInHand + " cards in hand.");
-      if (Blackjack.debug()) {
-         throw new IllegalStateException();
-      }
-      assert false;
-      return -5; //Kick the problem to the answer constructor
+      throw new IllegalStateException("I have " + numberCardsInHand + " cards in hand.");
    }
 
    if (cardNumber == 1) {
@@ -1725,7 +1531,7 @@ public double getTotalBetAmount() {
    if (insuranceTaken) {
       total += 0.5;
    }
-   total += (totalHands + 1) * 1; //You bet 1 on each hand
+   total += (totalHands + 1) * 1; 
    for (int i = 0; i <= totalHands; i++) {
       if (lastAction(i) == Action.DOUBLE) {
          total += 1;
