@@ -748,29 +748,6 @@ public static void testStrategy(boolean verbosity) {
 
 }
 
-public static void testCards() {
-   Suit Suittester = Suit.CLUBS;
-   assert (Suittester == Suit.CLUBS);
-   Suittester = Suit.DIAMONDS;
-   assert (Suittester == Suit.DIAMONDS);
-   Suittester = Suit.SPADES;
-   assert (Suittester == Suit.SPADES);
-   Suittester = Suit.HEARTS;
-   assert (Suittester == Suit.HEARTS);
-
-   CardValue val = CardValue.ACE;
-   assert (val == CardValue.ACE);
-
-   Card Funitude = new Card(Suittester, val);
-   assert (Funitude.getCardValue() == CardValue.ACE);
-   assert (Funitude.getSuit() == Suit.HEARTS);
-
-   Shoe Deck = new Shoe(2);
-   assert (Deck.numberOfCards() == 52 * 2);
-
-
-}
-
 /**
  * Tests that the given strategy obeys some common blackjack advice.
  * Essentially a wrapper function for testOneSolvedStrategy and
@@ -980,7 +957,6 @@ public static void allFastTests() {
    final long startTime = System.currentTimeMillis();
    testInsuranceGoodIdea();
    Testers.testResolveHands();
-   Testers.testCards();
    Testers.testOverloadedDealer(); //Utilities functions
    Testers.dealerClassTest();
    Testers.testDealerHCP();

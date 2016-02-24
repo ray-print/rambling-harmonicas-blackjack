@@ -13,7 +13,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ramblingharmonicas.blackjack.cards.Card;
 import ramblingharmonicas.blackjack.cards.CardValue;
-import ramblingharmonicas.blackjack.cards.Suit;
 
 @RunWith(Parameterized.class)
 public class ShoeTest {
