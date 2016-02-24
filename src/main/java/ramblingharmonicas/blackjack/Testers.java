@@ -162,7 +162,6 @@ public void runAllTests(boolean verbosity) throws IOException, NoRecommendationE
    }
    testAnswerLoad(verbosity);
    initAll();
-   testGetStrategyType();
    if (rulesKey != theRules.myHashKey()) {
       throw new RuntimeException("Rules mismatch");
    }
@@ -472,16 +471,6 @@ public void testAnswerLoad(boolean verbosity) throws IOException {
    if (verbosity) {
       System.out.println("Loading two files took: " + (System.currentTimeMillis() - initTime) + " ms.");
    }
-}
-
-/**
- * Test of getStrategyType method, of class Strategy.
- */
-public void testGetStrategyType() {
-   Strategy.Skill expResult = Strategy.Skill.COMP_DEP;
-   Strategy.Skill result = myStrategy.getStrategyType();
-   assert (expResult == result);
-
 }
 
 /**
