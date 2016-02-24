@@ -1,34 +1,36 @@
 package ramblingharmonicas.blackjack;
-import ramblingharmonicas.blackjack.cards.*;
+
 /**
- * Indicates an internal problem in the Strategy class.
- *
+ * Indicates a problem when solving a rule set or validate a solved rule set.
  */
 public class NoRecommendationException extends Exception {
 private static final long serialVersionUID = 1L;
 private State myState;
 private Rules theRules;
-private boolean stateDefined = false, rulesDefined = false;
+private Strategy myStrategy;
 
-public NoRecommendationException() {
-}
+public NoRecommendationException() {}
 
 public NoRecommendationException(Throwable t) {
-   super(t);
+	super(t);
 }
 
-public final void setState(State aState) {
-   if (aState != null) {
-      this.myState = new State(aState);
-      stateDefined = true;
-   }
-}
-
+public NoRecommendationException(String msg) {
+	super(msg);
+} 
 public final void setRules(Rules theRules) {
-   if (theRules != null) {
-      this.theRules = new Rules(theRules);
-      rulesDefined = true;
-   }
+    if (theRules != null) {
+        this.theRules = new Rules(theRules);
+    }
+}
+
+public NoRecommendationException(State aState, Rules theRules, Strategy myStrategy, String msg) {
+   super(msg);
+    if (aState != null) {
+        this.myState = new State(aState);
+    }
+    this.myStrategy = myStrategy;
+    setRules(theRules);
 }
 
 @Override
@@ -40,19 +42,11 @@ public String toString() {
    if (myState != null) {
       s.append("\n").append(myState);
    }
+   if (myStrategy != null) {
+	   s.append("\n").append(myStrategy);
+   }
    return s.toString();
 
-}
-
-public NoRecommendationException(State aState, Rules theRules, String msg) {
-   super(msg);
-   setState(aState);
-   setRules(theRules);
-
-}
-
-public NoRecommendationException(String msg) {
-   super(msg);
 }
 
 }
