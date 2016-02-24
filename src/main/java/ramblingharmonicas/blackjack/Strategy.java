@@ -1,4 +1,5 @@
 package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.calculation.Validation;
 import ramblingharmonicas.blackjack.cards.*;
 
 import java.io.BufferedInputStream;
@@ -551,7 +552,7 @@ void insideAction(Rules someRules) {
    Strategy thisStrat = new Strategy(theRulesAfterToggles, strategyType);
    thisStrat.setFileFormat(Strategy.CONSOLIDATED_BY_DECKS_FILES);
    try {
-      Testers.validateSolvedStrategy(thisStrat);
+      Validation.validateSolvedStrategy(thisStrat);
       //Validate this rule set right now.
    }
    catch (NoRecommendationException nre) {
@@ -801,7 +802,7 @@ void insideAction(Rules someRules) {
    try {
       solve(theRulesAfterToggles);
       //System.out.println("I've solved for this strategy: " + theRulesAfterToggles);
-      Testers.validateSolvedStrategy(Strategy.this); //Weird, does this work?
+      Validation.validateSolvedStrategy(Strategy.this); //Weird, does this work?
       numRuleSetsValidated++;
       //if ( ((numRuleSetsValidated % 5000) == 0) && (verbosity) )
       //   System.out.println(numRuleSetsValidated + " rule sets have been validated.");
@@ -2208,7 +2209,7 @@ boolean solveAndStore(Rules someRules, boolean actingSolo)
 
 
    if (Blackjack.debug()) {
-      Testers.validateSolvedStrategy(this);
+      Validation.validateSolvedStrategy(this);
    }
 
    if (someRules.myHashKey() != loadedRuleSet) {
