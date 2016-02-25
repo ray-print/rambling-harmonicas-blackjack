@@ -747,7 +747,6 @@ public static void allFastTests() {
    Testers.dealerClassTest();
    Testers.testDealerHCP();
 
-   Testers.basicRulesTester();
    Testers.testRulesConstructors();
    Testers.testState();
    AnswerTest.runAllTests();
@@ -879,41 +878,6 @@ public static void testState() {
    assert (aState.getHandResult(0, 21, true) == State.PUSH);
    assert (aState.getHandResult(0, 21, false) == State.BLACKJACK);
    assert (aState.getHandResult(0, 18, false) == State.BLACKJACK);
-
-}
-
-/**
- * Clearly inadequate testing.
- *
- *
- */
-static void basicRulesTester() {
-   Rules theseRules = new Rules();
-   assert (theseRules.hitOn17());
-   assert (theseRules.dealerHoleCard());
-   ArrayList<Card> startingCards = new ArrayList<Card>();
-   startingCards.add(new Card(Suit.CLUBS, CardValue.TEN));
-   startingCards.add(new Card(Suit.SPADES, CardValue.JACK));
-
-   State myState = new State(startingCards, new Card(Suit.DIAMONDS,
-           CardValue.TWO));
-
-   assert (theseRules.isPossible(Action.STAND, myState));
-   assert (theseRules.isPossible(Action.SPLIT, myState)) : myState.toString();
-   assert (theseRules.numPossibleActions(myState, false) == 5);
-   myState.action(Action.HIT, new Card(Suit.SPADES, CardValue.ACE));
-   assert (theseRules.numPossibleActions(myState, true) == 2);
-
-   myState = new State(CardValue.THREE, CardValue.THREE, CardValue.NINE);
-   theseRules = new Rules(1);
-   theseRules.setLateSurrender(false);
-   theseRules.myDoubleRules.setOnlyNineTenEleven(true);
-   assert (theseRules.numPossibleActions(myState, true) == 3);
-
-   myState = new State(CardValue.EIGHT, CardValue.EIGHT, CardValue.EIGHT);
-   myState.action(Action.SPLIT);
-   myState.postSplitDraw(new Card(Suit.SPADES, CardValue.TEN));
-   assert (theseRules.numPossibleActions(myState, true) == 2);
 
 }
 
