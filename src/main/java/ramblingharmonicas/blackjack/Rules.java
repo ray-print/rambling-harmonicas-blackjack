@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 
-
 /* All member variable changes requires changes to these functions:
  * copy constructor, normal constructor, (hashcode and equals, which
  * are not implemented), Strategy rules toggles, toString,
@@ -262,9 +261,6 @@ public Rules() {
    this(1);
 }
 
-/**
- * Performs an auto-test using the hashKey if Blackjack.debug() is true.
- */
 public Rules(Rules otherRules) {
    this.myDoubleRules = new DoubleRules(otherRules.getAutoToggles());
    this.setRulesAutoToggles(otherRules.getAutoToggles());
@@ -298,26 +294,19 @@ public Rules(Rules otherRules) {
    this.setOriginalBetsOnly(otherRules.getOriginalBetsOnly());
 
    setAccuracy(otherRules.getAccuracy());
-   if (Blackjack.debug()) {
-      if (this.myHashKey() != otherRules.myHashKey()) {
-         System.err.println("Error in rules copy constructor. This rule set:");
-         System.err.println(otherRules.toString());
-         System.err.println("-------------------------");
-         System.err.println(" was being copied onto this rule set.");
-         System.err.println(toString());
-         System.err.println("And afterwards their hash keys did not match.");
-         throw new IllegalStateException();
-      }
-   }
+   assert (this.myHashKey() == otherRules.myHashKey()): 
+           "Error in rules copy constructor. This rule set:" + otherRules.toString() +
+           "-------------------------" +
+           " was being copied onto this rule set." + 
+            toString() + 
+           "-------------------------" +
+           "And afterwards their hash keys did not match.";     
 }
 
 /**
- * DO NOT CHANGE THESE DEFAULTS -- DOING SO WILL MESS UP ALL THE TESTS.
- * TODO: Refactor to place these defaults in the testing framework
- *
- * @param numberDecks must be between 1-8.
+ * Do not change these defaults -- doing so will mess up all the tests
  */
-public Rules(int numberDecks) {
+public void setDefault() {
    this.myDoubleRules = new DoubleRules(true);
    setRulesAutoToggles(true);
    this.setEarlySurrender(false);
@@ -328,7 +317,6 @@ public Rules(int numberDecks) {
    this.charlie = 0;
    this.hitSplitAces = false;
    setMaxNumberSplitHands(1); //You can split once by default.
-   setNumberDecks(numberDecks);
    setNumResplitAces(1);
    myDoubleRules = new DoubleRules(true);
    this.setLateSurrender(true);
@@ -342,6 +330,15 @@ public Rules(int numberDecks) {
    //Default: no effect, so this doesn't break tests written before
    this.setOriginalBetsOnly(false);
    setAccuracy(CACHE_ACCURACY);
+}
+
+/**
+ *
+ * @param numberDecks must be between 1-8.
+ */
+public Rules(int numberDecks) {
+   setNumberDecks(numberDecks);
+   setDefault();
 }
 
 /*TODO: Make these into enums and store the hand size details in the enum.

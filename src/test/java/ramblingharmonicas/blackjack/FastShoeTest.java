@@ -3,6 +3,8 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,37 +42,37 @@ public class FastShoeTest {
 	@Test
 	public void testDeckConstructor() {
 		assert aShoe != null : "FastShoe constructor should work";
-		assertEquals(aShoe.numberOfCards(), 52 * numDecks);
+		assertEquals(aShoe.numberOfCards(), numberOfCards);
 	}
 
 	@Test
 	public void testCardAddition() {
 		aShoe.addCard(Blackjack.ACECARD);
 		aShoe.addCard(Blackjack.JACKCARD);
-		assertEquals(aShoe.numberOfCards(), 52 * numDecks + 2);
+		assertEquals(aShoe.numberOfCards(), numberOfCards + 2);
 		aShoe.addCard(new Card(Suit.SPADES, CardValue.JACK));
 	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
 	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
 	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.KING));
-	    assertEquals (52 * numDecks + 6, aShoe.numberOfCards());
+	    assertEquals (numberOfCards + 6, aShoe.numberOfCards());
 	}
 
 	@Test
 	public void testCardRemoval() {
 		aShoe.fasterDrawSpecific(Blackjack.TENCARD);
-		assertEquals(aShoe.numberOfCards(), 52 * numDecks - 1);
+		assertEquals(aShoe.numberOfCards(), numberOfCards - 1);
 		aShoe.fasterDrawSpecific(Blackjack.ACECARD);
-		assertEquals(aShoe.numberOfCards(), 52 * numDecks - 2);
+		assertEquals(aShoe.numberOfCards(), numberOfCards - 2);
 	}
 
 	@Test
 	public void testProbabilityOf() {
 		for (int card : aceToNine) {
-			assert aShoe.fastProbabilityOf(card) ==
-					(double) (4 * numDecks) / (double) (52 * numDecks);
+			assert aShoe.probabilityOf(card) ==
+					(double) (4 * numDecks) / (double) (numberOfCards);
 		}
-		assert aShoe.fastProbabilityOf(Blackjack.TENCARD) ==
-					(double) (16 * numDecks) / (double) (52 * numDecks);
+		assert aShoe.probabilityOf(Blackjack.TENCARD) ==
+					(double) (16 * numDecks) / (double) (numberOfCards);
 	}
 
 	@Test
@@ -81,15 +83,15 @@ public class FastShoeTest {
 		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.KING));
 		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.TEN));
 		   aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.ACE));
-		   int numberCards = 52 * numDecks + 6;
+		   int numberCards = numberOfCards + 6;
 		   for (CardValue cv : CardValue.twoToTen) {
 		      if (cv == CardValue.TEN) {
 		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
-		        		 aShoe.fastProbabilityOf(Blackjack.TENCARD),
+		        		 aShoe.probabilityOf(Blackjack.TENCARD),
 		        		 Constants.SMALLEST_EPSILON);
 		         break;
 		      }
-		      assertEquals ( (4D * numDecks) / numberCards, aShoe.fastProbabilityOf(cv),
+		      assertEquals ( (4D * numDecks) / numberCards, aShoe.probabilityOf(cv),
 		    		  Constants.SMALLEST_EPSILON); 
 		   }
 	}
@@ -116,24 +118,22 @@ public class FastShoeTest {
 		for (int i = 0; i < 4 * numDecks; i++) {
 			aShoe.fasterDrawSpecific(Blackjack.TWOCARD);
 		}
-		assert aShoe.fastProbabilityOf(Blackjack.TWOCARD) < 0;
+		assert aShoe.probabilityOf(Blackjack.TWOCARD) < 0;
 	}
 
 	@Test
 	public void testTheseThreeInOrder() {
-	   final double totalCards = 52 * numDecks;
-	   final double numberDecks = (double) numDecks;
 	   double probability, expectedProbability, startingCards;
 	   for (CardValue val : CardValue.oneToTen) {
 		  probability = aShoe.probTheseThreeInOrder(val, val, val);
 	      if (CardValue.TEN == val) {
-             startingCards = 16D * numberDecks;
+             startingCards = 16D * numDecks;
 	      }
 	      else {
-             startingCards = 4D * numberDecks;
+             startingCards = 4D * numDecks;
 	      }
 	      expectedProbability = (startingCards * (startingCards -1) * (startingCards -2) 
-	              / ((totalCards) * (totalCards - 1D) * (totalCards - 2D)));
+	              / ((numberOfCards) * (numberOfCards - 1D) * (numberOfCards - 2D)));
 	      assertEquals(expectedProbability, probability, Constants.SMALLEST_EPSILON);
 	   }
 	}
@@ -166,17 +166,51 @@ public class FastShoeTest {
 	   assertEquals(numberOfCards -2, aShoe.numberOfCards());
 	}
 	
-	/* TODO: Separate these tests. Then move over the key test, then I'm done with the
-	 * FastShoe unit tests.
-	 * 	   double probOfThree = 0;
-		   probOfThree += aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD) * 7 / (numberOfCards - 1);
-		   probOfThree += (1 - aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD)) * 8 / 107;
-		   assert (aShoe.playerProbability(true, new Card(Suit.CLUBS, CardValue.TEN), CardValue.THREE)
-		           == probOfThree);
-		   assert (shoeCopy.probTheseThreeInOrder(CardValue.THREE, CardValue.THREE, CardValue.THREE)
-		           == (6D / 107D) * (5D / 106D) * (4D / 105D));		*/
-
+	@Test
+	public void testPlayerProbability() {
+		//dealer has a ten, what is the change of you drawing a three? (Given the dealer has no ace)
+		double probOfThree = 0;
+		aShoe.fasterDrawSpecific(CardValue.TEN);
+		double probOfDealerDrawingThree = 
+				aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD);
+		probOfThree += 
+				probOfDealerDrawingThree * 
+				(4 * numDecks - 1) / (numberOfCards - 2);
+		probOfThree += (1 - probOfDealerDrawingThree) * 
+				(4 * numDecks) / (numberOfCards - 2);
+		double result = aShoe.playerProbability(true, new Card(Suit.CLUBS, CardValue.TEN), CardValue.THREE);
+		assertEquals(probOfThree, result, Constants.SMALLEST_EPSILON);
+	}
 	
+	/**
+	 * Tests the fast shoe key used in the dealer probability cache.
+	 * This could use vast improving. Specifically, a recursive solution
+	 * to go to an arbitrary depth, and a permutation formula to solve
+	 * for the total number of expected keys at a given depth.
+	 */
+	@Test
+	public void testFastShoeKey() {
+	   final int DECK_CHOICES = 61;
+	   Set<String> allTheKeys = new TreeSet<String>();
+	   for (int i = 1; i < DECK_CHOICES; i++) {
+	      FastShoe myShoe = new FastShoe(i);
+	      for (int cv1 = 0; cv1 < 10; cv1++) {
+	         myShoe.fasterDrawSpecific(cv1);
+	         allTheKeys.add(myShoe.myStringKey());
+	         for (int cv2 = 0; cv2 < 10; cv2++) {
+	            myShoe.fasterDrawSpecific(cv2);
+	            allTheKeys.add(myShoe.myStringKey());
+	            myShoe.addCard(cv2);
+	         }
+	         myShoe.addCard(cv1);
+
+	      }
+	   }
+	   final int twoRemovedKeys = 55 * (DECK_CHOICES - 1);
+	   final int oneRemovedKeys = 10 * (DECK_CHOICES - 1);
+	   assertEquals(oneRemovedKeys + twoRemovedKeys, allTheKeys.size());
+	   //55 permutations while removing 2 cards
+	}
 /* Untested
  * FastShoe(FastShoe myOriginal, int[] cardArray) and its three extremely similar functions
  *

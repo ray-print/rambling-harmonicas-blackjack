@@ -1,4 +1,5 @@
 package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.calculation.Validation;
 import ramblingharmonicas.blackjack.cards.*;
 
 import java.io.BufferedInputStream;
@@ -208,7 +209,7 @@ public static boolean insuranceGoodIdea(VagueShoe myShoe, Rules theRules,
    double probability;
    Card dealerCard = myState.getDealerUpCard();
    if (dealerCard.value() == CardValue.ACE.value()) {
-      probability = myShoe.fastProbabilityOf(CardValue.TEN);
+      probability = myShoe.probabilityOf(CardValue.TEN);
    }
    else {
       throw new IllegalStateException("Insurance with non-ace dealer up cards unsupported.");
@@ -551,7 +552,7 @@ void insideAction(Rules someRules) {
    Strategy thisStrat = new Strategy(theRulesAfterToggles, strategyType);
    thisStrat.setFileFormat(Strategy.CONSOLIDATED_BY_DECKS_FILES);
    try {
-      Testers.validateSolvedStrategy(thisStrat);
+      Validation.validateStrategy(thisStrat);
       //Validate this rule set right now.
    }
    catch (NoRecommendationException nre) {
@@ -801,7 +802,7 @@ void insideAction(Rules someRules) {
    try {
       solve(theRulesAfterToggles);
       //System.out.println("I've solved for this strategy: " + theRulesAfterToggles);
-      Testers.validateSolvedStrategy(Strategy.this); //Weird, does this work?
+      Validation.validateStrategy(Strategy.this); //Weird, does this work?
       numRuleSetsValidated++;
       //if ( ((numRuleSetsValidated % 5000) == 0) && (verbosity) )
       //   System.out.println(numRuleSetsValidated + " rule sets have been validated.");
@@ -1060,7 +1061,7 @@ void insideAction(Rules someRules) {
             System.err.println("I did not solve and store successfully. Throwing exception.");
             System.err.println("Here is the failed Rule set: " + theRulesAfterToggles.toString());
             System.err.println("Here is my strategy currently: ");
-            print();
+            print(true);
             saveTotalEVMap();
             throw new RuntimeException();
          }
@@ -1181,6 +1182,9 @@ public void setStrategyType(Skill strategyType) {
    allSolved = false;
 }
 
+public void solve() throws NoRecommendationException, IOException {
+   solve(theRules);
+}   
 /**
  * UNTESTED
  * This function should load the Rules into the strategy.
@@ -1243,7 +1247,7 @@ private void findAllAnswers(Rules someRules) throws NoRecommendationException,
                System.err.println("Calculations are currently deactivated.");
                System.err.println("isPrecalculated returns: " + isPrecal);
                System.err.println("The file name I was looking for is: " + fileNameForAnswers());
-               throw new NoRecommendationException(null, someRules, "I have to calculate "
+               throw new NoRecommendationException(null, someRules, null, "I have to calculate "
                        + "this rule set.");
 
             }
@@ -1305,7 +1309,7 @@ public double findBestEV(Rules theRules, State myState)
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
    Answer myAnswer = findBestAnswer(aShoe, theRules, myState);
    if (!myAnswer.isComplete()) {
-      throw new NoRecommendationException(myState, theRules, "Can't call findBestEV on"
+      throw new NoRecommendationException(myState, theRules, null, "Can't call findBestEV on"
               + "an incomplete Answer.");
    }
    return myAnswer.getBestEV();
@@ -1339,7 +1343,7 @@ public double findSecondBestEV(Rules theRules, State myState)
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
    Answer myAnswer = findBestAnswer(aShoe, theRules, myState);
    if (!myAnswer.isComplete()) {
-      throw new NoRecommendationException(myState, theRules, "Can't call findSecondBestEV on"
+      throw new NoRecommendationException(myState, theRules, null, "Can't call findSecondBestEV on"
               + "an incomplete Answer.");
    }
    return myAnswer.getSecondBestEV();
@@ -1381,7 +1385,7 @@ public Action findSecondBestAction(Rules theRules, State myState)
       if ((myAnswer.getSecondBestAction() == recommendedBest)
               && (!myState.playerBJ()) && theRules.isPossible(recommendedBest, myState)) {
          System.err.println(theRules.toString() + myState.toString() + myAnswer.toString());
-         throw new NoRecommendationException(myState, theRules, "Second best action is the same as first best action.");
+         throw new NoRecommendationException(myState, theRules, null, "Second best action is the same as first best action.");
       }
       /*  I'm removing this error check. The reason is that
        * during late surrender, you can't surrender until the dealer has checked
@@ -1430,7 +1434,7 @@ Answer findBestAnswer(Shoe myShoe, Rules someRules, State myState)
 
    if ((someRules.numPossibleActions(myState, false) < 2) && (!myState.playerBJ())) {
       throw new NoRecommendationException(myState, someRules, 
-    		  "findBestAnswer was called when there is only only one possible action.");
+    		  null, "findBestAnswer was called when there is only only one possible action.");
    }
 
    if (strategyType != Skill.PERFECT) {
@@ -2200,12 +2204,12 @@ boolean solveAndStore(Rules someRules, boolean actingSolo)
    //This should also correctly initialize Strategy variables
 
    if ((strategyType != Skill.COMP_DEP) && (strategyType != Skill.TOTAL_DEP)) {
-      throw new NoRecommendationException(null, someRules, "Can't store results of this skill level:" + strategyType);
+      throw new NoRecommendationException(null, someRules, null, "Can't store results of this skill level:" + strategyType);
    }
 
 
    if (Blackjack.debug()) {
-      Testers.validateSolvedStrategy(this);
+      Validation.validateStrategy(this);
    }
 
    if (someRules.myHashKey() != loadedRuleSet) {
@@ -2586,7 +2590,7 @@ private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
    Answer splitAnswer = null;
    Answer normalAnswer = allAnswers.get(myState.getAnswerHash(false));
    if (normalAnswer == null) {
-      NoRecommendationException empty = new NoRecommendationException(myState, theRules, "Can't find"
+      NoRecommendationException empty = new NoRecommendationException(myState, theRules, null, "Can't find"
               + " answer in loaded map (code: " + myState.getAnswerHash(false));
       throw empty;
    }
@@ -2634,7 +2638,7 @@ private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
    // if (nothing was possible) || (I made some mistake)
    if (bestEV < -400) {
       throw new NoRecommendationException(myState, theRules,
-              "All recommended actions aren't legal.");
+              null, "All recommended actions aren't legal.");
    }
    return splitAnswer;
 }
@@ -3128,7 +3132,7 @@ private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationEx
  * TODO: Standardize and note whether dealer A up card expected values include the possibility of
  * dealer blackjack or not.
  */
-public void print() {
+public void print(final boolean showSecondBest) {
    if (!isAllSolved()) {
       System.err.println("This strategy has not been solved yet.");
       return;
@@ -3142,9 +3146,9 @@ public void print() {
    System.out.println(theRules); //TODO: Create a prettier version of toString and use that
 
    StringBuilder sb = new StringBuilder();
-   sb.append(getHardTable(true));
-   sb.append(getSoftTable(true));
-   sb.append(getSplitTable(true));
+   sb.append(getHardTable(showSecondBest));
+   sb.append(getSoftTable(showSecondBest));
+   sb.append(getSplitTable(showSecondBest));
    System.out.println(sb);
    if (strategyType != Skill.COMP_DEP) {
 	  // TODO: Figure out how far the program is from solving for total-dependent strategy and arbitrary strategies

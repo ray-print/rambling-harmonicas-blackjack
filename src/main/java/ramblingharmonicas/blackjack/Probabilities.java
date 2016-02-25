@@ -3,6 +3,10 @@ package ramblingharmonicas.blackjack;
 import java.util.*;
 import ramblingharmonicas.blackjack.cards.*;
 
+/**
+ * This class may be of theoretical interest but is of no practical use.
+ * 
+ */
 public class Probabilities {
 /**
  *
@@ -16,13 +20,10 @@ static double largeHandProbability(CardValue dealerCard, int numberOfCards,
         final FastShoe myDeck, final Rules theRules) {
    int cardsInHand = 1;
    ArrayList<Card> myCards = new ArrayList<Card>();
-   final double probabilityInitialCard = myDeck.fastProbabilityOf(dealerCard);
+   final double probabilityInitialCard = myDeck.probabilityOf(dealerCard);
    myDeck.fastDrawSpecific(dealerCard);
    myCards.add(new Card(Suit.CLUBS, dealerCard));
-   //System.out.println("The probability of the initial card draw was " + probabilityInitialCard);
    return DealerProbabilityRecursive(myCards, myDeck, theRules, probabilityInitialCard, numberOfCards);
-
-
 }
 
 private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
@@ -30,8 +31,7 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
         int numberOfCards) {
    int i, j, k;
    double totalDealerProbability = 0;
-   if (Utilities.isBust(myCards)) //BUST
-   {
+   if (Utilities.isBust(myCards)) {
       return 0;
    }
 
@@ -47,15 +47,8 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
    }
    // Otherwise, hit on Soft 17.
 
-   /*Whew. Now I know that:
-    A) The dealer is not bust.
-    B) The dealer has less than 17 or a soft 17, and therefore should hit.
-    Since I know I'm going to hit, solve for the probabilities. */
-// P(Ace), P(Two). . .P(10) --> Probabilities []
 
-   if (myCards.size() >= numberOfCards) {/* System.out.println("The cards in my hand are: ");
-       for (Card q : myCards) System.out.print(q.value() + "  ");
-       System.out.println("\nThe probability for that to happen is: " + probability);*/
+   if (myCards.size() >= numberOfCards) {
       return probability;
 
    }
@@ -71,7 +64,7 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
       }
    }
 
-   if ((myCards.size() == 1) && (theRules.dealerHoleCard() == true)) { //System.out.println("YO!!!");
+   if ((myCards.size() == 1) && (theRules.dealerHoleCard() == true)) {
       if (myCards.get(0).getCardValue() == CardValue.ACE) {
          i = 0;
          Probabilities[9] = 0;
@@ -81,51 +74,33 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
                Probabilities[i++] = myDeck.probabilityOfExcluding(val, CardValue.TEN);
             }
          }
-         //System.out.println("Hi");
       }
-      else if (myCards.get(0).value() == CardValue.TEN.value()) //NO ACES POSSIBLE
+      else if (myCards.get(0).value() == CardValue.TEN.value())
       {
          i = 0;
          Probabilities[0] = 0;
          aceDraw = false;
-         // System.out.println("Allo");
-         for (CardValue val : oneToTen) {
-            if (val != CardValue.ACE) {//System.out.println("val is " + val.toString() + " and the probability is " +
-               // myDeck.probabilityOfExcluding(val, CardValue.ACE) );
-               Probabilities[i] = myDeck.probabilityOfExcluding(val, CardValue.ACE);
 
+         for (CardValue val : oneToTen) {
+            if (val != CardValue.ACE) {
+               Probabilities[i] = myDeck.probabilityOfExcluding(val, CardValue.ACE);
             }
             i++;
          }
       }
-      else { // System.out.println("Bye?");
-         //Regular case: I know nothing about what the next card is, other than that it's random and in the shoe.
-
+      else {
          i = 0;
          for (CardValue val : oneToTen) {
-            Probabilities[i++] = myDeck.fastProbabilityOf(val);
+            Probabilities[i++] = myDeck.probabilityOf(val);
          }
-
-
       }
    }
-   else {  //System.out.println("Yes, bye.");
-//Regular case: I know nothing about what the next card is, other than that it's random and in the shoe.
+   else {  
       i = 0;
       for (CardValue val : oneToTen) {
-         Probabilities[i++] = myDeck.fastProbabilityOf(val);
+         Probabilities[i++] = myDeck.probabilityOf(val);
       }
    }
-
-   /*System.out.println("My probability vector is:");
-    for (int ii = 0; ii < Probabilities.length ; ii++)
-    {System.out.println(Probabilities[ii] + " chance of getting a " + (ii+1)); }
-    */
-
-//PROBABILITIES SECTION END
-
-//I've solved for all the probabilities. Now start hitting me. Check BOOLs for Aces and Tens.
-
 
    Card drawnCard;
    i = 0;
@@ -139,34 +114,28 @@ private static double DealerProbabilityRecursive(final ArrayList<Card> myCards,
          i++;
          continue;
       }
-      if (Probabilities[i] > 0) { //That CardValue is still in the shoe
+      if (Probabilities[i] > 0) {
 
 
          drawnCard = myDeck.fastDrawSpecific(val);
 
          myCards.add(drawnCard);
-
-         //     private double DealerProbabilityRecursive
-//(final ArrayList<Card> myCards, final FastShoe myDeck,  final Rules theRules, double probability, int numberOfCards)
-
-         totalDealerProbability += DealerProbabilityRecursive(myCards, myDeck, theRules, Probabilities[i] * probability, numberOfCards);
+         totalDealerProbability += DealerProbabilityRecursive
+                 (myCards, myDeck, theRules, Probabilities[i] * probability, numberOfCards);
 
          myCards.remove(drawnCard);
          myDeck.addCard(drawnCard);
 
 
-      } //probabilities if statement end.
+      }
       i++;
    }
 
-   return totalDealerProbability; // when would I ever get here?? Oh, at the very, very end.
+   return totalDealerProbability; // Done
 }
 
 /* Prints out the chances that the dealer will have a hands of a given length, given a certain
  * upcard.
- *
- *
- *
  */
 static double DealerRecursiveSandBox(final ArrayList<Card> myCards,
         final FastShoe myDeck, final Rules theRules, double probHere) {
@@ -228,7 +197,7 @@ static double DealerRecursiveSandBox(final ArrayList<Card> myCards,
    }
 
    long twoStart = System.currentTimeMillis();
-   //PROBABILITIES SECTION START
+
    double[] Probabilities = new double[10];
    boolean tenDraw = true;
    boolean aceDraw = true;
@@ -266,27 +235,22 @@ static double DealerRecursiveSandBox(final ArrayList<Card> myCards,
       else {
          i = 0;
          for (CardValue val : oneToTen) {
-            Probabilities[i++] = myDeck.fastProbabilityOf(val);
+            Probabilities[i++] = myDeck.probabilityOf(val);
          }
       }
    }
    else {
       i = 0;
       for (CardValue val : oneToTen) {
-         Probabilities[i++] = myDeck.fastProbabilityOf(val);
+         Probabilities[i++] = myDeck.probabilityOf(val);
       }
    }
 
    Card drawnCard;
    double[] scratch;
-   // = new double[10];
-   //This is pointless initialization since scratch is a built-in pointer. yay.
-   //for (k = 0; k < scratch.length; k++)
-   //        scratch[k] = 0;
+
    i = 0;
    long threeStart;
-   long fourStart;
-   long fiveStart;
    for (CardValue val : oneToTen) {
       if ((val == CardValue.ACE) && (aceDraw == false)) {
          i++;
@@ -323,8 +287,7 @@ static void dealerProbabilities(int numberOfDecks) {
    Rules myRules = new Rules();
    FastShoe myShoe = new FastShoe(numberOfDecks);
    double probabilitySum = 0;
-   // System.out.println("With a ten up, the odds of the dealer having 2 cards or more without standing or going bust are: ");
-   // System.out.println(Probabilities.largeHandProbability(CardValue.TEN, 2, myShoe, myRules));
+
    double probability;
    for (i = 2; i < 12; i++) {
       System.out.println("With " + numberOfDecks + " decks, the odds of the dealer having ");
@@ -344,19 +307,16 @@ static void dealerProbabilities(int numberOfDecks) {
 }
 
 /**
- * Mothballed. I forget what it does.
- *
- * @param numberOfDecks
- *
+ * Mothballed.
  */
 static void testDealerRecursiveSandBox(int numberOfDecks) {
    ArrayList<Card> myCards = new ArrayList<Card>();
    FastShoe myShoe = new FastShoe(numberOfDecks);
-   final double myProb = myShoe.fastProbabilityOf(CardValue.FIVE);
    Card pulledCard = myShoe.fastDrawSpecific(CardValue.FIVE);
    myCards.add(pulledCard);
    Rules theRules = new Rules();
-   System.out.println("The total of all those is: " + Probabilities.DealerRecursiveSandBox(myCards, myShoe, theRules, 1));
+   System.out.println("The total of all those is: " +
+           Probabilities.DealerRecursiveSandBox(myCards, myShoe, theRules, 1));
 }
 
 }

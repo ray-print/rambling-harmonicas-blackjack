@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * TODO: Move all tests in this file into JUnit. 
+ ***** TODO: Move all tests in this file into JUnit.  ****************
  * TODO: Move all code which solves and then stores data sets into separate file.
  * TODO: Move all non-tests into Blackjack.java
  *
@@ -162,7 +162,6 @@ public void runAllTests(boolean verbosity) throws IOException, NoRecommendationE
    }
    testAnswerLoad(verbosity);
    initAll();
-   testGetStrategyType();
    if (rulesKey != theRules.myHashKey()) {
       throw new RuntimeException("Rules mismatch");
    }
@@ -475,16 +474,6 @@ public void testAnswerLoad(boolean verbosity) throws IOException {
 }
 
 /**
- * Test of getStrategyType method, of class Strategy.
- */
-public void testGetStrategyType() {
-   Strategy.Skill expResult = Strategy.Skill.COMP_DEP;
-   Strategy.Skill result = myStrategy.getStrategyType();
-   assert (expResult == result);
-
-}
-
-/**
  * This does NOT test the actual EVs. It only checks that the total-dependent
  * strategy matches the composition-dependent strategy everywhere it should.
  *
@@ -506,7 +495,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          System.out.println("StrategyTest.testConsolidateHardAndOmniBus: Here is a rule set, "
                  + " and its total-dependent strategy, which I am testing.");
          System.out.println(someRules);
-         aStrategy.print();
+         aStrategy.print(true);
       }
       someState = new State(CardValue.EIGHT, CardValue.THREE, CardValue.ACE);
       assert (aStrategy.findBestAction(someState) == Action.DOUBLE);    //-> Hit comp-dep
@@ -532,7 +521,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          System.out.println("StrategyTest.testConsolidateHardAndOmniBus: Here is a rule set, "
                  + " and its total-dependent strategy, which I am testing.");
          System.out.println(someRules);
-         aStrategy.print();
+         aStrategy.print(true);
       }
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.SIX);
       assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE); //Hit comp-dep
@@ -633,7 +622,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
  * @param verbosity
  * @param aStrategy
  */
-private static void testTotalConsolidatedForConsolidation(boolean verbosity,
+public static void testTotalConsolidatedForConsolidation(boolean verbosity,
         Strategy aStrategy)
         throws NoRecommendationException, IOException {
    Action[] bestAction = new Action[21];
@@ -669,7 +658,7 @@ private static void testTotalConsolidatedForConsolidation(boolean verbosity,
                        + " hand total is to " + bestAction[handTotal] + ".");
                System.err.println("The dealer has a " + dealerCard + " in hand.");
                System.out.println("Here are my strategy tables:");
-               aStrategy.print();
+               aStrategy.print(true);
                throw new NoRecommendationException();
             }
             if (secondBestAction[handTotal] != scratchSecond) {
@@ -678,7 +667,7 @@ private static void testTotalConsolidatedForConsolidation(boolean verbosity,
                        + scratchSecond + ". However, the recommended action in another state with the same"
                        + " hand total is to " + secondBestAction[handTotal] + ".");
                System.out.println("Here are my strategy tables:");
-               aStrategy.print();
+               aStrategy.print(true);
                System.err.println("The dealer has a " + dealerCard + " in hand.");
                throw new NoRecommendationException();
 
@@ -748,246 +737,16 @@ public static void testStrategy(boolean verbosity) {
 
 }
 
-public static void testCards() {
-   Suit Suittester = Suit.CLUBS;
-   assert (Suittester == Suit.CLUBS);
-   Suittester = Suit.DIAMONDS;
-   assert (Suittester == Suit.DIAMONDS);
-   Suittester = Suit.SPADES;
-   assert (Suittester == Suit.SPADES);
-   Suittester = Suit.HEARTS;
-   assert (Suittester == Suit.HEARTS);
-
-   CardValue val = CardValue.ACE;
-   assert (val == CardValue.ACE);
-
-   Card Funitude = new Card(Suittester, val);
-   assert (Funitude.getCardValue() == CardValue.ACE);
-   assert (Funitude.getSuit() == Suit.HEARTS);
-
-   Shoe Deck = new Shoe(2);
-   assert (Deck.numberOfCards() == 52 * 2);
-
-
-}
-
-/**
- * Tests that the given strategy obeys some common blackjack advice.
- * Essentially a wrapper function for testOneSolvedStrategy and
- * testTotalConsolidatedForConsolidation
- *
- * @param aStrategy
- */
-static void validateSolvedStrategy(Strategy aStrategy) throws NoRecommendationException, IOException {
-   //Card DCard;
-   //Card firstPlayerCard;
-   //Card secondPlayerCard;
-   for (CardValue dealerCard : CardValue.oneToTen) {
-      for (CardValue firstPlayerCard : CardValue.oneToTen) {
-         for (CardValue secondPlayerCard : CardValue.oneToTen) {
-            testOneSolvedStrategy(dealerCard, firstPlayerCard, secondPlayerCard, aStrategy);
-         }
-      }
-   }
-   final boolean verbosity = false;
-
-   if (aStrategy.getStrategyType() == Strategy.Skill.TOTAL_DEP) {
-      StrategyTest.testTotalConsolidatedForConsolidation(verbosity, aStrategy);
-   }
-
-}
-
-/**
- * The driving force behind validateSolvedStrategy.
- * Tests the given strategy to make sure that it obeys common sense blackjack
- * rules:
- * Split Aces against dealer 9 and under
- * Double on 11 against dealer 9 and under
- * Don't stand if your hand Total is 11 or under, unless you can early surrender
- * Stand on hard 20; always stand on blackjacks.
- * Don't surrender on dealer 2-7 up.
- * Never take insurance.
- * If you have hard 14 and over with a dealer 2-6 up, you should always stand or
- * split.
- *
- * @param dealerCard
- * @param firstPlayerCard
- * @param secondPlayerCard
- * @param aStrategy
- *
- */
-private static void testOneSolvedStrategy(CardValue dealerCard,
-        CardValue firstPlayerCard, CardValue secondPlayerCard,
-        Strategy aStrategy) throws NoRecommendationException {
-   Rules theRules = aStrategy.getMyRules();
-   try {
-      State myState = new State(new Card(Suit.CLUBS, firstPlayerCard), new Card(Suit.CLUBS, secondPlayerCard),
-              new Card(Suit.SPADES, dealerCard));
-      Action chosenAction;
-      final int handTotal;
-      boolean isSoft;
-      Answer theAnswer = aStrategy.findBestAnswer(new Shoe(theRules.getNumberOfDecks()), theRules, myState);
-      chosenAction = aStrategy.findBestAction(myState);
-
-      //Always split aces, if it's possible, when the dealer doesn't have a 10 or ace up.
-      if ((theRules.isPossible(Action.SPLIT, myState))
-              && (firstPlayerCard == secondPlayerCard) && (firstPlayerCard == CardValue.ACE)) {
-         if ((dealerCard != CardValue.TEN) && (dealerCard != CardValue.ACE)) {
-            if (chosenAction != Action.SPLIT) {
-               System.err.println("With two Aces and a dealer " + dealerCard + ", I chose to " + chosenAction.toString());
-               System.err.println("Here is my rule set: " + theRules.toString());
-               State.printStateStatus(myState, "Here is my state:");
-               throw new NoRecommendationException();
-            }
-         }
-         return;
-      }
-
-      //Don't surrender with dealer up card of 2-7
-      if ((dealerCard.value() < 8) && (dealerCard.value() != CardValue.ACE.value())
-              && (chosenAction == Action.SURRENDER)) {
-         System.err.println("I chose to surrender when the dealer had less than an 8 up.");
-         System.err.println(theAnswer);
-         State.printStateStatus(myState, "");
-         aStrategy.print();
-         //re.printStackTrace(); No need, it'll never be caught.
-         throw new NoRecommendationException();
-
-      }
-
-      if ((firstPlayerCard == CardValue.ACE) || (secondPlayerCard == CardValue.ACE)) {
-         isSoft = true;
-         handTotal = firstPlayerCard.value() + secondPlayerCard.value() + 10;
-      }
-      else {
-         isSoft = false;
-         handTotal = firstPlayerCard.value() + secondPlayerCard.value();
-      }
-
-
-      //ALWAYS STAND ON 21
-      if (handTotal == 21) {
-         if (chosenAction != Action.STAND) {
-            System.err.println("With a hand total of " + handTotal + " and a dealer " + dealerCard + ", I chose to " + chosenAction.toString());
-            System.err.println("Here is my rule set: " + theRules.toString());
-            State.printStateStatus(myState, "Here is my state:");
-            throw new NoRecommendationException();
-
-         }
-      }
-
-      //NEVER TAKE INSURANCE
-      if (myState.isInsuranceAdvised()) {
-         System.err.println("With a hand total of " + handTotal + " and a dealer " + dealerCard + ", I chose to take insurance.");
-         System.err.println("Here is my rule set: " + theRules.toString());
-         State.printStateStatus(myState, "Here is my state:");
-         throw new NoRecommendationException();
-      }
-
-
-
-
-      //ALWAYS STAND ON HARD 20
-      if ((handTotal == 20) && (!isSoft)) {
-         if (chosenAction != Action.STAND) {
-            System.err.println("With a hand total of " + handTotal + " and a dealer " + dealerCard + ", I chose to " + chosenAction.toString());
-            System.err.println("Here is my rule set: " + theRules.toString());
-            State.printStateStatus(myState, "Here is my state:");
-            throw new NoRecommendationException();
-
-         }
-      }
-
-      //ALWAYS DOUBLE ON 11, IF POSSIBLE, ON DEALER 9 or under.
-      if ((handTotal == 11) && (theRules.isPossible(Action.DOUBLE, myState))
-              && (dealerCard.value() != 10) && (dealerCard.value() != 1)
-              && (chosenAction != Action.DOUBLE)) {
-         System.err.println("With a hand total of " + handTotal + " and a dealer " + dealerCard + ", I chose to " + chosenAction.toString() + ", not double.");
-         System.err.println("Here is my rule set: " + theRules.toString());
-         State.printStateStatus(myState, "Here is my state:");
-
-         throw new NoRecommendationException();
-      }
-
-      //Always hit, double, or split if your hand total is 11 or under and
-      //early surrender is not allowed. If early surrender is allowed, then
-      //don't surrender unless the dealer has a 10 or ace up.
-      if (handTotal <= 11) {
-         if ((chosenAction != Action.HIT) && (chosenAction != Action.DOUBLE)
-                 && (chosenAction != Action.SPLIT)) {
-            if (!theRules.getEarlySurrender() && !theRules.getEarlySurrenderNotOnAces()) {
-
-               System.err.println("With a hand total of " + handTotal + ", I did not choose to hit or double.");
-               System.err.println("Here is my rule set: " + theRules.toString());
-               System.err.println("My chosen action is: " + chosenAction);
-               try {
-                  Thread.sleep(1000);
-               }
-               catch (Exception e) {
-               }
-               State.printStateStatus(myState, "Here is my state:");
-               throw new NoRecommendationException();
-            }
-            else if ((dealerCard != CardValue.TEN)
-                    && (dealerCard != CardValue.ACE)) {
-
-               System.err.println("With a hand total of " + handTotal + ", I did not choose to hit or double.");
-               System.err.println("Here is my rule set: " + theRules.toString());
-               System.err.println("My chosen action is: " + chosenAction);
-               try {
-                  Thread.sleep(1000);
-               }
-               catch (Exception e) {
-               }
-               State.printStateStatus(myState, "Here is my state:");
-               throw new NoRecommendationException();
-
-            }
-            else ; //Early surrender on a ten or ace. Take it.
-         }
-      }
-
-
-      //STAND ON A HARD 14+ if the dealer has 2-6 up.
-      if ((handTotal > 14) && (dealerCard.value() >= 2) && (dealerCard.value() <= 6) && (!isSoft)) {
-         if ((chosenAction != Action.STAND) && (chosenAction != Action.SPLIT)) {
-            System.err.println("With a hand total of " + handTotal + ", I did not choose to hit or double.");
-            System.err.println("Here is my rule set: " + theRules.toString());
-            System.err.println("My chosen action is: " + chosenAction);
-            try {
-               Thread.sleep(1000);
-            }
-            catch (Exception e) {
-            }
-            State.printStateStatus(myState, "Here is my state:");
-            throw new NoRecommendationException();
-         }
-
-      }
-
-
-      //WHOLE FUNCTION ABOVE HERE
-   }
-   catch (IOException f) {
-      throw new NoRecommendationException(f);
-   }
-
-}
-
 public static void allFastTests() {
    //Faster tests -- those which don't require solving the strategy.
    DealerCache.setCache(DealerCache.Status.FULL_CACHE);
    final long startTime = System.currentTimeMillis();
    testInsuranceGoodIdea();
    Testers.testResolveHands();
-   Testers.testCards();
    Testers.testOverloadedDealer(); //Utilities functions
-   Testers.testOverLoadFastShoe(1);
-   Testers.testShoe();
    Testers.dealerClassTest();
    Testers.testDealerHCP();
 
-   Testers.basicRulesTester();
    Testers.testRulesConstructors();
    Testers.testState();
    AnswerTest.runAllTests();
@@ -1035,53 +794,6 @@ public static void viewRawSplitEV(Rules theRules,
       e.printStackTrace();
       throw new RuntimeException(e);
 
-   }
-}
-
-/**
- * Helper function for testShoe
- *
- *
- * @param numberDecks
- * @throws ShuffleNeededException
- */
-private static void shoeCopyConstructorTest(int numberDecks) throws ShuffleNeededException {
-   Shoe firstShoe = new Shoe(numberDecks);
-   Card myAce = new Card(Suit.CLUBS, CardValue.ACE);
-
-   Shoe secondShoe = firstShoe.deepClone();
-   assert (firstShoe.numberOfCards() == 52 * numberDecks);
-   assert (secondShoe.numberOfCards() == 52 * numberDecks);
-
-   secondShoe.drawSpecific(CardValue.NINE);
-   secondShoe.drawSpecific(CardValue.NINE);
-   secondShoe.drawSpecific(CardValue.NINE);
-   secondShoe.drawSpecific(CardValue.NINE);
-   firstShoe.drawSpecific(CardValue.TWO);
-   firstShoe.drawSpecific(CardValue.TWO);
-   firstShoe.drawSpecific(CardValue.TWO);
-   firstShoe.drawSpecific(CardValue.TWO);
-   final double numDecks = numberDecks;
-
-   assert (firstShoe.fastProbabilityOf(CardValue.NINE)
-           < ((double) (4D * numDecks) / (double) (52D * numDecks - 4D)) + Constants.EPSILON) :
-           firstShoe.fastProbabilityOf(CardValue.NINE) + " calculated, expected"
-           + (((4D * numDecks) / (52D * numDecks - 4D)) + Constants.EPSILON);
-
-
-
-   assert (firstShoe.fastProbabilityOf(CardValue.ACE)
-           > ((4D * numDecks) / (52D * numDecks - 4D)) - Constants.EPSILON);
-
-   assert (secondShoe.fastProbabilityOf(CardValue.NINE)
-           < ((4D * numDecks - 4D) / (52D * numDecks - 4D) + Constants.EPSILON));
-
-   if (numberDecks != 1) {
-      assert (secondShoe.fastProbabilityOf(CardValue.NINE)
-              > ((4D * numDecks - 4D) / (52D * numDecks - 4D) - Constants.EPSILON));
-   }
-   else {
-      assert (secondShoe.fastProbabilityOf(CardValue.NINE) < 0);
    }
 }
 
@@ -1166,41 +878,6 @@ public static void testState() {
    assert (aState.getHandResult(0, 21, true) == State.PUSH);
    assert (aState.getHandResult(0, 21, false) == State.BLACKJACK);
    assert (aState.getHandResult(0, 18, false) == State.BLACKJACK);
-
-}
-
-/**
- * Clearly inadequate testing.
- *
- *
- */
-static void basicRulesTester() {
-   Rules theseRules = new Rules();
-   assert (theseRules.hitOn17());
-   assert (theseRules.dealerHoleCard());
-   ArrayList<Card> startingCards = new ArrayList<Card>();
-   startingCards.add(new Card(Suit.CLUBS, CardValue.TEN));
-   startingCards.add(new Card(Suit.SPADES, CardValue.JACK));
-
-   State myState = new State(startingCards, new Card(Suit.DIAMONDS,
-           CardValue.TWO));
-
-   assert (theseRules.isPossible(Action.STAND, myState));
-   assert (theseRules.isPossible(Action.SPLIT, myState)) : myState.toString();
-   assert (theseRules.numPossibleActions(myState, false) == 5);
-   myState.action(Action.HIT, new Card(Suit.SPADES, CardValue.ACE));
-   assert (theseRules.numPossibleActions(myState, true) == 2);
-
-   myState = new State(CardValue.THREE, CardValue.THREE, CardValue.NINE);
-   theseRules = new Rules(1);
-   theseRules.setLateSurrender(false);
-   theseRules.myDoubleRules.setOnlyNineTenEleven(true);
-   assert (theseRules.numPossibleActions(myState, true) == 3);
-
-   myState = new State(CardValue.EIGHT, CardValue.EIGHT, CardValue.EIGHT);
-   myState.action(Action.SPLIT);
-   myState.postSplitDraw(new Card(Suit.SPADES, CardValue.TEN));
-   assert (theseRules.numPossibleActions(myState, true) == 2);
 
 }
 
@@ -1815,7 +1492,7 @@ private static void advancedTestResolveHands() {
 
 
    //OK. To calculate first do insurance:
-   double probOfTen = myShoe.fastProbabilityOf(CardValue.TEN);
+   double probOfTen = myShoe.probabilityOf(CardValue.TEN);
    double calculatedValue = 0;
    calculatedValue = probOfTen * 1 + (1 - probOfTen) * -0.5;
    //System.out.println("Insurance is worth " + calculatedValue);
@@ -2201,256 +1878,6 @@ private static void testGetDealerHand() {
    }
 
 
-}
-
-/**
- * Helper function for testShoe
- * Tests most functionality of drawAppropriates.
- * Does not test for exception throwing functionality, though.
- *
- * @param myShoe
- * @throws ShuffleNeededException
- *
- */
-public static void testDrawAppropriateFunctions(Shoe myShoe) throws ShuffleNeededException {
-   Card drawnCard;
-   Card secondDrawnCard;
-   List<Card> scratch = new ArrayList<Card>();
-   Rules theRules = new Rules(1);
-//Apparently each number takes less than 0.0057 ms to generate. Not that long after all.
-   for (int i = 0; i < 1000; i++) {
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.ALL_HARD, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_HARD, drawnCard);
-      if ((drawnCard.getCardValue() == CardValue.ACE)
-              || (secondDrawnCard.getCardValue() == CardValue.ACE)) {
-         throw new RuntimeException("drawAppropriate drew the wrong card.");
-      }
-      myShoe.addCard(drawnCard);
-      myShoe.addCard(secondDrawnCard);
-
-      //Strategy.GameMode.ALL_HARD
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.HARD_12_16, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.HARD_12_16, drawnCard);
-      if ((drawnCard.getCardValue() == CardValue.ACE)
-              || (secondDrawnCard.getCardValue() == CardValue.ACE)) {
-         throw new RuntimeException("drawAppropriate drew an ace on Shoe.HARD_TOTAL_12_16.");
-      }
-      if (((drawnCard.value() + secondDrawnCard.value()) > 16)
-              || ((drawnCard.value() + secondDrawnCard.value()) < 12)) {
-         throw new RuntimeException("Hand total wrong on Shoe.HARD_TOTAL_12_16: "
-                 + ((drawnCard.value() + secondDrawnCard.value())));
-      }
-      myShoe.addCard(drawnCard);
-      myShoe.addCard(secondDrawnCard);
-
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SOFT, drawnCard);
-      if ((drawnCard.getCardValue() != CardValue.ACE)
-              && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
-         throw new RuntimeException("Ace not drawn to soft hand in drawAppropriate.");
-      }
-      myShoe.addCard(secondDrawnCard);
-      myShoe.addCard(drawnCard);
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SOFT_AND_HARD, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SOFT_AND_HARD, drawnCard);
-      if (drawnCard.value() == secondDrawnCard.value()) {
-         throw new RuntimeException(
-                 "The same two CVs were drawn in drawAppropiate to DrawMode.ALL_SOFT_AND_HARD:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      myShoe.addCard(secondDrawnCard);
-      myShoe.addCard(drawnCard);
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.ALL_SPLITS, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.ALL_SPLITS, drawnCard);
-      if (drawnCard.value() != secondDrawnCard.value()) {
-         throw new RuntimeException("Split cards not of identical value in drawAppropriate:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      myShoe.addCard(secondDrawnCard);
-      myShoe.addCard(drawnCard);
-
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.SOFT_OVER_16, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.SOFT_OVER_16, drawnCard);
-      if ((drawnCard.getCardValue() != CardValue.ACE) && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
-         throw new RuntimeException("SOFT_OVER_16 did not return an Ace in drawAppropriates:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      scratch.add(drawnCard);
-      scratch.add(secondDrawnCard);
-      if ((Utilities.handTotal(scratch) < 16) || (Utilities.handTotal(scratch) > 21)) {
-         throw new RuntimeException("SOFT_OVER_16 did not give the correct hand total in drawAppropriates:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      scratch.clear();
-      myShoe.addCard(secondDrawnCard);
-      myShoe.addCard(drawnCard);
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.SOFT_UNDER_16, true, theRules);
-      secondDrawnCard = myShoe.drawSecondPlayerCard(DrawMode.SOFT_UNDER_16, drawnCard);
-      if ((drawnCard.getCardValue() != CardValue.ACE) && (secondDrawnCard.getCardValue() != CardValue.ACE)) {
-         throw new RuntimeException("SOFT_UNDER_16 did not return an Ace in drawAppropriates:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      scratch.add(drawnCard);
-      scratch.add(secondDrawnCard);
-      if (Utilities.handTotal(scratch) > 16) {
-         throw new RuntimeException("SOFT_UNDER_16 did not give the correct hand total in drawAppropriates:"
-                 + drawnCard.toString() + " and " + secondDrawnCard.toString());
-      }
-      scratch.clear();
-      myShoe.addCard(secondDrawnCard);
-      myShoe.addCard(drawnCard);
-
-      /* MOTHBALLED
-
-       drawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_9, true,theRules );
-       if ( (drawnCard.value() < 2) || (drawnCard.value() > 6) )
-       throw new RuntimeException("drawSecondPlayerCard draw a " + drawnCard.toString() + ", not 2-7.");
-
-       secondDrawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_9, drawnCard);
-       if ( (secondDrawnCard.value() < 2) || (secondDrawnCard.value() > 6) )
-       throw new RuntimeException("drawSecondPlayerCard(2-args) draw a " + drawnCard.toString() + ", not 2-7.");
-
-       if  (  (drawnCard.value() + secondDrawnCard.value() ) > 8)
-       throw new RuntimeException("Hand total wrong on Shoe.HAND_TOTAL_UNDER_9: " +
-       ((drawnCard.value() + secondDrawnCard.value() )) );
-
-       myShoe.addCard(secondDrawnCard);
-       myShoe.addCard(drawnCard);
-
-       */
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.DEALER_2_6, false, theRules);
-      if ((drawnCard.value() < 2) || (drawnCard.value() > 6)) {
-         throw new RuntimeException("drawAppropriate drew a " + drawnCard.toString() + ", not 2-6.");
-      }
-      myShoe.addCard(drawnCard);
-
-
-
-      drawnCard = myShoe.drawAppropriate(DrawMode.DEALER_7_A, false, theRules);
-      if ((drawnCard.value() >= 2) && (drawnCard.value() <= 6)) {
-         throw new RuntimeException("drawAppropriate draw a " + drawnCard.toString() + ", not 7-A.");
-      }
-      myShoe.addCard(drawnCard);
-
-
-
-      /*
-
-
-       drawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_12, true,theRules );
-       if ( (drawnCard.value() < 2) || (drawnCard.value() > 9) )
-       throw new RuntimeException("drawSecondPlayerCard draw a " + drawnCard.toString() + ", not 2-9.");
-       secondDrawnCard = myShoe.drawSecondPlayerCard(Shoe.HAND_TOTAL_UNDER_12, drawnCard);
-       if ( (secondDrawnCard.value() < 2) || (secondDrawnCard.value() > 9) )
-       {
-       throw new RuntimeException("drawSecondPlayerCard(2-args) draw a " + secondDrawnCard.toString() + ", of value "
-       + secondDrawnCard.value() + "; not of value 2-9.");
-       }
-       if  (  (drawnCard.value() + secondDrawnCard.value() ) >= 12)
-       throw new RuntimeException("Hand total wrong on Shoe.HAND_TOTAL_UNDER_12: " +
-       ((drawnCard.value() + secondDrawnCard.value() )) );
-       myShoe.addCard(drawnCard);
-       myShoe.addCard(secondDrawnCard);
-
-
-       */
-   }
-
-}
-
-/**
- * testDrawAppropriateFunctions -- some parts are mothballed (2-6, 7-A, + ?1
- * more)
- *
- *
- * Tests fastProbabilityOf and drawAppropriates, nothing else.
- *
- */
-public static void testShoe() {
-
-   Shoe Deck = new Shoe(8);
-   final int cardsInDeck = 8 * 52;
-   assert (cardsInDeck == Deck.numberOfCards());
-   final int[] internalCVC = Deck.getCardValueCache();
-   for (CardValue i : CardValue.values()) {
-      assert ((Deck.fastProbabilityOf(i)
-              < ((double) internalCVC[i.value()] / (double) cardsInDeck) + Constants.EPSILON)
-              && (Deck.fastProbabilityOf(i)
-              > ((double) internalCVC[i.value()] / (double) cardsInDeck - Constants.EPSILON)));
-   }
-
-   Shoe myShoe = new Shoe(1);
-   try {
-      testDrawAppropriateFunctions(myShoe);
-      for (int i = 1; i < 10; i++) {
-         shoeCopyConstructorTest(i);
-      }
-   }
-   catch (ShuffleNeededException notShuffled) {
-      System.out.println("testDrawAppropriate(int cardPullCode) or shoeCopyConstructor(int) threw an exception.");
-      notShuffled.printStackTrace();
-      assert false;
-   }
-
-
-
-
-}
-
-/**
- * Tests the fast shoe key used in the dealer probability cache.
- * This could use vast improving. Specifically, a recursive solution
- * to go to an arbitrary depth, and a permutation formula to solve
- * for the total number of expected keys at a given depth.
- */
-public static void testFastShoeKey() {
-   int number;
-   final int DECK_CHOICES = 61;
-   Set<String> allTheKeys = new TreeSet<String>();
-   for (int i = 1; i < DECK_CHOICES; i++) {
-      FastShoe myShoe = new FastShoe(i);
-      for (int cv1 = 0; cv1 < 10; cv1++) {
-         myShoe.fasterDrawSpecific(cv1);
-         allTheKeys.add(myShoe.myStringKey());
-         for (int cv2 = 0; cv2 < 10; cv2++) {
-            myShoe.fasterDrawSpecific(cv2);
-            allTheKeys.add(myShoe.myStringKey());
-            /*
-             for (int cv3 =0; cv3<10; cv3++)
-             {
-             myShoe.fasterDrawSpecific(cv3);
-             allTheKeys.add(myStringKey());
-             myShoe.addCard(cv3);
-             }  */
-            myShoe.addCard(cv2);
-         }
-         myShoe.addCard(cv1);
-
-      }
-   }
-   final int twoRemovedKeys = 55 * (DECK_CHOICES - 1);
-   final int oneRemovedKeys = 10 * (DECK_CHOICES - 1);
-   assert (allTheKeys.size() == (oneRemovedKeys + twoRemovedKeys)) :
-           "There are this many keys: " + allTheKeys.size();
-   //55 permutations while removing 2 cards
-
-}
-
-/**
- * This calls testFastShoeKey.
- * Functions that haven't been tested here:
-
- */
-public static void testOverLoadFastShoe(int numDecks) {
-   testFastShoeKey();
 }
 
 /**
@@ -2958,10 +2385,6 @@ public static void testConstructors() {
 
 }
 
-/**
- *
- * @author Watongo
- */
 public static class testTotalEV {
 private static boolean saveAll = false;
 
@@ -3311,7 +2734,7 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
       }
       catch (Exception e) {
       }
-      myStrats.print();
+      myStrats.print(true);
       try {
          Thread.sleep(100);
       }
@@ -3321,7 +2744,7 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
    }
    if (!percentErrorPass && verbosity) {
       System.out.println("Off by more than 5 % on this test. Split strategy table: ");
-      myStrats.print();
+      myStrats.print(true);
    }
    return percentErrorPass;
 }

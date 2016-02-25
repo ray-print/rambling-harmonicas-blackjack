@@ -2,36 +2,25 @@ package ramblingharmonicas.blackjack;
 import ramblingharmonicas.blackjack.cards.*;
 
 /**
- * Contains all cards in a dealing shoe.
- * Package-private because it's only for calculation purposes -- this stores
- * only the value of each card, not its suit.
+ * Contains all cards in a dealing shoe. Stores only the value of each card, not the suit.
  *
  * There's some duplicated code here, possibly some unneeded functions,
- * and a lack of clarity in function names.
+ * and a lack of clarity in function names. The draw functions need refactoring -- there
+ * are too many of them, and some create excess objects or take objects as arguments (and should
+ * not do so for performance reasons)
  * All good areas to work on.
  * Also, this class uses a different indexing system than the one used in the
- * dealer recursive function. This is unnecessarily confusing. If that is ever
- * changed
- * the JavaDocs here must be modified to reflect that change.
+ * dealer recursive function. This is unnecessarily confusing.
  */
 class FastShoe implements VagueShoe {
 /**
  *
- * The array index is the CARD VALUE. [0] is unused. [1] is Ace. Etc.
+ * The array index is the CARD VALUE. [0] is unused; [1] is Ace, and so on.
  * This style does not reflect the usage in other parts of the program.
- *
  */
 private int[] cardValueCache = new int[11];
-/**
- * Total cards in the Shoe.
- *
- */
 private int totalCards;
 
-/**
- * Constructs a FastShoe with the specified number of decks.
- *
- */
 public FastShoe(int numberOfDecks) throws IllegalArgumentException {
    if (numberOfDecks <= 0) {
       throw new IllegalArgumentException("A FastShoe must have a positive "
@@ -48,11 +37,8 @@ public FastShoe(int numberOfDecks) throws IllegalArgumentException {
 }
 
 public FastShoe deepClone() {
-   return new FastShoe(this, cardValueCache);
-}
-
-FastShoe(FastShoe myOriginal, int[] cardArray) {
-   this(cardArray);
+   //avoid exposing private data
+   return new FastShoe(cardValueCache);
 }
 
 /**
@@ -63,30 +49,19 @@ private FastShoe(int[] cardArray) {
    System.arraycopy(cardArray, 0, this.cardValueCache, 0, cardArray.length);
    int sum = 0;
    for (int i = 1; i < cardArray.length; i++) {
-      sum += cardArray[i]; //the initial element is a crap value.
+      sum += cardArray[i]; //the initial element is a garbage value.
    }
    this.totalCards = sum;
    cardValueCache[0] = -50000;
 
 }
 
-/**
- * Creates a FastShoe from a normal Shoe.
- *
- *
- * @param normalShoe
- */
 FastShoe(Shoe normalShoe) {
-
    this.totalCards = normalShoe.numberOfCards();
    this.cardValueCache = normalShoe.getCardValueCache();
    //OK because it returns a deep clone of the cache.
-
 }
 
-/**
- * @return Total numbers of cards in shoe.
- */
 @Override
 public int numberOfCards() {
    return totalCards;
@@ -96,10 +71,8 @@ public int numberOfCards() {
 public String toString() {
    StringBuilder s = new StringBuilder();
    final String ln = System.getProperty("line.separator");
-
    s.append("This fast shoe contains a total of ")
            .append(this.numberOfCards()).append(" cards: ").append(ln);
-
    for (int i = 1; i < cardValueCache.length; i++) {
       s.append(cardValueCache[i]).append(" cards of value ").append(i).append(ln);
 
@@ -118,11 +91,11 @@ public String toString() {
  * @throws IllegalStateException if there are no cards left in the shoe
  */
 @Override
-public double fastProbabilityOf(final CardValue thisCard) {
+public double probabilityOf(final CardValue thisCard) {
    if (thisCard == null) {
       throw new NullPointerException();
    }
-   return fastProbabilityOf(thisCard.value() - 1);
+   return probabilityOf(thisCard.value() - 1);
 
 }
 
@@ -133,11 +106,10 @@ public double fastProbabilityOf(final CardValue thisCard) {
  *
  * @param cardIndex
  * @return A negative number if there are none of those cards left in the shoe
- * or if
- * the shoe is empty
+ * or if the shoe is empty
  *
  */
-double fastProbabilityOf(final int cardIndex) {
+double probabilityOf(final int cardIndex) {
    if (totalCards == 0) {
       return -100000000;
    }
@@ -164,7 +136,7 @@ double fastProbOfExcluding(final int goodCardIndex, final int excludedIndex) {
    }
    if (goodCardIndex == excludedIndex) {
       throw new IllegalArgumentException("FastShoe.fastProbOfExcluding(int,int) called"
-              + " with cards of the same value.");
+              + " with cards of the same value: " + goodCardIndex);
    }
    if (cardValueCache[(goodCardIndex + 1)] == 0) {
       return -5000;
@@ -181,8 +153,7 @@ double fastProbOfExcluding(final int goodCardIndex, final int excludedIndex) {
  * @return The probability of drawing the specified CardValue from the Shoe,
  * given that all
  * cards with the excluded CardValue cannot be drawn. Returns a negative value
- * if the CardValue
- * is not present in the shoe or if the Shoe is empty.
+ * if the CardValue is not present in the shoe or if the Shoe is empty.
  * @throws IllegalArgumentException if the two passed CardValues are the same.
  */
 double probabilityOfExcluding(final CardValue thisCard, final CardValue excluded) {
@@ -191,38 +162,32 @@ double probabilityOfExcluding(final CardValue thisCard, final CardValue excluded
    }
    if (thisCard.value() == excluded.value()) {
       throw new IllegalArgumentException("Shoe.probabilityOfExcluding(CardValue, CardValue) called"
-              + " with cards of the same value.");
+              + " with cards of the same value: " + thisCard);
    }
    if (cardValueCache[thisCard.value()] == 0) {
       return -100000;
    }
 
    return (double) (cardValueCache[thisCard.value()]) / ((double) (totalCards - cardValueCache[excluded.value()]));
-//Java requires explicit upcasting.
-
-
 }
 
 /**
  * Draws a card. The returned suit is always clubs.
- * About seven times faster than drawSpecific.
- * Return value not tested.
- * This should not be used in calculation functions because
- * it uses non-primitive data types.
  *
  * @param thisCard
  * @return Card.
- *
+ * TODO: Rename to drawSpecific / deprecate
  */
 @Override
 public Card fastDrawSpecific(final CardValue thisCard) {
    if (totalCards == 0) {
-      throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
+      throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no "
+              + "cards left in the shoe.");
    }
 
    if (cardValueCache[thisCard.value()] == 0) {
-      throw new IllegalStateException("FastShoe.fastdrawSpecific(CardValue) called for a CardValue not present"
-              + " in the shoe.");
+      throw new IllegalStateException("FastShoe.fastdrawSpecific(CardValue) called for a CardValue "
+              + "not present in the shoe.");
    }
    (cardValueCache[thisCard.value()])--;
    totalCards--;
@@ -231,12 +196,9 @@ public Card fastDrawSpecific(final CardValue thisCard) {
 }
 
 /**
- * "Draws" a card.
  * Faster than fastdrawSpecific?
  *
  * @param thisCard
- *
- *
  */
 public void fasterDrawSpecific(final CardValue thisCard) {
    if (totalCards == 0) {
@@ -260,45 +222,31 @@ public void fasterDrawSpecific(final CardValue thisCard) {
  */
 public void fasterDrawSpecific(final int cardIndex) {
    if (totalCards == 0) {
-      throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards left in the shoe.");
+      throw new IllegalStateException("FastShoe.fastDrawSpecific(CardValue) called with no cards "
+              + "left in the shoe.");
    }
 
    if (cardValueCache[(cardIndex + 1)] == 0) {
-      System.out.println("FastShoe.fastdrawSpecific(cardIndex) called for a CardValue not present"
-              + " in the shoe: " + cardIndex);
-      System.out.println(this);
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("FastShoe.fastdrawSpecific(cardIndex) called for a "
+              + "CardValue not present in the shoe: " + cardIndex + ". Shoe:" + this);
    }
    (cardValueCache[cardIndex + 1])--;
    totalCards--;
-
 }
 
-/**
- * Tested, works as expected.
- *
- */
 @Override
 public void addCard(final Card thisCard) {
    cardValueCache[(thisCard.value())]++;
    totalCards++;
-
 }
 
-/**
- * @param myCardValue
- *
- */
 public void addCard(final CardValue myCardValue) {
    cardValueCache[myCardValue.value()]++;
    totalCards++;
 }
 
 /**
- * cardValueCache[0] = -50000
- * and cardValueCache[1] holds the number of Aces. However, the indexing system
- * is different
- * in the dealer array (aces are in the 0 spot).
+ * The indexing system is different in the dealer array (aces are in the 0 spot).
  *
  * @param cardIndex
  */
@@ -308,16 +256,14 @@ public void addCard(final int cardIndex) {
 }
 
 /**
- * This function is currently unused and untested. Its purpose was
+ * This function is meant 
  * to help with the approximation value of a dealer hand when the dealer
  * hand limit had been reached. With the dealer probability cache, it is
- * not necessary to have a dealer max hand size, so there is no need to
- * use the approximation function.
+ * not necessary to have a dealer max hand size.
  *
  * @param value
  * @return 0 if value is 0 or less. Otherwise, the chances of getting this value
- * or less,
- * given the current shoe. Returns 1 if value is 11 or more.
+ * or less, given the current shoe. Returns 1 if value is 11 or more.
  */
 public double probGettingThisOrLess(final int value) {
    int cardsum = 0;
@@ -325,7 +271,7 @@ public double probGettingThisOrLess(final int value) {
       return 0;
    }
    if (value >= (cardValueCache.length - 1)) {
-      return 1; //You have less than 11
+      return 1; 
    }
    for (int i = 1; i <= value; i++) {
       cardsum += cardValueCache[i];
@@ -341,24 +287,24 @@ public double probGettingThisOrLess(final int value) {
  */
 public double probTheseThreeInOrder(CardValue firstCard, CardValue secondCard,
         CardValue dealerCard) {
-   final double probFirstCard = fastProbabilityOf(firstCard);
+   final double probFirstCard = probabilityOf(firstCard);
    if (probFirstCard < 0) {
-      return -100000; //It's not in shoe.
+      return -100000; 
    }
    if (totalCards < 3) {
-      return -100000; //Not enough cards in shoe.
+      return -100000;
    }
    int[] duplicate = new int[cardValueCache.length];
    System.arraycopy(cardValueCache, 0, duplicate, 0, cardValueCache.length);
 
    duplicate[firstCard.value()]--;
    if (duplicate[secondCard.value()] == 0) {
-      return -100000; //Second card not in shoe
+      return -100000; 
    }
    final double probSecondCard = (double) duplicate[secondCard.value()] / (double) (totalCards - 1);
    duplicate[secondCard.value()]--;
    if (duplicate[dealerCard.value()] == 0) {
-      return -100000; //Third card not in shoe
+      return -100000; 
    }
    final double probDealerCard = (double) duplicate[dealerCard.value()] / (double) (totalCards - 2);
 
@@ -370,11 +316,10 @@ public double probTheseThreeInOrder(CardValue firstCard, CardValue secondCard,
 
 /**
  * This function is not directly tested but is a wrapper for
- * fastProbablityOf(int),
+ * fastProbabilityOf(int),
  * which is well tested.
  * Speed ideas -- first, inline this to make it faster, second, don't double
- * allocate
- * the double [] if possible.
+ * allocate the double [] if possible.
  *
  * @return
  *
@@ -383,9 +328,8 @@ double[] getAllProbs() {
    int i;
    double[] probabilities = new double[10];
    for (i = 0; i < probabilities.length; i++) {
-      probabilities[i] = fastProbabilityOf(i);
+      probabilities[i] = probabilityOf(i);
    }
-
 
    return probabilities;
 }
@@ -406,17 +350,14 @@ double[] getAllProbs() {
  */
 double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
    if (!dealerHole) {
-      return fastProbabilityOf(drawnCard);
+      return probabilityOf(drawnCard);
    }
    final int currentDealerUpCard = DCard.value() - 1;
    if ((currentDealerUpCard != Blackjack.TENCARD)
            && (currentDealerUpCard != Blackjack.ACECARD)) {
-      return fastProbabilityOf(drawnCard);
+      return probabilityOf(drawnCard);
    }
-   //System.out.println("Got this far in playerProbability.");
-   //storeDealerHoleCardProbabilities(DCard);
 
-   int i;
    double probability = 0;
    CardValue undrawable;
    if (DCard.getCardValue().value() == CardValue.TEN.value()) {
@@ -426,7 +367,7 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
       undrawable = CardValue.TEN;
    }
    else {
-      throw new NullPointerException("Error in FastShoe.playerProbability"); //this is impossible
+      throw new NullPointerException("Error in FastShoe.playerProbability"); 
    }
    if (cardValueCache[drawnCard.value()] == 0) //Not in shoe.
    {
@@ -459,12 +400,8 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
 
    probability = probability / (totalCards - 1);
 
-   // this.printContents();
-   // //System.out.println("Full player probability function activated with card " +drawnCard.toString()
-   //         + " with dealer hole card " + DCard.getCardValue().toString() +": " + probability);
-
-   assert ((probability < fastProbabilityOf(drawnCard) * 1.10)
-           && (probability > fastProbabilityOf(drawnCard) * 0.90));
+   assert ((probability < probabilityOf(drawnCard) * 1.10)
+           && (probability > probabilityOf(drawnCard) * 0.90));
    //This stupid pain in the $&% correction should not be too far away from the original probability.
    // Probably not more than 5 % -- tested on one deck dealer hit soft 17
    //But just in case we'll make it to 10 %.
@@ -477,8 +414,6 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
  * function will calculate the probability of him drawing each card.
  *
  * @param dealerUpCardIndex Dealer card index (Ace = 0)
- * @return
- *
  */
 double[] getDealerHCP(int dealerUpCardIndex) {
    double[] probabilities = new double[10];

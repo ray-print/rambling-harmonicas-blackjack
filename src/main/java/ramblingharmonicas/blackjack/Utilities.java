@@ -19,14 +19,10 @@ public static String stackTraceToString(Throwable t) {
 }
 
 /**
- * Tested thrice; worked fine.
- * Not using this function, because it duplicates handTotal and I need to save
- * time.
- *
  * There's a function in State that does the same as this function. This one or
  * the
  * State one should be destroyed because code bloat is bad.
- *
+ * @deprecated Used only in Probabilities and Testers; duplicate existing functionality
  * @param myCards
  * @return
  */
@@ -55,9 +51,7 @@ static boolean isSoft(final int[] myCards, final int handTotal) {
    if (lowHandTotal(myCards) == handTotal) {
       return false;
    }
-   else {
-      return true;
-   }
+   return true;
 
 }
 
@@ -70,12 +64,7 @@ private static int lowHandTotal(int[] myCards) {
    return sum;
 }
 
-/*  Tested before altering. Seems to work fine.
- * Overloaded for theoretical performance improvement
- *
- *
- */
-static int handTotal(final int[] myCards /*Boolean isSoft*/) //trick doesn't work
+static int handTotal(final int[] myCards ) 
 {
    int sum = myCards[0] * 11;
 
@@ -87,7 +76,6 @@ static int handTotal(final int[] myCards /*Boolean isSoft*/) //trick doesn't wor
 
    }
    if (sum <= 21) {
-      //if (myCards[0] > 0) isSoft = true; else isSoft = false;
       return sum;
    }
    else {
@@ -96,32 +84,19 @@ static int handTotal(final int[] myCards /*Boolean isSoft*/) //trick doesn't wor
          sum -= 10;
          numOfAces--;
       }
-      //if (numOfAces > 0) isSoft = true; else isSoft =false; 
-      // if (sum > 21) System.out.println ("I'm bust! don't call Dealer.handTotal in that case?");
       return sum;
    }
-
 }
 
-/**
- * Tested, seems to work fine.
- *
- *
- *
- */
 static int handSize(final int[] myCards) {
    int handSize = 0;
    for (int i = 0; i < myCards.length; i++) {
       handSize += myCards[i];
    }
    return handSize;
-
-
 }
 
 /**
- * Tested.
- *
  * @param myCards An array of cards.
  * @param thisValue A given card value.
  * @return True if myCards contains a card of thisValue; false otherwise. Tens
@@ -137,8 +112,6 @@ public static boolean contains(final List<Card> myCards, CardValue thisValue) {
 }
 
 /**
- * Tested multiple times, seems to work fine.
- *
  * Gives most advantageous hand total.
  *
  * @param myCards
@@ -162,7 +135,6 @@ public static int handTotal(final List<Card> myCards) {
          sum -= 10;
          numOfAces--;
       }
-      // if (sum > 21) System.out.println ("I'm bust! don't call Dealer.handTotal in that case?");
       return sum;
    }
 
@@ -178,12 +150,7 @@ public static boolean isSoft(List<Card> myCards) {
    if (sum != handTotal(myCards)) {
       return true;
    }
-   else {
-      return false;
-   }
-
-
-
+   return false;
 }
 
 /**
@@ -232,9 +199,7 @@ static int retrieveSingleCard(int[] myCards) {
          }
       }
       throw new IllegalStateException();
-      //I should never get to the above line.
    }
-
 }
 
 static float[] doublesToFloat(double[] array) {
@@ -246,8 +211,6 @@ static float[] doublesToFloat(double[] array) {
 }
 
 /**
- * UNTESTED
- *
  * @param someStates
  * @return
  */
@@ -317,7 +280,8 @@ static double combinedStatesEV(State[] possibleStates, double[] probabilities) t
    for (int i = 0; i < possibleStates.length; i++) {
       if (probabilities[i] > 0) {
          if (possibleStates[i].getExpectedValue() < -10) {
-            throw new NoRecommendationException("IllegalStateException:Error discovered in combinedStatesEV");
+            throw new NoRecommendationException(
+                    "IllegalStateException:Error discovered in combinedStatesEV");
          }
          answer += probabilities[i] * possibleStates[i].getExpectedValue();
       }
@@ -424,7 +388,12 @@ static State findStartHand(ArrayList<ArrayList<State>> solvedStates,
    int i;
    int j;
    for (i = 0; i < solvedStates.size(); i++) {
-      if (((solvedStates.get(i).get(0).getFirstCardValue() == firstCard) && (solvedStates.get(i).get(0).getSecondCardValue() == secondCard)) || ((solvedStates.get(i).get(0).getFirstCardValue() == secondCard) && (solvedStates.get(i).get(0).getSecondCardValue() == firstCard))) {
+      //TODO: OMG simplify this ridiculous conditional
+      if (  ((solvedStates.get(i).get(0).getFirstCardValue() == firstCard) 
+              && (solvedStates.get(i).get(0).getSecondCardValue() == secondCard)) 
+                                 || 
+              ((solvedStates.get(i).get(0).getFirstCardValue() == secondCard) 
+              && (solvedStates.get(i).get(0).getSecondCardValue() == firstCard))) {
          wrongArrayPassed = false;
          break;
       }
@@ -452,8 +421,6 @@ static State findStartHand(ArrayList<ArrayList<State>> solvedStates,
 
 /**
  * Sets every value of the passed array to 0.
- *
- * @param zero
  */
 public static void zero(double[] zero) {
    for (int k = 0; k < zero.length; k++) {
@@ -463,8 +430,6 @@ public static void zero(double[] zero) {
 
 /**
  * Sets every value of the passed array to 0.
- *
- * @param zero
  */
 public static void zero(int[] zero) {
    for (int k = 0; k < zero.length; k++) {
@@ -491,11 +456,9 @@ public static void zero(int[] zero) {
 public static ArrayList<Card> getDealerHand(Rules theRules,
         ArrayList<Card> dealerCards, Shoe myShoe) {
    if ((dealerCards.size() == 1) && (theRules.dealerHoleCard())) {
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Utilities.getDealerHand should only be called with one card in hand when"
-                 + "the dealer receives no hole card. If the dealer has a hole card, it should be added back in to"
-                 + "the deck before calling this function.");
-      }
+         throw new IllegalStateException("Utilities.getDealerHand should only be called with one "
+                 + "card in hand when the dealer receives no hole card. If the dealer has a hole"
+                 + "card, it should be added back in to the deck before calling this function.");
    }
    do {
 
@@ -517,7 +480,6 @@ public static ArrayList<Card> getDealerHand(Rules theRules,
       }
       //I should hit now.
       dealerCards.add(myShoe.drawRandom());
-
    }
    while (true);
 
@@ -545,8 +507,7 @@ public static ArrayList<Card> getDealerHand(Rules theRules, Card dealerUpCard,
 /**
  * Moves best action and EV to second place
  * and moves second best to first place.
- * UNTESTED
- *
+ * TODO: Shouldn't this be a member function of State?
  * @param aState
  *
  */
@@ -582,8 +543,8 @@ public static int[] convertBytesToInteger(byte[] b) throws IOException {
 /**
  * Convenience function for exception handling while
  * attempting to close a Stream. Upon failure, I print the stack
- * trace and return false. (Not necessary after upgrade to Java 1.7)
- *
+ * trace and return false.
+ * TODO: Deprecate this upon upgrading to Java 7 or higher
  * @param Closeable stream
  * @return True if the stream was null or was successfully closed.
  * False otherwise.
