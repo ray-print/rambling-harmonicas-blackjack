@@ -1,5 +1,3 @@
-https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
-
 #### House edge and strategy calculator for standard blackjack (probabilistic analysis)
 
 ## Background
@@ -160,10 +158,10 @@ The house edge is -0.0590%
 
 The program store strategy data in files; if the file is not found for a given rule set, it will calculate the data fresh based on a given rule set. 
 
-The program can also be used to simply play through a blackjack game, but it does not contain the idea of chips or amount wagered or any graphics capabilities.
+The API can also be used to simply play through a blackjack game, but it does not contain the idea of chips or amount wagered or any graphics capabilities.
 
 ## Status
-When last tested, results of this calculator matched those of other blackjack calculators, apart from split results (which tend to vary from calculator to calculator). If you find any discrepancy between the results here and those of other calculators, please let me know which results don't match. (Note this project is in alpha because of the shoddy state of testing and project organization, so if you are in need of reliable results you should go to the tried-and-true calculators.)
+Results of this calculator matched those of other blackjack calculators, apart from split results (which tend to vary from calculator to calculator). If you find any discrepancy between the results here and those of other calculators, please let me know which results don't match. (Note this project is in alpha because of the shoddy state of testing and project organization, so if you are in need of reliable results you should go to the tried-and-true calculators.)
 The project's API is usable, but the code needs clean-up.
 
 Supported rule sets include:
