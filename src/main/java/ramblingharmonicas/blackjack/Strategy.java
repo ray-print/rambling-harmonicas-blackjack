@@ -1659,27 +1659,27 @@ public Action findBestAction(State myState) throws NoRecommendationException, IO
 }
 
 /**
- * Not tested.
+ * TODO: Add test if not present
  *
  * @param myShoe The Shoe is only used if the skill is set to
  * Perfect. All computation is done anew for every Perfect hand, so
  * no hashes are used.
  * @param theRules The current rule set.
  * @param myState The current state.
- * @return The best action. Null if there are
+ * @return The best action.
  *
  * @throws IllegalStateException if there are less than 2 possible
  * actions
  * @throws UnsupportedOperationException for Perfect calculations
  * on split hands. Insurance is not covered
  * by this. Simple and very easy strategy are NOT YET IMPLEMENTED.
- * @throw NoRecommendationException if the actions I want to recommend
+ * @throw NoRecommendationException if the actions the Strategy recommends
  * are all impossible or there's an error of some kind.
  *
  */
 public Action findBestAction(State myState, Rules theRules, Shoe myShoe) throws NoRecommendationException, IOException {
    Answer theAnswer = findBestAnswer(myShoe, theRules, myState);
-   //OK. Do I have the weird surrender/blackjack issue here?
+
    if (theRules.isPossible(theAnswer.getBestAction(), myState)) {
       return theAnswer.getBestAction();
    }
