@@ -1633,15 +1633,14 @@ private void loadVeryEasy(final int handTotal, CardValue dealerCard,
  * @throws ClassNotFoundException
  *
  */
-public Action findBestAction(Rules theRules,
-        State myState) throws NoRecommendationException, IOException {
+public Action findBestAction(State myState, Rules theRules) throws NoRecommendationException, IOException {
    if (strategyType == Skill.PERFECT) {
       throw new NoRecommendationException("Convenience function findbestAction(Rules,State) should"
               + "not be used with perfect skill, since that means you take the current shoe into account.");
    }
 
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
-   return findBestAction(aShoe, theRules, myState);
+   return findBestAction(myState, theRules, aShoe);
 }
 
 /**
@@ -1655,7 +1654,7 @@ public Action findBestAction(Rules theRules,
  *
  */
 public Action findBestAction(State myState) throws NoRecommendationException, IOException {
-   return findBestAction(theRules, myState);
+   return findBestAction(myState, theRules);
 
 }
 
@@ -1678,8 +1677,7 @@ public Action findBestAction(State myState) throws NoRecommendationException, IO
  * are all impossible or there's an error of some kind.
  *
  */
-public Action findBestAction(Shoe myShoe, Rules theRules,
-        State myState) throws NoRecommendationException, IOException {
+public Action findBestAction(State myState, Rules theRules, Shoe myShoe) throws NoRecommendationException, IOException {
    Answer theAnswer = findBestAnswer(myShoe, theRules, myState);
    //OK. Do I have the weird surrender/blackjack issue here?
    if (theRules.isPossible(theAnswer.getBestAction(), myState)) {

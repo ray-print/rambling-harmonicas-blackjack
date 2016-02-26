@@ -220,7 +220,7 @@ public void testFindBestActionOmniBus(boolean verbosity) throws IOException {
 
    Action anAction = null;
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -235,7 +235,7 @@ public void testFindBestActionOmniBus(boolean verbosity) throws IOException {
    aState = new State(myCards, new Card(Suit.CLUBS, CardValue.ACE));
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -332,7 +332,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState.setDealerBlackjack(false);
    Action anAction = null;
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -346,7 +346,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState = new State(myCards, dealerCard);
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -386,7 +386,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState = new State(myCards, dealerCard);
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -514,7 +514,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       //http://wizardofodds.com/games/blackjack/appendix/3a/
       //"Boss Media single deck"
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.FIVE);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE);
+      assert (aStrategy.findBestAction(someState, someRules) == Action.DOUBLE);
       //You should hit if you're playing composition-dependent.
       //Total-dependent should say to hit.
       if (verbosity) {  //haven't loaded the rules into the strategy before the first assert
@@ -524,12 +524,12 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          aStrategy.print(true);
       }
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.SIX);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.DOUBLE); //Hit comp-dep
       someState = new State(CardValue.TEN, CardValue.TWO, CardValue.SIX);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.STAND); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.STAND); //Hit comp-dep
 
       someState = new State(CardValue.TEN, CardValue.TWO, CardValue.FOUR);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.STAND); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.STAND); //Hit comp-dep
 
 
       //Below here is a test done without using the Strategy framework
@@ -1923,7 +1923,7 @@ static public void testResplitEVs() {
       value = myStrategy.findBestEV(theRules, aState);
 
       assert (value > (1 + Constants.FIVE_PERCENT_ERROR) * -0.12446) : value + " for best action: "
-              + myStrategy.findBestAction(theRules, aState);
+              + myStrategy.findBestAction(aState, theRules);
 
       assert (value < (1 - Constants.FIVE_PERCENT_ERROR) * -0.12446) : value;
 
@@ -1960,10 +1960,10 @@ static public void testResplitEVs() {
       value = myStrategy.findBestEV(theRules, aState);
 
       assert (value < (1 + Constants.FIVE_PERCENT_ERROR) * 0.01726) :
-              value + " for best action: " + myStrategy.findBestAction(theRules, aState);
+              value + " for best action: " + myStrategy.findBestAction(aState, theRules);
 
       assert (value > (1 - Constants.FIVE_PERCENT_ERROR) * 0.01726) : value + " for best action: "
-              + myStrategy.findBestAction(theRules, aState);
+              + myStrategy.findBestAction(aState, theRules);
       // These two numbers are from http://www.bjstrat.net/cgi-bin/cdca.cgi
       //
 
