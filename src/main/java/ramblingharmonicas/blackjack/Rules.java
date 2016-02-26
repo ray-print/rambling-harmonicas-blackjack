@@ -7,8 +7,8 @@ import java.io.Serializable;
 
 
 /* All member variable changes requires changes to these functions:
- * copy constructor, normal constructor, (hashcode and equals, which
- * are not implemented), Strategy rules toggles, toString,
+ * copy constructor, normal constructor, equals, 
+ * Strategy rules toggles, toString,
  * serialVersionUID, myHashCode, and any serialization related
  * methods.
  *
@@ -1059,6 +1059,45 @@ public int numPossibleActions(State aState, boolean manualDeal) {
 
 public int getNumResplitAces() {
    return this.numResplitAces;
+}
+
+@Override
+public boolean equals(Object o) {
+    if (o == this) {
+        return true;
+    }
+    if ( (o == null) || (o.getClass() != this.getClass() )) {
+        return false;
+    }
+    Rules otherRules = (Rules) o;
+    return ( (Math.abs(getBlackJackPayback() - otherRules.getBlackJackPayback()) <
+                    Constants.SMALLEST_EPSILON)
+            && getCharlie() == otherRules.getCharlie()
+            && (dealerHoleCard() == otherRules.dealerHoleCard())
+            && (getDealerMaxHandSize() == otherRules.getDealerMaxHandSize())
+            && (getEarlySurrender() == otherRules.getEarlySurrender())
+            && (getEarlySurrenderNotOnAces() == otherRules.getEarlySurrenderNotOnAces())
+            && (hitOn17() == otherRules.hitOn17())
+            && (hitSplitAces() == otherRules.hitSplitAces())
+            && (getLateSurrender() == otherRules.getLateSurrender())
+            && (getMaxNumberSplitHands() == otherRules.getMaxNumberSplitHands())
+            && (getAccuracy() == otherRules.getAccuracy())
+            && (getNumResplitAces() == otherRules.getNumResplitAces())
+            && (getNumberOfDecks() == otherRules.getNumberOfDecks())
+            && (getPlayerMaxHandSize() == otherRules.getPlayerMaxHandSize())
+            && (getAutoToggles() == otherRules.getAutoToggles())
+            //TODO: implement .equals in myDoubleRules
+            && (myDoubleRules.alwaysPossible() == otherRules.myDoubleRules.alwaysPossible())
+            && (myDoubleRules.anyTwoCards() == otherRules.myDoubleRules.anyTwoCards())
+            && (myDoubleRules.notOnAces() == otherRules.myDoubleRules.notOnAces())
+            && (myDoubleRules.notSplitAces() == otherRules.myDoubleRules.notSplitAces())
+            && (myDoubleRules.onlyNineTenEleven() == otherRules.myDoubleRules.onlyNineTenEleven())
+            && (myDoubleRules.onlyTenAndEleven() == otherRules.myDoubleRules.onlyTenAndEleven()) );
+}
+
+@Override
+public int hashCode() {
+    return ( (Long) myHashKey()).hashCode();
 }
 
 @Override

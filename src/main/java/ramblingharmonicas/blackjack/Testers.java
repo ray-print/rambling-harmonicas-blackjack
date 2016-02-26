@@ -747,7 +747,6 @@ public static void allFastTests() {
    Testers.dealerClassTest();
    Testers.testDealerHCP();
 
-   Testers.testRulesConstructors();
    Testers.testState();
    AnswerTest.runAllTests();
 
@@ -881,71 +880,7 @@ public static void testState() {
 
 }
 
-/**
- * Currently just tests the copy constructor. Note that the copy constructor is
- * also
- * tested every time it runs, by the hash.
- *
- */
-static void testRulesConstructors() {
-   Rules theRules, otherRules;
-   theRules = new Rules(1);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
 
-   theRules.setAccuracy(Rules.LOW_ACCURACY);
-   theRules.setCharlie(5);
-   theRules.setEarlySurrender(true);
-   theRules.setHitSplitAces(true);
-   theRules.setNumberDecks(2);
-   theRules.setMaxNumberSplitHands(2);
-   theRules.myDoubleRules.setNotOnAces(true);
-   theRules.myDoubleRules.setOnlyNineTenEleven(true);
-   theRules.myDoubleRules.setNotPostSplit(true);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
-
-   theRules = new Rules(otherRules);
-   theRules.setRulesAutoToggles(false);
-   theRules.myDoubleRules.setAnyTwoCards(false);
-   theRules.myDoubleRules.setOnlyNineTenEleven(true);
-   theRules.myDoubleRules.setOnlyTenAndEleven(true);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
-}
-
-/**
- * Tests the copy constructor
- *
- * @param theRules
- * @param otherRules
- */
-static private void testRulesCopyConstructor(Rules theRules, Rules otherRules) {
-   assert (theRules.getBlackJackPayback() < otherRules.getBlackJackPayback() + Constants.EPSILON);
-   assert (theRules.getBlackJackPayback() > otherRules.getBlackJackPayback() - Constants.EPSILON);
-   assert (theRules.getCharlie() == otherRules.getCharlie());
-   assert (theRules.dealerHoleCard() == otherRules.dealerHoleCard());
-   assert (theRules.getDealerMaxHandSize() == otherRules.getDealerMaxHandSize());
-   assert (theRules.getEarlySurrender() == otherRules.getEarlySurrender());
-   assert (theRules.getEarlySurrenderNotOnAces() == otherRules.getEarlySurrenderNotOnAces());
-   assert (theRules.hitOn17() == otherRules.hitOn17());
-   assert (theRules.hitSplitAces() == otherRules.hitSplitAces());
-   assert (theRules.getLateSurrender() == otherRules.getLateSurrender());
-   assert (theRules.getMaxNumberSplitHands() == otherRules.getMaxNumberSplitHands());
-   assert (theRules.getAccuracy() == otherRules.getAccuracy());
-   assert (theRules.getNumResplitAces() == otherRules.getNumResplitAces());
-   assert (theRules.getNumberOfDecks() == otherRules.getNumberOfDecks());
-   assert (theRules.getPlayerMaxHandSize() == otherRules.getPlayerMaxHandSize());
-   assert (theRules.getAutoToggles() == otherRules.getAutoToggles());
-   assert (theRules.myDoubleRules.alwaysPossible() == otherRules.myDoubleRules.alwaysPossible());
-   assert (theRules.myDoubleRules.anyTwoCards() == otherRules.myDoubleRules.anyTwoCards());
-   assert (theRules.myDoubleRules.notOnAces() == otherRules.myDoubleRules.notOnAces());
-   assert (theRules.myDoubleRules.notSplitAces() == otherRules.myDoubleRules.notSplitAces());
-   assert (theRules.myDoubleRules.onlyNineTenEleven() == otherRules.myDoubleRules.onlyNineTenEleven());
-   assert (theRules.myDoubleRules.onlyTenAndEleven() == otherRules.myDoubleRules.onlyTenAndEleven());
-//Boring. But probably useful.
-
-}
 
 /**
  * Includes no tests, but useful for debugging DealerRecursive
