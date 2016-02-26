@@ -6,7 +6,6 @@ import java.util.*;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import ramblingharmonicas.blackjack.cards.*;
 import ramblingharmonicas.blackjack.rules.Surrender;
 
 //TODO: Refactor to move some functionality to Utilities or Strategy or some new class(es).
@@ -25,6 +24,39 @@ public static void main(String[] args) throws NoRecommendationException, IOExcep
 
     myStrategy.solve();
     myStrategy.print(false);
+}
+
+private static void testReadmeAPI() throws NoRecommendationException, IOException {
+    Rules theRules = new Rules(4);
+    theRules.setAccuracy(Rules.CACHE_ACCURACY); //Controls calculation speed and accuracy
+    theRules.setHitSplitAces(true);
+    theRules.setHitOn17(false);
+    theRules.myDoubleRules.setOnlyTenAndEleven(true);
+    Strategy myStrategy = new Strategy(theRules, Strategy.Skill.COMP_DEP);
+    double houseEdge = myStrategy.getHouseEdge();
+    System.out.println(theRules);
+    System.out.println("My house edge is: " + houseEdge);
+    System.out.println("-------------------------");
+    Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
+    State myState = new State(myShoe.drawRandom(), myShoe.drawRandom(), myShoe.drawRandom());
+    //To see what actions are possible:
+    boolean splitPossible = theRules.isPossible(Action.SPLIT, myState);
+    boolean doublePossible = theRules.isPossible(Action.DOUBLE, myState);
+
+    //Get the best action, assuming that the Shoe was pristine before this hand was dealt.
+    //Checked exceptions -- IOException and NoRecommendationException
+    Action bestAction = myStrategy.findBestAction(myState, theRules); 
+
+    //Does a fresh calculation based on the current contents of the Shoe.
+    myStrategy.setStrategyType(Strategy.Skill.PERFECT);
+
+    //Checked exceptions -- IOException and NoRecommendationException
+    Action optimalAction = myStrategy.findBestAction(myState, theRules, myShoe);
+    System.out.println(myState);
+    System.out.println("Optimal action:" + optimalAction);
+    System.out.println("Best action: " + bestAction);
+    System.out.println("Split possible: " + splitPossible);
+    System.out.println("Double possible: " + doublePossible);
 }
 
 private static Strategy parseArguments(String[] args) {

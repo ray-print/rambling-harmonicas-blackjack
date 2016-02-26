@@ -1,15 +1,17 @@
 #### House edge and strategy calculator for standard blackjack (probabilistic analysis)
 
-## Background
-This is the first program of any length I wrote; I stopped development in August 2014 and restarted in Feb 2016. The code needs serious refactoring (for several reasons -- I did it on a lark, not expecting to publish it; I was inexperienced when I wrote it; and I purposely used no external libraries.). It's in Java so it will obviously never compare to other calculators in terms of speed.
-
-There is nothing new in this calculator in terms of algorithms. It uses a cache to speed up calculation of dealer hand results and approximates split hand results.
-
 ## Setup
 
-Run:
+Clone the repo, then:
 
-```shell
+Test: (may take up to two minutes)
+```bash
+./gradlew check
+```
+
+Install:
+
+```bash
  ./gradlew installDist
 ```
 
@@ -19,13 +21,13 @@ The executable should then be built in build/install/Blackjack/bin
 
 Get help:
 
-```shell
+```bash
 ./blackjack -?
 ```
 
-Solves for the house edge and gives accurate strategy advice for a given rule set (assumes a console width of ~100 characters):
+Solve for the house edge and gives accurate strategy advice for a given rule set (assumes a console width of ~100 characters):
 
-```shell
+```bash
 ./blackjack --decks=4 --hsa=false --double-after-split=false --surrender=early --no-hole-card
 (...description of rule set...)
                                           HARD HANDS                                        
@@ -158,7 +160,45 @@ The house edge is -0.0590%
 
 The program store strategy data in files; if the file is not found for a given rule set, it will calculate the data fresh based on a given rule set. 
 
-The API can also be used to simply play through a blackjack game, but it does not contain the idea of chips or amount wagered or any graphics capabilities.
+## API
+
+#### House edge
+
+Currently only available for composition-dependent strategy.
+
+```java
+Rules theRules = new Rules(4);
+theRules.setAccuracy(Rules.CACHE_ACCURACY); //Controls calculation speed and accuracy
+theRules.setHitSplitAces(true);
+theRules.setHitOn17(false);
+theRules.myDoubleRules.setOnlyTenAndEleven(true);
+Strategy myStrategy = new Strategy(theRules, Strategy.Skill.COMP_DEP);
+
+//Checked exceptions -- IOException and NoRecommendationException
+double houseEdge = myStrategy.getHouseEdge();
+```
+
+#### Play out a hand:
+The API does not contain the idea of chips or amount wagered (or any graphics).
+
+```java
+/* Same set up as above, then: */
+Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
+State myState = new State(myShoe.drawRandom(), myShoe.drawRandom(), myShoe.drawRandom());
+//To see what actions are possible:
+boolean splitPossible = theRules.isPossible(Action.SPLIT, myState);
+boolean doublePossible = theRules.isPossible(Action.DOUBLE, myState);
+
+//Get the best action, assuming that the Shoe was pristine before this hand was dealt.
+//Checked exceptions -- IOException and NoRecommendationException
+Action bestAction = myStrategy.findBestAction(myState, theRules); 
+
+//Does a fresh calculation based on the current contents of the Shoe.
+myStrategy.setStrategyType(Strategy.Skill.PERFECT);
+
+//Checked exceptions -- IOException and NoRecommendationException
+Action optimalAction = myStrategy.findBestAction(myState, theRules, myShoe);
+```
 
 ## Status
 Results of this calculator matched those of other blackjack calculators, apart from split results (which tend to vary from calculator to calculator). If you find any discrepancy between the results here and those of other calculators, please let me know which results don't match. (Note this project is in alpha because of the shoddy state of testing and project organization, so if you are in need of reliable results you should go to the tried-and-true calculators.)
@@ -179,6 +219,13 @@ number of cards, on split aces
 Solved rule sets can be stored on disk so that calculations do not need to be repeated.
 A standard rule set may take 5-10 seconds to calculate. If the dealer probability cache is used, then the first rule set will take much longer but then subsequent rule sets will be faster.
 
+#### Limitations
+* The house edge is currently only calculated for composition-dependent strategies
+* Only one resplit is allowed
+* Complicated surrender/double rules are not implemented
+* Standard deviation, effect of shoe depth, other probabilities not calculated
+* Split calculations are not optimized
+
 ## Project Goals
 * Use testing framework, refactor tests to match best practices, check code coverage, add test cases where applicable
 * Set up tests to run on every commit using some CI tool
@@ -194,7 +241,15 @@ A standard rule set may take 5-10 seconds to calculate. If the dealer probabilit
 * Store results in database to make data more accessible
 
 ## Contributions
-Yes! They are welcome! Please let me know what you want to work on. The most important thing to do now is to refactor the tests: migrate them to JUnit, remove useless ones, and add unit tests where appropriate. Once that is done, then there are scores of TODOs -- just grab one and ping me and refactor away. Until the tests are done and obvious refactoring is completed, no new features should be worked on, but bug fixes and suggestions for API improvements are always welcome. Also please see the issues list.
+Yes! They are welcome! Please let me know what you want to work on. The most important thing to do now is to refactor the tests: migrate them to JUnit, remove useless ones, and add unit tests where appropriate. Once that is done, then there are scores of TODOs -- just grab one and ping me and refactor away. Bug fixes and suggestions for API and documentation improvements are always welcome. Also please see the issues list.
+
+## License
+GNU
+
+## Background
+This is the first program of any length I wrote; I stopped development in August 2014 and restarted in Feb 2016. The code needs serious refactoring (for several reasons -- I did it on a lark, not expecting to publish it; I was inexperienced when I wrote it; and I purposely used no external libraries.). It's in Java so it will obviously never compare to other calculators in terms of speed.
+
+There is nothing new in this calculator in terms of algorithms. It uses a cache to speed up calculation of dealer hand results and approximates split hand results.
 
 ## Acknowledgements
 Thanks to all those who have solved this problem before, especially those who posted results online: John A. Nairn, the Wizard of Odds, Casino Vérité Software, bjstrat.net. I hope that this calculator will one day be as good as the already existing ones.
