@@ -425,7 +425,10 @@ boolean isComplete() {
  * 
 
  * @deprecated Answer should not know the details of State like this. Unfortunately, that leads
- * to a massive argument list. Boo Java.
+ * to a massive argument list, which is prone to user error. Boo Java. 
+ * TODO: Move this functionality over to State -- State can call a long Answer constructor.
+ * That way Answer doesn't have to know about State functions, and State just has to know about
+ * one Answer constructor.
  */
 protected Answer(State aState, boolean consolidated) {
     this (true, (float) aState.getExpectedValue(), (float) aState.getSecondBestEV(),

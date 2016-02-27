@@ -745,7 +745,7 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       if (currentEV > bestEV) {
          if (bestAction != null) {
             secondBestEV = bestEV;
-            secondBestAction = Action.deepClone(bestAction);
+            secondBestAction = bestAction;
          }
          bestEV = currentEV;
          bestAction = Action.HIT;
@@ -759,7 +759,7 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       if (actionResults.get(i).getExpectedValue() > bestEV) {
          if (bestAction != null) {
             secondBestEV = bestEV;
-            secondBestAction = Action.deepClone(bestAction);
+            secondBestAction = bestAction;
          }
          bestEV = actionResults.get(i).getExpectedValue();
          if (actionResults.get(i).testPostSplit()) {
@@ -792,16 +792,17 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
          secondBestEV = probDealerBJ * dealerBJWithHoleCard.getExpectedValue() + (1 - probDealerBJ) * secondBestEV;
       }
       else {
-         assert (false) : "Dealer can't have an early BJ in a no-hole game.";
          throw new NoRecommendationException ("Dealer can't have an early BJ in a no-hole game.");
       }
    }
    if (bestAction == null) {
-      State.printStateStatus(myState, "Action doom.");
-      System.out.println("I have " + actionResults.size() + " elements in action and hitting is" + (hitPossible ? "" : "not") + " possible .");
-      System.out.println("\n\n\n");
-      State.printStateStatus(actionResults.get(0), "This is what's in my action vector:");
-      throw new NoRecommendationException("Ya I screwed up this time. bestAction null pointer exception.");
+        StringBuilder sb = new StringBuilder();
+        sb.append("I have ").append(actionResults.size())
+               .append(" elements in action and hitting is").append(hitPossible ? "" : "not")
+               .append(" possible .").append("\n\n\n").append(". This is my action vector")
+               .append(actionResults.get(0));
+        throw new NoRecommendationException(myState, theRules, null, 
+              "bestAction null pointer exception." + sb);
    }
    if (secondBestAction == null) {
       if ((theRules.numPossibleActions(myState, false) != 1) && (myState.numberCardsInHand() < playerMaxHandSize)) {
@@ -826,14 +827,10 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
                }
             }
          }
-         try {
-            Thread.sleep(1000);
-         }
-         catch (Exception e) {
-         }
-         assert false : "IllegalStateException: secondBestAction set incorrectly in Player's Recursive.";
+         assert false : "IllegalStateException: secondBestAction set incorrectly in "
+                 + "Player's Recursive.";
       }
-      secondBestAction = Action.deepClone(bestAction);
+      secondBestAction = bestAction;
       secondBestEV = bestEV;
    }
    if (!earlySurrenderPossible) {

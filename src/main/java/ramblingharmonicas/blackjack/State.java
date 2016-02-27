@@ -224,7 +224,7 @@ ArrayList<ArrayList<Action>> getActions() {
    for (i = 0; i < totalHands + 1; i++) {
       clone.add(new ArrayList<Action>());
       for (j = 0; j < playerActions.get(i).size(); j++) {
-         clone.get(i).add(Action.deepClone(playerActions.get(i).get(j)));
+         clone.get(i).add(playerActions.get(i).get(j));
       }
 
    }
@@ -546,7 +546,7 @@ Card action(final Action myAction, final Card myCard, FastShoe myShoe) {
 
    myShoe.fasterDrawSpecific(myCard.getCardValue());
 
-   playerActions.get(currentHand).add(Action.deepClone(myAction));
+   playerActions.get(currentHand).add(myAction);
    myHands.get(currentHand).add(new Card(myCard));
    if (amIBust() == true) {
       return myCard;
