@@ -2021,7 +2021,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
          for (CardValue dealerCard : CardValue.oneToTen) {
             consolidated = rawData[index++];
             //consolidated, first second, dealer
-            anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard);
+            anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard, true);
             allAnswers.put(anAnswer.myHashKey(), anAnswer);
 
             //B) Load split answer if it exists. Should be the next byte.
@@ -2030,7 +2030,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
                if (consolidated == Strategy.dummyByte) ; //Dummy value, no split answer
                //Do not add to map
                else { //There is a split answer
-                  anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard);
+                  anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard, true);
                   //System.out.println("Adding this answer to map: " + anAnswer);
                   allAnswers.put(anAnswer.myHashKey(), anAnswer);
                }
@@ -2588,9 +2588,8 @@ private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
    Answer splitAnswer = null;
    Answer normalAnswer = allAnswers.get(myState.getAnswerHash(false));
    if (normalAnswer == null) {
-      NoRecommendationException empty = new NoRecommendationException(myState, theRules, null, "Can't find"
+      throw new NoRecommendationException(myState, theRules, null, "Can't find"
               + " answer in loaded map (code: " + myState.getAnswerHash(false));
-      throw empty;
    }
    boolean isComplete = normalAnswer.isComplete();
 
@@ -3081,9 +3080,10 @@ private void calculateHouseEdge() throws NoRecommendationException {
                        new Card(q, dealerCard));
 
                currentAnswer = retrieveAnswerAdvOrBasic(scratch);
-               assert (currentAnswer.isComplete());
+               assert (currentAnswer.isComplete()): "Incomplete answer: " + currentAnswer;
                totalEV += probability * currentAnswer.getBestEV();
-               assert ( (probSum += probability) > 0);
+               assert ( (probSum += probability) > 0): "Probability sum:" + probSum +
+               ", probability: " + probability;
             }
          }
       }
@@ -3105,20 +3105,18 @@ private void calculateHouseEdge() throws NoRecommendationException {
 private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationException {
 
    Answer theAnswer;
-   if (myState.getFirstCardValue().value() == myState.getSecondCardValue().value()) //firstCardIs(myState.getSecondCard().getCardValue())) <-wrong, jacks and queens are the same
-   {
+   if (myState.getFirstCardValue().value() == myState.getSecondCardValue().value()) {
       //the hashmap may have two answers in this case.
       theAnswer = twoAnswersInMap(myState);
       if (theAnswer == null) {
          throw new NoRecommendationException("NPE -- no answer in map for " + myState);
       }
    }
-   else //Now I know that splitting is impossible, since the player cards are different.
+   else //Splitting is impossible
    {
-      theAnswer = (Answer) allAnswers.get(myState.getAnswerHash(false));
+      theAnswer = allAnswers.get(myState.getAnswerHash(false));
       if (theAnswer == null) {
-         State.printStateStatus(myState, "In retrieveAnswerAdvOrBasic");
-          throw new NoRecommendationException("NullPointerException");
+          throw new NoRecommendationException("Answer is null. State: " + myState);
       }
    }
    return theAnswer;

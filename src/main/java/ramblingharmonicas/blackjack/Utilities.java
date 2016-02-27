@@ -250,9 +250,9 @@ static Answer splitEVtoAnswer(final double splitEV, CardValue PCard,
    final double originalBestEV = baseState.getExpectedValue();
    final double originalSecondBestEV = baseState.getSecondBestEV();
    if (splitEV > originalBestEV) {
-      baseState.setSecondBestAction(baseState.getPreferredAction());
+      baseState.setSecondBestAction(baseState.getBestAction());
       baseState.setSecondBestEV(originalBestEV);
-      baseState.setPreferredAction(Action.SPLIT);
+      baseState.setBestAction(Action.SPLIT);
       baseState.overWriteEV(splitEV);
    }
    else if (splitEV > originalSecondBestEV) {
@@ -515,9 +515,9 @@ static public void swapTopChoices(State aState) {
    final Action futureBest = aState.getSecondBestAction();
    final double futureBestEV = aState.getSecondBestEV();
    aState.setSecondBestEV(aState.getExpectedValue());
-   aState.setSecondBestAction(aState.getPreferredAction());
+   aState.setSecondBestAction(aState.getBestAction());
    aState.overWriteEV(futureBestEV);
-   aState.setPreferredAction(futureBest);
+   aState.setBestAction(futureBest);
 }
 
 /**

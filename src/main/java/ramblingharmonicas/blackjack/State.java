@@ -128,7 +128,7 @@ private double expectedValue = -100000000;
  * Used by the calculation functions to store the best possible action to take.
  *
  */
-private Action preferredAction = Action.ERROR;
+private Action bestAction = Action.ERROR;
 /**
  * When the first best action is unavailable, do this.
  * In some circumstances -- player blackjack -- the only option will be to
@@ -262,7 +262,7 @@ public State(State toBeCloned) {
    this.totalHands = toBeCloned.getTotalHands();
    Action mypreference;
    try {
-      this.preferredAction = toBeCloned.getPreferredAction();
+      this.bestAction = toBeCloned.getBestAction();
    }
    catch (IllegalStateException q) {
    } //Hasn't been set, that's fine.
@@ -772,13 +772,13 @@ public CardValue getSecondCardValue() {
 /**
  * @exception IllegalStateException if preferredAction has not been set yet.
  */
-Action getPreferredAction() {
-   if (preferredAction == null) {
-      throw new IllegalStateException("The preferred action has not "
-              + "been set yet, but State.getPreferredAction() was called.");
+Action getBestAction() {
+   if (bestAction == null) {
+      throw new IllegalStateException("The best action has not "
+              + "been set yet, but State.getBestAction() was called.");
    }
 
-   return preferredAction;
+   return bestAction;
 }
 
 /**
@@ -787,8 +787,8 @@ Action getPreferredAction() {
  *
  * @param bestAction
  */
-protected void setPreferredAction(Action bestAction) {
-   preferredAction = bestAction;
+protected void setBestAction(Action bestAction) {
+   this.bestAction = bestAction;
 }
 
 protected void setSecondBestAction(Action secondBestAction) {
@@ -1313,6 +1313,9 @@ boolean testPostSplit() {
  *
  * TOTALLY UNTESTED. Especially check that it gives the right hand value for a
  * variety of hands.
+ * @deprecated Make this static. Don't keep extra split answers in hash map, that is hella
+ * confusing. Once the extra split answers aren't in the map, it should be easier to disentangle
+ * State/Answer.
  */
 protected int getAnswerHash(boolean splitAnswerDesired) {
    if (splitAnswerDesired && (this.numberCardsInHand() != 2)) {
@@ -1492,7 +1495,7 @@ public String toString() {
       sb.append("The dealer has not yet checked for blackjack.").append(ln);
    }
    try {
-      Action bestAction = getPreferredAction();
+      Action bestAction = getBestAction();
       sb.append("The best action has been defined as a ").append(bestAction).append(ln);
    }
    catch (IllegalStateException q) {

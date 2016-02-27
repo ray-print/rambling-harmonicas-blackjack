@@ -580,10 +580,10 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
                     || (hardAnswers.get(i).get(j).getDealerUpCard().getCardValue() == CardValue.FOUR)))
             ;
             else {
-               if ((hardAnswers.get(i).get(j).getPreferredAction()
-                       != totalDependent.get(i).get(j).getPreferredAction())
-                       && (hardAnswers.get(i).get(j).getPreferredAction() != Action.SURRENDER)
-                       && (totalDependent.get(i).get(j).getPreferredAction() != Action.SURRENDER)) {
+               if ((hardAnswers.get(i).get(j).getBestAction()
+                       != totalDependent.get(i).get(j).getBestAction())
+                       && (hardAnswers.get(i).get(j).getBestAction() != Action.SURRENDER)
+                       && (totalDependent.get(i).get(j).getBestAction() != Action.SURRENDER)) {
                   if (key != theRules.myHashKey()) {
                      throw new RuntimeException("Rules corruption in Strategy test.");
                   }
@@ -1699,7 +1699,7 @@ static void printStrategy(ArrayList<ArrayList<State>> solvedStates,
               + "," + solvedStates.get(i).get(0).getSecondCard().getCardValue().value() + "\t       ");
       for (j = 0; j < solvedStates.get(i).size(); j++) {
          System.out.print(
-                 solvedStates.get(i).get(j).getPreferredAction().abbrev() + "        ");
+                 solvedStates.get(i).get(j).getBestAction().abbrev() + "        ");
       }
       System.out.print(newLineAndTab); //Should I use %t ?
       for (jj = 0; jj < solvedStates.get(i).size(); jj++) {
@@ -2077,7 +2077,7 @@ static public void testDealerHCP() {
 
    State solvedState =
            Testers.testPlayerRecursive(DCard, firstPCard, secondPCard, theRules, myShoe, false);
-   assert (solvedState.getPreferredAction() == Action.DOUBLE) : "Correct action not picked";
+   assert (solvedState.getBestAction() == Action.DOUBLE) : "Correct action not picked";
    assert ((solvedState.getExpectedValue() < 0.18192 + Constants.EPSILON)
            && (solvedState.getExpectedValue() > 0.18192 - Constants.EPSILON)) :
            "Expected value not calculated correctly for player 9-2 vs. dealer Ace:"

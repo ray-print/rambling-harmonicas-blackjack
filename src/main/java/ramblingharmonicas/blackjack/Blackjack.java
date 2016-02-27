@@ -475,7 +475,7 @@ static ArrayList<ArrayList<State>> solveHardPlayersRecursive(Rules theRules,
                catch (NoRecommendationException e) {} 
                //TODO -- empty catch blocks are bad
                if (Blackjack.debug()) {
-                  if ((duh.getPreferredAction() == duh.getSecondBestAction()) && (!duh.playerBJ())) {
+                  if ((duh.getBestAction() == duh.getSecondBestAction()) && (!duh.playerBJ())) {
                      System.out.println(theRules);
                      State.printStateStatus(duh, "Top two preferred actions are the same.");
                      assert false;
@@ -837,7 +837,7 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
       secondBestEV = bestEV;
    }
    if (!earlySurrenderPossible) {
-      myState.setPreferredAction(bestAction);
+      myState.setBestAction(bestAction);
       myState.setSecondBestAction(secondBestAction);
       myState.setEV(bestEV);
       myState.setSecondBestEV(secondBestEV);
@@ -856,21 +856,21 @@ static State PlayerRecursive(final FastShoe myShoe, final State myState,
             return myState;
          }
          else {
-            myState.setPreferredAction(Action.SURRENDER);
+            myState.setBestAction(Action.SURRENDER);
             myState.setSecondBestEV(bestEV);
             myState.setSecondBestAction(bestAction);
             return myState;
          }
       }
       else if (earlySurrenderState.getExpectedValue() > secondBestEV) {
-         myState.setPreferredAction(bestAction);
+         myState.setBestAction(bestAction);
          myState.setEV(bestEV);
          myState.setSecondBestEV(earlySurrenderState.getExpectedValue());
          myState.setSecondBestAction(Action.SURRENDER);
          return myState;
       }
       else {
-         myState.setPreferredAction(bestAction);
+         myState.setBestAction(bestAction);
          myState.setSecondBestAction(secondBestAction);
          myState.setEV(bestEV);
          myState.setSecondBestEV(secondBestEV);
@@ -977,10 +977,10 @@ static double[] getBestEVOfSplitStates(FastShoe myShoe, Rules theRules,
          myCards.clear();
          myShoe.addCard(q);
          if ((    theRules.noDoublePostSplit() 
-                 && scratch.getPreferredAction() == Action.DOUBLE) 
+                 && scratch.getBestAction() == Action.DOUBLE) 
                  || ((PCard == CardValue.ACE) 
                  && (theRules.noDoubleSplitAces()) 
-                 && (scratch.getPreferredAction() == Action.DOUBLE))) {
+                 && (scratch.getBestAction() == Action.DOUBLE))) {
             bestEVOfStates[i] = scratch.getSecondBestEV();
          }
          else {
@@ -1089,13 +1089,13 @@ static double[] DealerRecursive(final int[] myCards, final FastShoe myDeck,
  */
 static boolean anyDisagreementHere(ArrayList<State> someStates) throws NoRecommendationException {
    assert (!someStates.isEmpty());
-   final Action firstAction = someStates.get(0).getPreferredAction();
+   final Action firstAction = someStates.get(0).getBestAction();
    final Action secondAction = someStates.get(0).getSecondBestAction();
    for (int i = 1; i < someStates.size(); i++) {
       if (someStates.get(i).getFirstCardValue() == someStates.get(i).getSecondCardValue()) {
          throw new NoRecommendationException();
       }
-      if (firstAction != someStates.get(i).getPreferredAction()) {
+      if (firstAction != someStates.get(i).getBestAction()) {
          return true;
       }
       if (secondAction != someStates.get(i).getSecondBestAction()) {
@@ -1139,7 +1139,7 @@ static void solveConsolidationAndReplace(double[] probThisState,
    int i;
    boolean discord = Blackjack.anyDisagreementHere(similarStates);
    if (!discord) {
-      bestAction = similarStates.get(0).getPreferredAction();
+      bestAction = similarStates.get(0).getBestAction();
       secondBestAction = similarStates.get(0).getSecondBestAction();
    }
    else {
@@ -1156,7 +1156,7 @@ static void solveConsolidationAndReplace(double[] probThisState,
       int j = 0;
       for (Action anAction : possibleActions) {
          for (i = 0; i < similarStates.size(); i++) {
-            if (similarStates.get(i).getPreferredAction() == anAction) {
+            if (similarStates.get(i).getBestAction() == anAction) {
                score[j] += similarStates.get(i).getExpectedValue() * probThisState[i] / sumOfProbs;
             }
             else if (similarStates.get(i).getSecondBestAction() == anAction) {
@@ -1191,7 +1191,7 @@ static void solveConsolidationAndReplace(double[] probThisState,
    }
    for (int k = 0; k < similarStates.size(); k++) {
       if (!discord) {
-         if (!bestAction.equals(similarStates.get(k).getPreferredAction())) {
+         if (!bestAction.equals(similarStates.get(k).getBestAction())) {
             throw new NoRecommendationException("Error in anyDisAgreement here: there was indeed disagreement."
                     + " The best action was thought to be " + bestAction
                     + ", but here is a state that says otherwise: " + similarStates.get(k).toString());
@@ -1204,7 +1204,7 @@ static void solveConsolidationAndReplace(double[] probThisState,
 
       }
       else {
-         similarStates.get(k).setPreferredAction(bestAction);
+         similarStates.get(k).setBestAction(bestAction);
          similarStates.get(k).setSecondBestAction(secondBestAction);
          similarStates.get(k).overWriteEV(bestEV);
          similarStates.get(k).setSecondBestEV(secondBestEV);
@@ -1243,7 +1243,7 @@ private static double noHitSplitAcesSolve(CardValue DCard, CardValue PCard,
       scratch.setDealerBlackjack(false);
    }
    scratch = Blackjack.PlayerRecursive(myShoe, scratch, theRules);
-   if (scratch.getPreferredAction() == Action.SPLIT) {
+   if (scratch.getBestAction() == Action.SPLIT) {
       return scratch.getExpectedValue();
    }
    else if (scratch.getSecondBestAction() == Action.SPLIT) {
