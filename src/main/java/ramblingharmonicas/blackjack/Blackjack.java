@@ -15,19 +15,6 @@ static public long dealerIterations = 0;
 static public long fastDealerIterations = 0;
 static public long playerIterations = 0;
 static public long holeCardCheck = 0;
-final static int ACECARD = 0; //Represents INDEX POSITION, not value.
-final static int TWOCARD = 1;
-final static int THREECARD = 2;
-final static int FOURCARD = 3;
-final static int FIVECARD = 4;
-final static int SIXCARD = 5;
-final static int SEVENCARD = 6;
-final static int EIGHTCARD = 7;
-final static int NINECARD = 8;
-final static int TENCARD = 9;
-final static int JACKCARD = 9;
-final static int QUEENCARD = 9;
-final static int KINGCARD = 9;
 private static boolean DEBUGGING = true;
 
 public static void main(String[] args) throws NoRecommendationException, IOException {

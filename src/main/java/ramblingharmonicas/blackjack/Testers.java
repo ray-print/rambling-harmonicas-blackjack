@@ -1755,16 +1755,16 @@ public static void testOverloadedDealer() {
    Utilities.zero(myCards);
    testOverloadedDealer(myCards, 0, 0, false);
    Utilities.zero(myCards);
-   myCards[Blackjack.ACECARD] = 1;
+   myCards[Constants.ACECARD] = 1;
    testOverloadedDealer(myCards, 11, 1, true);
-   myCards[Blackjack.TENCARD] = 1;
+   myCards[Constants.TENCARD] = 1;
    testOverloadedDealer(myCards, 21, 2, true);
-   myCards[Blackjack.NINECARD] = 1;
+   myCards[Constants.NINECARD] = 1;
    testOverloadedDealer(myCards, 20, 3, false);
-   myCards[Blackjack.SEVENCARD] = 1;
+   myCards[Constants.SEVENCARD] = 1;
    testOverloadedDealer(myCards, 27, 4, false);
    Utilities.zero(myCards);
-   myCards[Blackjack.ACECARD] = 4;
+   myCards[Constants.ACECARD] = 4;
    testOverloadedDealer(myCards, 14, 4, true);
 
    testGetDealerHand();

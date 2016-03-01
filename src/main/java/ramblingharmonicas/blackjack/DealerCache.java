@@ -130,8 +130,8 @@ class DealerCache {
 	      builder.append("S");
 	   }
 	   builder.append(myShoe.myStringKey());
-	   assert ((dealerCardIndex >= Blackjack.ACECARD) && 
-	           (dealerCardIndex <= Blackjack.TENCARD));
+	   assert ((dealerCardIndex >= Constants.ACECARD) && 
+	           (dealerCardIndex <= Constants.TENCARD));
 	   builder.append(dealerCardIndex);   // 0-9.
 	
 	   /*
@@ -140,8 +140,8 @@ class DealerCache {
 	    else building.append("N");
 	    */
 	
-	   if ((dealerCardIndex == Blackjack.ACECARD)
-	           || (dealerCardIndex == Blackjack.TENCARD)) {
+	   if ((dealerCardIndex == Constants.ACECARD)
+	           || (dealerCardIndex == Constants.TENCARD)) {
 	      if (theRules.dealerHoleCard()) {
 	         builder.append("H");
 	      }

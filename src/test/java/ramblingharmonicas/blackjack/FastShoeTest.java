@@ -19,12 +19,12 @@ public class FastShoeTest {
 	private final FastShoe aShoe;
 	private final int numDecks;
 	private final int numberOfCards;
-	private final static int [] aceToNine = { Blackjack.ACECARD, Blackjack.TWOCARD,
-		Blackjack.THREECARD, Blackjack.FOURCARD, Blackjack.FIVECARD, Blackjack.SIXCARD, 
-		Blackjack.SEVENCARD, Blackjack.EIGHTCARD, Blackjack.NINECARD};
-	private final static int [] aceToEight = { Blackjack.ACECARD, Blackjack.TWOCARD,
-		Blackjack.THREECARD, Blackjack.FOURCARD, Blackjack.FIVECARD, Blackjack.SIXCARD, 
-		Blackjack.SEVENCARD, Blackjack.EIGHTCARD};
+	private final static int [] aceToNine = { Constants.ACECARD, Constants.TWOCARD,
+		Constants.THREECARD, Constants.FOURCARD, Constants.FIVECARD, Constants.SIXCARD, 
+		Constants.SEVENCARD, Constants.EIGHTCARD, Constants.NINECARD};
+	private final static int [] aceToEight = { Constants.ACECARD, Constants.TWOCARD,
+		Constants.THREECARD, Constants.FOURCARD, Constants.FIVECARD, Constants.SIXCARD, 
+		Constants.SEVENCARD, Constants.EIGHTCARD};
 
 	@Parameters
 	public static Collection<Object[]> data() {
@@ -47,8 +47,8 @@ public class FastShoeTest {
 
 	@Test
 	public void testCardAddition() {
-		aShoe.addCard(Blackjack.ACECARD);
-		aShoe.addCard(Blackjack.JACKCARD);
+		aShoe.addCard(Constants.ACECARD);
+		aShoe.addCard(Constants.JACKCARD);
 		assertEquals(aShoe.numberOfCards(), numberOfCards + 2);
 		aShoe.addCard(new Card(Suit.SPADES, CardValue.JACK));
 	    aShoe.addCard(new Card(Suit.DIAMONDS, CardValue.QUEEN));
@@ -59,9 +59,9 @@ public class FastShoeTest {
 
 	@Test
 	public void testCardRemoval() {
-		aShoe.fasterDrawSpecific(Blackjack.TENCARD);
+		aShoe.fasterDrawSpecific(Constants.TENCARD);
 		assertEquals(aShoe.numberOfCards(), numberOfCards - 1);
-		aShoe.fasterDrawSpecific(Blackjack.ACECARD);
+		aShoe.fasterDrawSpecific(Constants.ACECARD);
 		assertEquals(aShoe.numberOfCards(), numberOfCards - 2);
 	}
 
@@ -71,7 +71,7 @@ public class FastShoeTest {
 			assert aShoe.probabilityOf(card) ==
 					(double) (4 * numDecks) / (double) (numberOfCards);
 		}
-		assert aShoe.probabilityOf(Blackjack.TENCARD) ==
+		assert aShoe.probabilityOf(Constants.TENCARD) ==
 					(double) (16 * numDecks) / (double) (numberOfCards);
 	}
 
@@ -87,7 +87,7 @@ public class FastShoeTest {
 		   for (CardValue cv : CardValue.twoToTen) {
 		      if (cv == CardValue.TEN) {
 		         assertEquals ( (5 + (16D * numDecks)) / numberCards, 
-		        		 aShoe.probabilityOf(Blackjack.TENCARD),
+		        		 aShoe.probabilityOf(Constants.TENCARD),
 		        		 Constants.SMALLEST_EPSILON);
 		         break;
 		      }
@@ -111,14 +111,14 @@ public class FastShoeTest {
 	}
 	@Test
 	public void integrationTestProbablityOf() {
-		aShoe.addCard(Blackjack.ACECARD);
-		aShoe.addCard(Blackjack.JACKCARD);
-		aShoe.fasterDrawSpecific(Blackjack.ACECARD);
-		aShoe.fasterDrawSpecific(Blackjack.TENCARD);
+		aShoe.addCard(Constants.ACECARD);
+		aShoe.addCard(Constants.JACKCARD);
+		aShoe.fasterDrawSpecific(Constants.ACECARD);
+		aShoe.fasterDrawSpecific(Constants.TENCARD);
 		for (int i = 0; i < 4 * numDecks; i++) {
-			aShoe.fasterDrawSpecific(Blackjack.TWOCARD);
+			aShoe.fasterDrawSpecific(Constants.TWOCARD);
 		}
-		assert aShoe.probabilityOf(Blackjack.TWOCARD) < 0;
+		assert aShoe.probabilityOf(Constants.TWOCARD) < 0;
 	}
 
 	@Test
@@ -145,7 +145,7 @@ public class FastShoeTest {
 					Constants.SMALLEST_EPSILON);
 		}
 		for (int card : aceToNine) {
-			assertEquals(0.11111111, aShoe.fastProbOfExcluding(card,  Blackjack.TENCARD), 
+			assertEquals(0.11111111, aShoe.fastProbOfExcluding(card,  Constants.TENCARD), 
 					Constants.SMALLEST_EPSILON);
 		}
 	}
@@ -172,7 +172,7 @@ public class FastShoeTest {
 		double probOfThree = 0;
 		aShoe.fasterDrawSpecific(CardValue.TEN);
 		double probOfDealerDrawingThree = 
-				aShoe.fastProbOfExcluding(Blackjack.THREECARD, Blackjack.ACECARD);
+				aShoe.fastProbOfExcluding(Constants.THREECARD, Constants.ACECARD);
 		probOfThree += 
 				probOfDealerDrawingThree * 
 				(4 * numDecks - 1) / (numberOfCards - 2);
