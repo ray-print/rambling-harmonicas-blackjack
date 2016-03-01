@@ -1445,7 +1445,7 @@ Answer findBestAnswer(Shoe myShoe, Rules someRules, State myState)
    if (someRules.isPossible(Action.SPLIT, myState)) {
       throw new NoRecommendationException("No perfect solve for split states");    
    }
-   State solvedState = Blackjack.PlayerRecursive(new FastShoe(myShoe), myState, someRules);
+   State solvedState = Calculation.PlayerRecursive(new FastShoe(myShoe), myState, someRules);
    return new Answer(solvedState);
 }
 
@@ -2065,12 +2065,12 @@ private void calculateBasicStrategy() throws NoRecommendationException {
    //Those are predefined; no calculations are necessary.
 
    ArrayList<Answer> splitAnswers = null;
-   ArrayList<ArrayList<State>> hardAnswers = Blackjack.solveHardPlayersRecursive(
+   ArrayList<ArrayList<State>> hardAnswers = Calculation.solveHardPlayersRecursive(
            theRules, true);
-   ArrayList<ArrayList<State>> softAnswers = Blackjack.solveSoftPlayersRecursive(
+   ArrayList<ArrayList<State>> softAnswers = Calculation.solveSoftPlayersRecursive(
            theRules, true);
    if (theRules.getMaxNumberSplitHands() > 0) {
-      splitAnswers = Blackjack.calculateAllSplitValues(theRules, hardAnswers,
+      splitAnswers = Calculation.calculateAllSplitValues(theRules, hardAnswers,
               softAnswers, true);
    }
    else {
@@ -2081,7 +2081,7 @@ private void calculateBasicStrategy() throws NoRecommendationException {
 
 
    if ((strategyType == Skill.TOTAL_DEP)) {
-      Blackjack.consolidateIntoTotalDependent(hardAnswers, theRules);
+      Calculation.consolidateIntoTotalDependent(hardAnswers, theRules);
    }
    //DEBUGGING
    //Testers.printStrategy(softAnswers, "Soft answers for " + theRules, false);

@@ -22,7 +22,7 @@ public void testHard12 () throws NoRecommendationException { //should make JUnit
     myShoe.fastDrawSpecific(CardValue.JACK);
     myShoe.fastDrawSpecific(CardValue.TEN);
     State aState = new State(CardValue.TWO, CardValue.JACK, CardValue.TEN);
-    aState = Blackjack.PlayerRecursive(myShoe, aState, theRules);
+    aState = Calculation.PlayerRecursive(myShoe, aState, theRules);
     assert (aState.getBestAction() == Action.HIT);
     assert (aState.getSecondBestAction() == Action.SURRENDER);
 }

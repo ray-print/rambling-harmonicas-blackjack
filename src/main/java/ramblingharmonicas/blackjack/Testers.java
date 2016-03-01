@@ -545,10 +545,10 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       }
       myStrategy = new Strategy(theRules, Strategy.Skill.TOTAL_DEP);
 
-      hardAnswers = Blackjack.solveHardPlayersRecursive(theRules, false);
-      totalDependent = Blackjack.solveHardPlayersRecursive(theRules, false);
-      softAnswers = Blackjack.solveSoftPlayersRecursive(theRules, false);
-      splitAnswers = Blackjack.calculateAllSplitValues(theRules, hardAnswers, softAnswers, false);
+      hardAnswers = Calculation.solveHardPlayersRecursive(theRules, false);
+      totalDependent = Calculation.solveHardPlayersRecursive(theRules, false);
+      softAnswers = Calculation.solveSoftPlayersRecursive(theRules, false);
+      splitAnswers = Calculation.calculateAllSplitValues(theRules, hardAnswers, softAnswers, false);
 
       if (verbosity) {
          Testers.printStrategy(hardAnswers, theRules.toString(), false);
@@ -558,7 +558,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
 
 
 
-      Blackjack.consolidateIntoTotalDependent(totalDependent, theRules);
+      Calculation.consolidateIntoTotalDependent(totalDependent, theRules);
 
       if (verbosity) {
          System.out.println("\nConsolidated hard table:");
@@ -774,7 +774,7 @@ public static void viewRawSplitEV(Rules theRules,
          j = 0;
          for (CardValue d : CardValue.values()) {
             System.out.println(
-                    d.toString() + ": " + Blackjack.splitSolve(theRules,
+                    d.toString() + ": " + Calculation.splitSolve(theRules,
                     d, q, dealerBlackjackPossible));
             j++;
             if (j == 10) {
@@ -901,7 +901,7 @@ static private void printAndTestFastDealerRecursive(
    int[] handArray = new int[10];
    Utilities.convertCardArraytoArray(myCards, handArray);
    final double[] epicFail =
-           Blackjack.DealerRecursive(handArray, Deck, myRules);
+           Calculation.DealerRecursive(handArray, Deck, myRules);
    double probability_sum = 0;
 
    if (displayBaseInfo) {
@@ -1307,7 +1307,7 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
       cloneOfStartHand.add(new Card(startingCards.get(i)));
    }
 
-   final double[] calculatedResults = Blackjack.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
+   final double[] calculatedResults = Calculation.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
 
    ArrayList<Card> results;
    final double ITERATIONS = 50000;
@@ -1414,7 +1414,7 @@ private static void advancedTestResolveHands() {
            myShoe);
    alwaysCloned.action(Action.STAND);
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
 
 
@@ -1439,7 +1439,7 @@ private static void advancedTestResolveHands() {
    ArrayList<Card> dealerArrayList = new ArrayList<Card>();
    dealerArrayList.add(dealerCard);
    dealerCards = Utilities.convertCardArraytoArray(dealerArrayList, dealerCards);
-   double[] dealerResults = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerResults = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
 
    double intermediateCalculatedValue = 0;
    //Dealer has 21, either natural or from drawing. You lose.
@@ -1489,7 +1489,7 @@ private static void advancedTestResolveHands() {
    alwaysCloned.action(Action.INSURANCE); //TESTING
    alwaysCloned.setDealerBlackjack(true);
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((0.999 < value) && (value < 1.001));
@@ -1515,7 +1515,7 @@ private static void advancedTestResolveHands() {
    }
    //alwaysCloned.setDealerBlackjack(true);
    alwaysCloned.action(Action.STAND);
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((1.3921 < value) && (value < 1.3922));
@@ -1560,7 +1560,7 @@ private static void advancedTestResolveHands() {
            myShoe);
 
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((-0.2064 < value) && (value < -0.2052)) : "Expected result was between -0.2062 and -0.2050; actual"
@@ -1593,7 +1593,7 @@ static State testPlayerRecursive(final Card DCard, final Card firstPCard,
       myState.setDealerBlackjack(false);
    }
    try {
-      return Blackjack.PlayerRecursive(myShoe, myState, theRules);
+      return Calculation.PlayerRecursive(myShoe, myState, theRules);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -1644,7 +1644,7 @@ static void testResolveHands() {
            CardValue.ACE));
    aState.action(Action.STAND);
 
-   aState = Blackjack.resolveHands(aState, myShoe,
+   aState = Calculation.resolveHands(aState, myShoe,
            theRules);
 
 
@@ -1653,7 +1653,7 @@ static void testResolveHands() {
    Utilities.zero(dealerCards);
 
    dealerCards[ aState.getDealerUpCard().value() - 1] = 1;
-   double[] dealerProbs = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerProbs = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
    //13 and 20. That's what both of these hands have. I also took insurance. Dang that's way
    //too many calculations.
 
@@ -1941,8 +1941,8 @@ static public void viewRawResplits() {
       //Assuming the dealer does NOT have blackjack.
       final String rulesHash = theRules.toString();
       System.out.println(rulesHash);
-      solvedSoft = Blackjack.solveSoftPlayersRecursive(theRules, false);
-      solvedHard = Blackjack.solveHardPlayersRecursive(theRules, false);
+      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
+      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
 
       Testers.printStrategy(solvedSoft, "Assuming the dealer doesn't have blackjack.", false);
       System.out.println("------------------------------------");
@@ -2041,7 +2041,7 @@ static public void testDirectSplitAlgorithm(CardValue playerCard,
       myShoe.fasterDrawSpecific(playerCard);
       myShoe.fasterDrawSpecific(dealCard);
       State myState = new State(myCards, dealerCard);
-      myState = Blackjack.PlayerRecursive(myShoe, myState, theRules);
+      myState = Calculation.PlayerRecursive(myShoe, myState, theRules);
 
 //And...goodbye 7+ hours. */
       State.printStateStatus(myState,
@@ -2124,9 +2124,9 @@ static public void viewRawStrategy(Rules theRules, String accuracyLevel,
       ArrayList<ArrayList<State>> solvedHard = new ArrayList<ArrayList<State>>();
       ArrayList<ArrayList<State>> solvedSoft = new ArrayList<ArrayList<State>>();
       System.out.println(accuracyLevel + ", " + rulesString);
-      solvedSoft = Blackjack.solveSoftPlayersRecursive(theRules, false);
+      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
       Testers.printStrategy(solvedSoft, "", viewSecondBest);
-      solvedHard = Blackjack.solveHardPlayersRecursive(theRules, false);
+      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
 
       System.out.println("---------------------------------------");
       Testers.printStrategy(solvedHard, "", viewSecondBest);
