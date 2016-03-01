@@ -64,26 +64,19 @@ private static Strategy parseArguments(String[] args) {
         //TODO: The command line can pass on info about whether
         //to print the best/second best EV, force calculations or load them, use total-dep strategy,
         //etc., add that functionality and make a createStrategy function similar to createRules
+        if (theRules == null) {
+            return null;
+        }
         Strategy someStrat = new Strategy(theRules, Strategy.Skill.COMP_DEP);
         return someStrat;
     }
     catch (OptionException exception) {
-        System.out.println(exception);
-        try {
-            parser.printHelpOn(System.out);
-        }
-        finally {
-            return null;
-        }
+        System.out.println(exception + ". For help, please use the -? option.");
+        return null;
     }
     catch (ClassCastException exception) {
-        System.out.println(exception);
-        try {
-            parser.printHelpOn(System.out);
-        }
-        finally {
-            return null;
-        }
+        System.out.println(exception + ". For help, please use the -? option.");
+        return null;
     }
 
 }
@@ -108,7 +101,7 @@ ANY_TWO_CARDS, TEN_ELEVEN, NINE_TEN_ELEVEN, HARD_ONLY
 private static Rules createRules(OptionParser parser, String[] args) throws OptionException,
         ClassCastException {
     OptionSet options = parser.parse(args);
-    if (options.has(Options.HELP[0])) {
+    if (options.has(Options.HELP[0]) || (args.length == 0) ) {
         try {
             parser.printHelpOn(System.out);
         }
