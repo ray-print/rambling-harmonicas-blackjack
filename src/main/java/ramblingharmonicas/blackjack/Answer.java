@@ -16,16 +16,16 @@ import ramblingharmonicas.blackjack.cards.*;
  * a database
  */
 class Answer implements Serializable {
-private final byte dealerCard, firstPlayerCard, secondPlayerCard;
-private final byte bestAction, secondBestAction;
-private final float bestEV, secondBestEV;
+private byte dealerCard, firstPlayerCard, secondPlayerCard;
+private byte bestAction, secondBestAction;
+private float bestEV, secondBestEV;
 /**
  * A complete answer is one that has a solved bestEV and secondBestEV.
  * An incomplete answer has the default bestEV and secondBestEV (-1000),
  * because it's been recreated from a file.
  *
  */
-private final transient boolean complete;
+private transient boolean complete;
 static private final transient long serialVersionUID = 1001L;
 
 /**
@@ -205,65 +205,60 @@ public int hashCode() //If this contains a split, it'll do a split hash; otherwi
  */
 @Override
 public boolean equals(Object obj) {
-   if (obj == null) {
-      return false;
-   }
-   if (getClass() != obj.getClass()) {
-      return false;
-   }
-   final Answer other = (Answer) obj;
-   if (other == this) {
-      return true;
-   }
-   if (this.complete != other.isComplete()) {
-      return false;
-   }
+    if (obj == null) {
+        return false;
+    }
+    if (obj == this) {
+        return true;
+    }
+    if (getClass() != obj.getClass()) {
+        return false;
+    }
+    final Answer other = (Answer) obj;
 
-   if (this.getDealerCard() != other.getDealerCard()) {
-      return false;
-   }
-   if (this.getFirstPlayerCard() != other.getFirstPlayerCard()) {
-      if (this.getFirstPlayerCard() != other.getSecondPlayerCard()) {
-         return false;
-      }
-      else {
-         if (this.getSecondPlayerCard() != other.getFirstPlayerCard()) {
-            return false;
-         }
-         else {
-            return true;
-         }
-      }
-   }
-   if (this.getSecondPlayerCard() != other.getSecondPlayerCard()) {
-      return false;
-   }
-   if ((this.getBestAction() != other.getBestAction())
+    if (this.complete != other.isComplete()) {
+        return false;
+    }
+
+    if (this.getDealerCard() != other.getDealerCard()) {
+        return false;
+    }
+    boolean playerCardsEqual = false;
+    if (    (this.getFirstPlayerCard() == other.getFirstPlayerCard())
+            && (this.getSecondPlayerCard() == other.getSecondPlayerCard()) ) {
+        playerCardsEqual = true;
+    }
+    else { 
+        if ( (this.getFirstPlayerCard() == other.getSecondPlayerCard())
+             && (this.getSecondPlayerCard() == other.getFirstPlayerCard()) ) {
+            playerCardsEqual = true;
+        }
+    }
+    if (!playerCardsEqual) {
+        return false;
+    }
+    if ((this.getBestAction() != other.getBestAction())
            || (this.getSecondBestAction() != other.getSecondBestAction())) {
-      return false;
-   }
-   //Now we need float number comparisons.
+        return false;
+    }
 
-   if (this.complete == false) //Don't need to compare EVs, they're both empty
-   {
-      return true;
-   }
+    if (this.complete == false) {//Don't need to compare EVs, they're both empty
+        return true;
+    }
 
+    final float otherBestEV = other.getBestEV();
+    if ((otherBestEV > (this.bestEV * (1 + Constants.EPSILON)))
+           || (otherBestEV < (this.bestEV * (1 - Constants.EPSILON)))) {
+        return false;
+    }
 
-   final float otherBestEV = other.getBestEV();
-   if ((otherBestEV < (this.bestEV * (1 + Constants.EPSILON)))
-           && (otherBestEV > (this.bestEV * (1 - Constants.EPSILON)))) {
-      return false;
-   }
-
-   final float otherSecondBestEV = other.getSecondBestEV();
-   if ((otherSecondBestEV < (this.secondBestEV * 1.01))
-           && (otherSecondBestEV > (this.secondBestEV * 0.99))) {
-      return false;
-   }
-
-
-   return true;
+    final float otherSecondBestEV = other.getSecondBestEV();
+    if (       (otherSecondBestEV > (this.secondBestEV * (1 + Constants.EPSILON))
+           || (otherSecondBestEV < (this.secondBestEV * (1 - Constants.EPSILON))) ) ) {
+        return false;
+    }
+    
+    return true;
 }
 
 /**
@@ -310,29 +305,6 @@ static protected int answerHash(byte firstPlayer, byte secondPlayer,
 }
 
 /**
- * UNTESTED. Currently unused.
- * Should work even with multiple cards in hand.
- *
- * Convenience function for Answer(byte consolidatedAction,
- * CardValue firstPlayerCard, CardValue secondPlayerCard,
- * CardValue dealerCard). (1-line function.)
- *
- * @param bestAction
- * @param secondBestAction
- * @param aState
- * @throws IOException (Unlikely)
- *
- */
-Answer(Action bestAction, Action secondBestAction, State aState) throws
-        IOException {
-   this(getConsolidatedActions(Answer.actionToByte(bestAction),
-           Answer.actionToByte(secondBestAction)),
-           Answer.byteToCardValue(State.getEffectiveCard(aState, 1)),
-           Answer.byteToCardValue(State.getEffectiveCard(aState, 2)),
-           Answer.byteToCardValue(State.getEffectiveCard(aState, 0)));
-}
-
-/**
  * Convenience function for Answer(byte consolidatedAction,
  * CardValue firstPlayerCard, CardValue secondPlayerCard,
  * CardValue dealerCard). (1-line function.)
@@ -342,42 +314,58 @@ Answer(Action bestAction, Action secondBestAction, State aState) throws
  * @param firstPlayerCard
  * @param secondPlayerCard
  * @param dealerCard
- * @throws IOException
  */
 Answer(Action bestAction, Action secondBestAction, CardValue firstPlayerCard,
         CardValue secondPlayerCard,
         CardValue dealerCard) throws IOException {
    this(getConsolidatedActions(Answer.actionToByte(bestAction),
            Answer.actionToByte(secondBestAction)),
-           firstPlayerCard, secondPlayerCard, dealerCard);
+           firstPlayerCard, secondPlayerCard, dealerCard, false);
 }
 
+Answer (final boolean complete, float bestEV, float secondBestEV,
+        CardValue firstCard, CardValue secondCard, 
+        CardValue dealerCard, Action bestAction, Action secondBestAction) {
+    this(complete, bestEV, secondBestEV, firstCard, secondCard, dealerCard, 
+            getConsolidatedActions(Answer.actionToByte(bestAction),
+           Answer.actionToByte(secondBestAction)));
+}
+        
+private Answer (final boolean complete, float bestEV, float secondBestEV,
+        CardValue firstCard, CardValue secondCard, 
+        CardValue dealerCard, final byte consolidatedAction) {
+    this.complete = complete;
+    this.bestEV = bestEV;
+    this.secondBestEV = secondBestEV;
+    this.firstPlayerCard = Answer.cardValueToByte(firstCard);
+    this.secondPlayerCard = Answer.cardValueToByte(secondCard);
+    this.dealerCard = Answer.cardValueToByte(dealerCard);
+    this.secondBestAction = (byte) (consolidatedAction % 6);
+    this.bestAction = (byte) ((consolidatedAction - this.secondBestAction) / 6);    
+}
 /**
  * Constructor used to reconstruct Answer from raw file data; sets EVs to -1000.
  * Two other constructors also redirect here.
  * UNTESTED.
+ * Wrapping the IOException in a RuntimeException to allow constructor chaining. This is not
+ * optimal.
  */
-Answer(byte consolidatedAction, CardValue firstPlayerCard,
-        CardValue secondPlayerCard, CardValue dealerCard) throws IOException {
-   this.complete = false;
-   this.bestEV = this.secondBestEV = -1000;
-   this.firstPlayerCard = Answer.cardValueToByte(firstPlayerCard);
-   this.secondPlayerCard = Answer.cardValueToByte(secondPlayerCard);
-   this.dealerCard = Answer.cardValueToByte(dealerCard);
+Answer(byte consolidatedAction, CardValue firstPlayerCard, CardValue secondPlayerCard, 
+        CardValue dealerCard, boolean fromFile) throws IOException{
+   this(false, -1000, -1000,
+           firstPlayerCard, secondPlayerCard, dealerCard, consolidatedAction);
    if ((consolidatedAction < 0) || (consolidatedAction > 35)) {
-      throw new IOException("Error in reconstructing Answer from byte "
+      throw new IOException("Error in constructing Answer from byte "
               + consolidatedAction + " -- expected values are between 0 and 35."
               + " Dummybyte is " + Strategy.dummyByte);
    }
    this.secondBestAction = (byte) (consolidatedAction % 6);
    this.bestAction = (byte) ((consolidatedAction - this.secondBestAction) / 6);
    if ((this.bestAction == this.secondBestAction) && (!hasBlackjack())) {
-      System.err.println("Error in Answer constructor -- suggested actions are"
-              + " identical.");
-      throw new IOException("Error in reconstructing Answer -- suggested actions"
-              + " are identical:"
-              + byteToAction(this.bestAction));
+      throw new IOException("Error in constructing Answer -- suggested "
+              + "actions are identical:" + byteToAction(this.bestAction));
    }
+
 }
 
 /**
@@ -397,9 +385,7 @@ private boolean hasBlackjack() {
            && (CardValue.ACE == byteToCardValue(this.secondPlayerCard))) {
       return true;
    }
-   else {
-      return false;
-   }
+   return false;
 }
 
 /**
@@ -435,31 +421,35 @@ boolean isComplete() {
    return complete;
 }
 
+/**
+ * 
+
+ * @deprecated Answer should not know the details of State like this. Unfortunately, that leads
+ * to a massive argument list, which is prone to user error. Boo Java. 
+ * TODO: Move this functionality over to State -- State can call a long Answer constructor.
+ * That way Answer doesn't have to know about State functions, and State just has to know about
+ * one Answer constructor.
+ */
 protected Answer(State aState, boolean consolidated) {
-   this.bestAction = actionToByte(aState.getPreferredAction());
-   this.secondBestAction = actionToByte(aState.getSecondBestAction());
-   this.bestEV = (float) aState.getExpectedValue();
-   this.secondBestEV = (float) aState.getSecondBestEV();
-   this.firstPlayerCard = cardValueToByte(aState.getFirstCard().getCardValue());
-   this.secondPlayerCard = cardValueToByte(aState.getSecondCard().getCardValue());
-   this.dealerCard = cardValueToByte(aState.getDealerUpCard().getCardValue());
-   this.complete = true;
+    this (true, (float) aState.getExpectedValue(), (float) aState.getSecondBestEV(),
+            aState.getFirstCard().getCardValue(), aState.getSecondCard().getCardValue(),
+            aState.getDealerUpCard().getCardValue(), 
+            getConsolidatedActions(
+            Answer.actionToByte(aState.getBestAction()),
+            Answer.actionToByte(aState.getSecondBestAction())) );
 
+    if (aState.getBestAction() == aState.getSecondBestAction()) {
+        assert (aState.playerBJ()): "Error in answer constructor: top "
+            + "two actions are the same. State:" + aState;
+    }
 
-   if ((aState.getPreferredAction() == aState.getSecondBestAction())
-           && (!aState.playerBJ())) {
-      State.printStateStatus(aState, "Error in answer constructor: top "
-              + "two actions are the same.");
-      assert false;
-   }
-
-   if (!checkValidEV(consolidated)) {
-      State.printStateStatus(aState, "Error in Answer constructor - "
-              + "EV is incorrect.");
-      assert false;
-   }
+    assert checkValidEV(consolidated):
+        "Error in Answer constructor - EV is incorrect. State: "+ aState;
 }
 
+/**
+ * @deprecated Answer should not know the internals of State
+ */
 protected Answer(State aState) {
    this(aState, false);
 }
@@ -475,11 +465,7 @@ private boolean checkValidEV(boolean consolidated) {
    if (((bestEV < -10) || (bestEV > 10)
            || (secondBestEV < -10) || (secondBestEV > 10))
            || ((!consolidated) && (secondBestEV > bestEV))) {
-
-      assert !((bestEV < -10) || (bestEV > 10) || (secondBestEV > bestEV)
-              || (secondBestEV < -10) || (secondBestEV > 10));
       return false;
-
    }
    return true;
 }

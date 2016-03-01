@@ -1377,34 +1377,17 @@ public Action findSecondBestAction(Rules theRules, State myState)
         throws NoRecommendationException, IOException, IllegalStateException {
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
    Answer myAnswer = findBestAnswer(aShoe, theRules, myState);
-   //System.out.println("Strategy.findSecondBestAction: Here is the Answer I have: ");
-   //System.out.println(myAnswer);
-   //if (true) throw new RuntimeException();
-   if (Blackjack.debug()) {
-      Action recommendedBest = myAnswer.getBestAction();
-      if ((myAnswer.getSecondBestAction() == recommendedBest)
-              && (!myState.playerBJ()) && theRules.isPossible(recommendedBest, myState)) {
-         System.err.println(theRules.toString() + myState.toString() + myAnswer.toString());
-         throw new NoRecommendationException(myState, theRules, null, "Second best action is the same as first best action.");
-      }
-      /*  I'm removing this error check. The reason is that
-       * during late surrender, you can't surrender until the dealer has checked
-       * for blackjack. So surrender isn't possible. It's only after the dealer checks
-       * that this becomes possible. I'm going to leave out that logic since it would
-       * be solely for the sake of this test.
-       *
-       recommendedBest =this.findBestAction(theRules, myState);
-       if (  (recommendedBest == myAnswer.getSecondBestAction() )
-       &&
-       (!myState.playerBJ() ) && (theRules.isPossible(recommendedBest, myState))
-       )
-       {
-       System.err.println(theRules.toString() + myState.toString() + myAnswer.toString());
-       System.err.println("this.findBestAction said that I should: " + this.findBestAction(theRules, myState) );
-       throw new NoRecommendationException(myState, theRules, "Second best action is the same as first best action.");
-       }
-       */
-   }
+
+   //Error checking. TODO: Refactor into separate function in Validation
+    Action recommendedBest = myAnswer.getBestAction();
+    if ((myAnswer.getSecondBestAction() == recommendedBest)
+            && (!myState.playerBJ()) && theRules.isPossible(recommendedBest, myState)) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(myAnswer).append("Second best action is the same as first best action.");
+        throw new NoRecommendationException(myState, theRules, null, sb.toString());
+    }
+
+   
    return myAnswer.getSecondBestAction();
 }
 
@@ -1445,7 +1428,7 @@ Answer findBestAnswer(Shoe myShoe, Rules someRules, State myState)
    if (someRules.isPossible(Action.SPLIT, myState)) {
       throw new NoRecommendationException("No perfect solve for split states");    
    }
-   State solvedState = Blackjack.PlayerRecursive(new FastShoe(myShoe), myState, someRules);
+   State solvedState = Calculation.PlayerRecursive(new FastShoe(myShoe), myState, someRules);
    return new Answer(solvedState);
 }
 
@@ -1633,15 +1616,14 @@ private void loadVeryEasy(final int handTotal, CardValue dealerCard,
  * @throws ClassNotFoundException
  *
  */
-public Action findBestAction(Rules theRules,
-        State myState) throws NoRecommendationException, IOException {
+public Action findBestAction(State myState, Rules theRules) throws NoRecommendationException, IOException {
    if (strategyType == Skill.PERFECT) {
       throw new NoRecommendationException("Convenience function findbestAction(Rules,State) should"
               + "not be used with perfect skill, since that means you take the current shoe into account.");
    }
 
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
-   return findBestAction(aShoe, theRules, myState);
+   return findBestAction(myState, theRules, aShoe);
 }
 
 /**
@@ -1655,33 +1637,32 @@ public Action findBestAction(Rules theRules,
  *
  */
 public Action findBestAction(State myState) throws NoRecommendationException, IOException {
-   return findBestAction(theRules, myState);
+   return findBestAction(myState, theRules);
 
 }
 
 /**
- * Not tested.
+ * TODO: Add test if not present
  *
  * @param myShoe The Shoe is only used if the skill is set to
  * Perfect. All computation is done anew for every Perfect hand, so
  * no hashes are used.
  * @param theRules The current rule set.
  * @param myState The current state.
- * @return The best action. Null if there are
+ * @return The best action.
  *
  * @throws IllegalStateException if there are less than 2 possible
  * actions
  * @throws UnsupportedOperationException for Perfect calculations
  * on split hands. Insurance is not covered
  * by this. Simple and very easy strategy are NOT YET IMPLEMENTED.
- * @throw NoRecommendationException if the actions I want to recommend
+ * @throw NoRecommendationException if the actions the Strategy recommends
  * are all impossible or there's an error of some kind.
  *
  */
-public Action findBestAction(Shoe myShoe, Rules theRules,
-        State myState) throws NoRecommendationException, IOException {
+public Action findBestAction(State myState, Rules theRules, Shoe myShoe) throws NoRecommendationException, IOException {
    Answer theAnswer = findBestAnswer(myShoe, theRules, myState);
-   //OK. Do I have the weird surrender/blackjack issue here?
+
    if (theRules.isPossible(theAnswer.getBestAction(), myState)) {
       return theAnswer.getBestAction();
    }
@@ -1886,9 +1867,8 @@ private void loadAnswersFromFile() throws IOException {
  *
  * @param answerFile
  */
-private byte[] retrieveRawStrategyData(InputStream answerFile,
-        final boolean validateData)
-        throws IOException {
+private byte[] retrieveRawStrategyData(InputStream answerFile) throws IOException {
+    final boolean validateData = true;
    DataInputStream byteSource = null; //Too slow...
    byte[] theRawStrat = new byte[Strategy.NUMBER_ANSWERS];
    byte[] scratchData = new byte[NUMBER_ANSWERS];
@@ -2010,7 +1990,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
    final byte[] rawData;
    int index = 0;
 
-   rawData = retrieveRawStrategyData(answerFile, Blackjack.debug());
+   rawData = retrieveRawStrategyData(answerFile);
    Answer anAnswer;
    int myKey;
    byte consolidated;
@@ -2023,7 +2003,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
          for (CardValue dealerCard : CardValue.oneToTen) {
             consolidated = rawData[index++];
             //consolidated, first second, dealer
-            anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard);
+            anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard, true);
             allAnswers.put(anAnswer.myHashKey(), anAnswer);
 
             //B) Load split answer if it exists. Should be the next byte.
@@ -2032,7 +2012,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
                if (consolidated == Strategy.dummyByte) ; //Dummy value, no split answer
                //Do not add to map
                else { //There is a split answer
-                  anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard);
+                  anAnswer = new Answer(consolidated, firstPlayer, secondPlayer, dealerCard, true);
                   //System.out.println("Adding this answer to map: " + anAnswer);
                   allAnswers.put(anAnswer.myHashKey(), anAnswer);
                }
@@ -2067,12 +2047,12 @@ private void calculateBasicStrategy() throws NoRecommendationException {
    //Those are predefined; no calculations are necessary.
 
    ArrayList<Answer> splitAnswers = null;
-   ArrayList<ArrayList<State>> hardAnswers = Blackjack.solveHardPlayersRecursive(
+   ArrayList<ArrayList<State>> hardAnswers = Calculation.solveHardPlayersRecursive(
            theRules, true);
-   ArrayList<ArrayList<State>> softAnswers = Blackjack.solveSoftPlayersRecursive(
+   ArrayList<ArrayList<State>> softAnswers = Calculation.solveSoftPlayersRecursive(
            theRules, true);
    if (theRules.getMaxNumberSplitHands() > 0) {
-      splitAnswers = Blackjack.calculateAllSplitValues(theRules, hardAnswers,
+      splitAnswers = Calculation.calculateAllSplitValues(theRules, hardAnswers,
               softAnswers, true);
    }
    else {
@@ -2083,7 +2063,7 @@ private void calculateBasicStrategy() throws NoRecommendationException {
 
 
    if ((strategyType == Skill.TOTAL_DEP)) {
-      Blackjack.consolidateIntoTotalDependent(hardAnswers, theRules);
+      Calculation.consolidateIntoTotalDependent(hardAnswers, theRules);
    }
    //DEBUGGING
    //Testers.printStrategy(softAnswers, "Soft answers for " + theRules, false);
@@ -2186,7 +2166,6 @@ public boolean store() throws NoRecommendationException, IOException {
  */
 boolean solveAndStore(Rules someRules, boolean actingSolo)
 		throws NoRecommendationException, IOException 
-		//,ClassNotFoundException, IOException
 {
    if (mapLoadDeactivated) {
       System.err.println("Strategy.solveAndStore: I cannot solve and store a data set when the total EV map "
@@ -2207,20 +2186,16 @@ boolean solveAndStore(Rules someRules, boolean actingSolo)
       throw new NoRecommendationException(null, someRules, null, "Can't store results of this skill level:" + strategyType);
    }
 
-
-   if (Blackjack.debug()) {
-      Validation.validateStrategy(this);
-   }
+   Validation.validateStrategy(this);
 
    if (someRules.myHashKey() != loadedRuleSet) {
-      System.err.println("Strategy.solveAndStore: Rules discrepancy. The rules I think are loaded are "
-              + theRules + ", with hash key " + loadedRuleSet);
-      System.err.println("However, I should have this rule set loaded, with hash key " + someRules.myHashKey()
-              + someRules);
-      System.err.println("I am returning without saving this rule set.");
-      throw new NoRecommendationException();
-      //saveTotalEVMap();
-      //throw new IllegalStateException();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Strategy.solveAndStore: Rules discrepancy.")
+          .append(" The rules I think are loaded are ").append(theRules)
+          .append(", with hash key ").append(loadedRuleSet)
+          .append("However, I should have this rule set loaded, with hash key ")
+          .append(someRules.myHashKey()).append(someRules);
+        throw new NoRecommendationException(sb.toString());
    }
 
    final boolean success = saveToFile();
@@ -2590,9 +2565,8 @@ private Answer twoAnswersInMap(State myState) throws NoRecommendationException {
    Answer splitAnswer = null;
    Answer normalAnswer = allAnswers.get(myState.getAnswerHash(false));
    if (normalAnswer == null) {
-      NoRecommendationException empty = new NoRecommendationException(myState, theRules, null, "Can't find"
+      throw new NoRecommendationException(myState, theRules, null, "Can't find"
               + " answer in loaded map (code: " + myState.getAnswerHash(false));
-      throw empty;
    }
    boolean isComplete = normalAnswer.isComplete();
 
@@ -3083,9 +3057,10 @@ private void calculateHouseEdge() throws NoRecommendationException {
                        new Card(q, dealerCard));
 
                currentAnswer = retrieveAnswerAdvOrBasic(scratch);
-               assert (currentAnswer.isComplete());
+               assert (currentAnswer.isComplete()): "Incomplete answer: " + currentAnswer;
                totalEV += probability * currentAnswer.getBestEV();
-               assert ( (probSum += probability) > 0);
+               assert ( (probSum += probability) > 0): "Probability sum:" + probSum +
+               ", probability: " + probability;
             }
          }
       }
@@ -3107,20 +3082,18 @@ private void calculateHouseEdge() throws NoRecommendationException {
 private Answer retrieveAnswerAdvOrBasic(State myState) throws NoRecommendationException {
 
    Answer theAnswer;
-   if (myState.getFirstCardValue().value() == myState.getSecondCardValue().value()) //firstCardIs(myState.getSecondCard().getCardValue())) <-wrong, jacks and queens are the same
-   {
+   if (myState.getFirstCardValue().value() == myState.getSecondCardValue().value()) {
       //the hashmap may have two answers in this case.
       theAnswer = twoAnswersInMap(myState);
       if (theAnswer == null) {
          throw new NoRecommendationException("NPE -- no answer in map for " + myState);
       }
    }
-   else //Now I know that splitting is impossible, since the player cards are different.
+   else //Splitting is impossible
    {
-      theAnswer = (Answer) allAnswers.get(myState.getAnswerHash(false));
+      theAnswer = allAnswers.get(myState.getAnswerHash(false));
       if (theAnswer == null) {
-         State.printStateStatus(myState, "In retrieveAnswerAdvOrBasic");
-          throw new NoRecommendationException("NullPointerException");
+          throw new NoRecommendationException("Answer is null. State: " + myState);
       }
    }
    return theAnswer;

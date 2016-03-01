@@ -1,4 +1,5 @@
 package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.calculation.Validation;
 import ramblingharmonicas.blackjack.cards.*;
 
 /**
@@ -353,8 +354,8 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
       return probabilityOf(drawnCard);
    }
    final int currentDealerUpCard = DCard.value() - 1;
-   if ((currentDealerUpCard != Blackjack.TENCARD)
-           && (currentDealerUpCard != Blackjack.ACECARD)) {
+   if ((currentDealerUpCard != Constants.TENCARD)
+           && (currentDealerUpCard != Constants.ACECARD)) {
       return probabilityOf(drawnCard);
    }
 
@@ -418,44 +419,37 @@ double playerProbability(boolean dealerHole, Card DCard, CardValue drawnCard) {
 double[] getDealerHCP(int dealerUpCardIndex) {
    double[] probabilities = new double[10];
    int i;
-   if (dealerUpCardIndex == Blackjack.ACECARD) {
+   if (dealerUpCardIndex == Constants.ACECARD) {
       for (i = 0; i < probabilities.length - 1; i++) {
-         probabilities[i] = fastProbOfExcluding(i, Blackjack.TENCARD);
+         probabilities[i] = fastProbOfExcluding(i, Constants.TENCARD);
       }
-      probabilities[Blackjack.TENCARD] = -5000;
+      probabilities[Constants.TENCARD] = -5000;
    }
-   else if (dealerUpCardIndex == Blackjack.TENCARD) {
+   else if (dealerUpCardIndex == Constants.TENCARD) {
       for (i = 1; i < probabilities.length; i++) {
-         probabilities[i] = fastProbOfExcluding(i, Blackjack.ACECARD);
+         probabilities[i] = fastProbOfExcluding(i, Constants.ACECARD);
       }
 
-      probabilities[Blackjack.ACECARD] = -5000;
+      probabilities[Constants.ACECARD] = -5000;
    }
    else {
       probabilities = getAllProbs();
    }
 
-//ERROR CHECKING
-   if (Blackjack.debug()) {
+   Validation.assertProbsAreOne(probabilities);
+   //TODO: Refactor this assert block into a Validation function
       double sum = 0;
       for (i = 0; i < probabilities.length; i++) {
-         if (probabilities[i] > 0) {
-            sum += probabilities[i];
-         }
-         if ((i == Blackjack.ACECARD) && (dealerUpCardIndex == Blackjack.TENCARD)) {
+         if ((i == Constants.ACECARD) && (dealerUpCardIndex == Constants.TENCARD)) {
             assert (probabilities[i] < 0) : "Ace marked as being possible when it shouldn't be.";
          }
-         if ((i == Blackjack.TENCARD) && (dealerUpCardIndex == Blackjack.ACECARD)) {
+         if ((i == Constants.TENCARD) && (dealerUpCardIndex == Constants.ACECARD)) {
             assert (probabilities[i] < 0) : "Ten marked as being possible when it shouldn't be.";
          }
          if ((cardValueCache[i + 1] <= 0) && (probabilities[i] > 0)) {
             assert false : "Card marked as being possible to draw when it's not: cardindex " + i;
          }
       }
-      assert (sum < (1 + Constants.EPSILON)) && (sum > 1 - Constants.EPSILON);
-   }
-
-
    return probabilities;
 }
 
@@ -471,7 +465,7 @@ double[] getDealerHCP(int dealerUpCardIndex) {
 double[] getDealerProbabilities(int cardsInHand, boolean dealerHoleCard,
         int[] myCards) {
    if ((cardsInHand == 1) && (dealerHoleCard == true)
-           && ((myCards[Blackjack.ACECARD] == 1) || (myCards[Blackjack.TENCARD] == 1))) {
+           && ((myCards[Constants.ACECARD] == 1) || (myCards[Constants.TENCARD] == 1))) {
       Blackjack.holeCardCheck++;
       return getDealerHCP(Utilities.retrieveSingleCard(myCards));
    }

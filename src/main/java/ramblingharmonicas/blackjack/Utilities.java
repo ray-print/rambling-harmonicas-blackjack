@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import ramblingharmonicas.blackjack.calculation.Validation;
 
 
 public class Utilities {
@@ -250,9 +251,9 @@ static Answer splitEVtoAnswer(final double splitEV, CardValue PCard,
    final double originalBestEV = baseState.getExpectedValue();
    final double originalSecondBestEV = baseState.getSecondBestEV();
    if (splitEV > originalBestEV) {
-      baseState.setSecondBestAction(baseState.getPreferredAction());
+      baseState.setSecondBestAction(baseState.getBestAction());
       baseState.setSecondBestEV(originalBestEV);
-      baseState.setPreferredAction(Action.SPLIT);
+      baseState.setBestAction(Action.SPLIT);
       baseState.overWriteEV(splitEV);
    }
    else if (splitEV > originalSecondBestEV) {
@@ -267,15 +268,7 @@ static double combinedStatesEV(State[] possibleStates, double[] probabilities) t
    if (possibleStates == null) {
       throw new NoRecommendationException("IllegalArgumentException");
    }
-   if (Blackjack.debug()) {
-      double sum = 0;
-      for (int i = 0; i < probabilities.length; i++) {
-         if (probabilities[i] > 0) {
-            sum += probabilities[i];
-         }
-      }
-      assert ((sum > 0.9999) && (sum < 1.0001)) : "Sum is " + sum;
-   }
+   Validation.assertProbsAreOne(probabilities);
    double answer = 0;
    for (int i = 0; i < possibleStates.length; i++) {
       if (probabilities[i] > 0) {
@@ -515,9 +508,9 @@ static public void swapTopChoices(State aState) {
    final Action futureBest = aState.getSecondBestAction();
    final double futureBestEV = aState.getSecondBestEV();
    aState.setSecondBestEV(aState.getExpectedValue());
-   aState.setSecondBestAction(aState.getPreferredAction());
+   aState.setSecondBestAction(aState.getBestAction());
    aState.overWriteEV(futureBestEV);
-   aState.setPreferredAction(futureBest);
+   aState.setBestAction(futureBest);
 }
 
 /**

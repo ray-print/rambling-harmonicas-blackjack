@@ -58,5 +58,38 @@ public void testStandPossible() {
         }
     }
 }
-    
+/**
+ * Note that the copy constructor is
+ * also tested every time it runs, by Rules.myHashKey .
+ *
+ */
+@Test
+public void testCopyConstructor() {
+   Rules theRules, otherRules;
+   theRules = new Rules(1);
+   otherRules = new Rules(theRules);
+   assert theRules.equals(otherRules);
+
+   theRules.setAccuracy(Rules.LOW_ACCURACY);
+   theRules.setCharlie(5);
+   theRules.setEarlySurrender(true);
+   theRules.setHitSplitAces(true);
+   theRules.setNumberDecks(2);
+   theRules.setMaxNumberSplitHands(2);
+   theRules.myDoubleRules.setNotOnAces(true);
+   theRules.myDoubleRules.setOnlyNineTenEleven(true);
+   theRules.myDoubleRules.setNotPostSplit(true);
+   otherRules = new Rules(theRules);
+   assert theRules.equals(otherRules);
+
+   theRules = new Rules(otherRules);
+   theRules.setRulesAutoToggles(false);
+   theRules.myDoubleRules.setAnyTwoCards(false);
+   theRules.myDoubleRules.setOnlyNineTenEleven(true);
+   theRules.myDoubleRules.setOnlyTenAndEleven(true);
+   otherRules = new Rules(theRules);
+   assert theRules.equals(otherRules);
+}
+
+
 }

@@ -220,7 +220,7 @@ public void testFindBestActionOmniBus(boolean verbosity) throws IOException {
 
    Action anAction = null;
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -235,7 +235,7 @@ public void testFindBestActionOmniBus(boolean verbosity) throws IOException {
    aState = new State(myCards, new Card(Suit.CLUBS, CardValue.ACE));
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -332,7 +332,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState.setDealerBlackjack(false);
    Action anAction = null;
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -346,7 +346,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState = new State(myCards, dealerCard);
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -386,7 +386,7 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
    aState = new State(myCards, dealerCard);
    aState.setDealerBlackjack(false);
    try {
-      anAction = myStrategy.findBestAction(myShoe, theRules, aState);
+      anAction = myStrategy.findBestAction(aState, theRules, myShoe);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -514,7 +514,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       //http://wizardofodds.com/games/blackjack/appendix/3a/
       //"Boss Media single deck"
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.FIVE);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE);
+      assert (aStrategy.findBestAction(someState, someRules) == Action.DOUBLE);
       //You should hit if you're playing composition-dependent.
       //Total-dependent should say to hit.
       if (verbosity) {  //haven't loaded the rules into the strategy before the first assert
@@ -524,12 +524,12 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
          aStrategy.print(true);
       }
       someState = new State(CardValue.SIX, CardValue.TWO, CardValue.SIX);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.DOUBLE); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.DOUBLE); //Hit comp-dep
       someState = new State(CardValue.TEN, CardValue.TWO, CardValue.SIX);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.STAND); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.STAND); //Hit comp-dep
 
       someState = new State(CardValue.TEN, CardValue.TWO, CardValue.FOUR);
-      assert (aStrategy.findBestAction(someRules, someState) == Action.STAND); //Hit comp-dep
+      assert (aStrategy.findBestAction(someState, someRules) == Action.STAND); //Hit comp-dep
 
 
       //Below here is a test done without using the Strategy framework
@@ -545,10 +545,10 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       }
       myStrategy = new Strategy(theRules, Strategy.Skill.TOTAL_DEP);
 
-      hardAnswers = Blackjack.solveHardPlayersRecursive(theRules, false);
-      totalDependent = Blackjack.solveHardPlayersRecursive(theRules, false);
-      softAnswers = Blackjack.solveSoftPlayersRecursive(theRules, false);
-      splitAnswers = Blackjack.calculateAllSplitValues(theRules, hardAnswers, softAnswers, false);
+      hardAnswers = Calculation.solveHardPlayersRecursive(theRules, false);
+      totalDependent = Calculation.solveHardPlayersRecursive(theRules, false);
+      softAnswers = Calculation.solveSoftPlayersRecursive(theRules, false);
+      splitAnswers = Calculation.calculateAllSplitValues(theRules, hardAnswers, softAnswers, false);
 
       if (verbosity) {
          Testers.printStrategy(hardAnswers, theRules.toString(), false);
@@ -558,7 +558,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
 
 
 
-      Blackjack.consolidateIntoTotalDependent(totalDependent, theRules);
+      Calculation.consolidateIntoTotalDependent(totalDependent, theRules);
 
       if (verbosity) {
          System.out.println("\nConsolidated hard table:");
@@ -580,10 +580,10 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
                     || (hardAnswers.get(i).get(j).getDealerUpCard().getCardValue() == CardValue.FOUR)))
             ;
             else {
-               if ((hardAnswers.get(i).get(j).getPreferredAction()
-                       != totalDependent.get(i).get(j).getPreferredAction())
-                       && (hardAnswers.get(i).get(j).getPreferredAction() != Action.SURRENDER)
-                       && (totalDependent.get(i).get(j).getPreferredAction() != Action.SURRENDER)) {
+               if ((hardAnswers.get(i).get(j).getBestAction()
+                       != totalDependent.get(i).get(j).getBestAction())
+                       && (hardAnswers.get(i).get(j).getBestAction() != Action.SURRENDER)
+                       && (totalDependent.get(i).get(j).getBestAction() != Action.SURRENDER)) {
                   if (key != theRules.myHashKey()) {
                      throw new RuntimeException("Rules corruption in Strategy test.");
                   }
@@ -747,9 +747,7 @@ public static void allFastTests() {
    Testers.dealerClassTest();
    Testers.testDealerHCP();
 
-   Testers.testRulesConstructors();
    Testers.testState();
-   AnswerTest.runAllTests();
 
    Testers.testRulesHash(false); //Generates ~410k unique keys at last count.
    //false = no verbosity
@@ -776,7 +774,7 @@ public static void viewRawSplitEV(Rules theRules,
          j = 0;
          for (CardValue d : CardValue.values()) {
             System.out.println(
-                    d.toString() + ": " + Blackjack.splitSolve(theRules,
+                    d.toString() + ": " + Calculation.splitSolve(theRules,
                     d, q, dealerBlackjackPossible));
             j++;
             if (j == 10) {
@@ -881,71 +879,7 @@ public static void testState() {
 
 }
 
-/**
- * Currently just tests the copy constructor. Note that the copy constructor is
- * also
- * tested every time it runs, by the hash.
- *
- */
-static void testRulesConstructors() {
-   Rules theRules, otherRules;
-   theRules = new Rules(1);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
 
-   theRules.setAccuracy(Rules.LOW_ACCURACY);
-   theRules.setCharlie(5);
-   theRules.setEarlySurrender(true);
-   theRules.setHitSplitAces(true);
-   theRules.setNumberDecks(2);
-   theRules.setMaxNumberSplitHands(2);
-   theRules.myDoubleRules.setNotOnAces(true);
-   theRules.myDoubleRules.setOnlyNineTenEleven(true);
-   theRules.myDoubleRules.setNotPostSplit(true);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
-
-   theRules = new Rules(otherRules);
-   theRules.setRulesAutoToggles(false);
-   theRules.myDoubleRules.setAnyTwoCards(false);
-   theRules.myDoubleRules.setOnlyNineTenEleven(true);
-   theRules.myDoubleRules.setOnlyTenAndEleven(true);
-   otherRules = new Rules(theRules);
-   testRulesCopyConstructor(theRules, otherRules);
-}
-
-/**
- * Tests the copy constructor
- *
- * @param theRules
- * @param otherRules
- */
-static private void testRulesCopyConstructor(Rules theRules, Rules otherRules) {
-   assert (theRules.getBlackJackPayback() < otherRules.getBlackJackPayback() + Constants.EPSILON);
-   assert (theRules.getBlackJackPayback() > otherRules.getBlackJackPayback() - Constants.EPSILON);
-   assert (theRules.getCharlie() == otherRules.getCharlie());
-   assert (theRules.dealerHoleCard() == otherRules.dealerHoleCard());
-   assert (theRules.getDealerMaxHandSize() == otherRules.getDealerMaxHandSize());
-   assert (theRules.getEarlySurrender() == otherRules.getEarlySurrender());
-   assert (theRules.getEarlySurrenderNotOnAces() == otherRules.getEarlySurrenderNotOnAces());
-   assert (theRules.hitOn17() == otherRules.hitOn17());
-   assert (theRules.hitSplitAces() == otherRules.hitSplitAces());
-   assert (theRules.getLateSurrender() == otherRules.getLateSurrender());
-   assert (theRules.getMaxNumberSplitHands() == otherRules.getMaxNumberSplitHands());
-   assert (theRules.getAccuracy() == otherRules.getAccuracy());
-   assert (theRules.getNumResplitAces() == otherRules.getNumResplitAces());
-   assert (theRules.getNumberOfDecks() == otherRules.getNumberOfDecks());
-   assert (theRules.getPlayerMaxHandSize() == otherRules.getPlayerMaxHandSize());
-   assert (theRules.getAutoToggles() == otherRules.getAutoToggles());
-   assert (theRules.myDoubleRules.alwaysPossible() == otherRules.myDoubleRules.alwaysPossible());
-   assert (theRules.myDoubleRules.anyTwoCards() == otherRules.myDoubleRules.anyTwoCards());
-   assert (theRules.myDoubleRules.notOnAces() == otherRules.myDoubleRules.notOnAces());
-   assert (theRules.myDoubleRules.notSplitAces() == otherRules.myDoubleRules.notSplitAces());
-   assert (theRules.myDoubleRules.onlyNineTenEleven() == otherRules.myDoubleRules.onlyNineTenEleven());
-   assert (theRules.myDoubleRules.onlyTenAndEleven() == otherRules.myDoubleRules.onlyTenAndEleven());
-//Boring. But probably useful.
-
-}
 
 /**
  * Includes no tests, but useful for debugging DealerRecursive
@@ -967,7 +901,7 @@ static private void printAndTestFastDealerRecursive(
    int[] handArray = new int[10];
    Utilities.convertCardArraytoArray(myCards, handArray);
    final double[] epicFail =
-           Blackjack.DealerRecursive(handArray, Deck, myRules);
+           Calculation.DealerRecursive(handArray, Deck, myRules);
    double probability_sum = 0;
 
    if (displayBaseInfo) {
@@ -1373,7 +1307,7 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
       cloneOfStartHand.add(new Card(startingCards.get(i)));
    }
 
-   final double[] calculatedResults = Blackjack.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
+   final double[] calculatedResults = Calculation.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
 
    ArrayList<Card> results;
    final double ITERATIONS = 50000;
@@ -1480,7 +1414,7 @@ private static void advancedTestResolveHands() {
            myShoe);
    alwaysCloned.action(Action.STAND);
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
 
 
@@ -1505,7 +1439,7 @@ private static void advancedTestResolveHands() {
    ArrayList<Card> dealerArrayList = new ArrayList<Card>();
    dealerArrayList.add(dealerCard);
    dealerCards = Utilities.convertCardArraytoArray(dealerArrayList, dealerCards);
-   double[] dealerResults = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerResults = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
 
    double intermediateCalculatedValue = 0;
    //Dealer has 21, either natural or from drawing. You lose.
@@ -1555,7 +1489,7 @@ private static void advancedTestResolveHands() {
    alwaysCloned.action(Action.INSURANCE); //TESTING
    alwaysCloned.setDealerBlackjack(true);
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((0.999 < value) && (value < 1.001));
@@ -1581,7 +1515,7 @@ private static void advancedTestResolveHands() {
    }
    //alwaysCloned.setDealerBlackjack(true);
    alwaysCloned.action(Action.STAND);
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((1.3921 < value) && (value < 1.3922));
@@ -1626,7 +1560,7 @@ private static void advancedTestResolveHands() {
            myShoe);
 
 
-   alwaysCloned = Blackjack.resolveHands(alwaysCloned, myShoe,
+   alwaysCloned = Calculation.resolveHands(alwaysCloned, myShoe,
            theRules);
    value = alwaysCloned.getExpectedValue();
    assert ((-0.2064 < value) && (value < -0.2052)) : "Expected result was between -0.2062 and -0.2050; actual"
@@ -1659,7 +1593,7 @@ static State testPlayerRecursive(final Card DCard, final Card firstPCard,
       myState.setDealerBlackjack(false);
    }
    try {
-      return Blackjack.PlayerRecursive(myShoe, myState, theRules);
+      return Calculation.PlayerRecursive(myShoe, myState, theRules);
    }
    catch (NoRecommendationException e) {
       e.printStackTrace();
@@ -1710,7 +1644,7 @@ static void testResolveHands() {
            CardValue.ACE));
    aState.action(Action.STAND);
 
-   aState = Blackjack.resolveHands(aState, myShoe,
+   aState = Calculation.resolveHands(aState, myShoe,
            theRules);
 
 
@@ -1719,7 +1653,7 @@ static void testResolveHands() {
    Utilities.zero(dealerCards);
 
    dealerCards[ aState.getDealerUpCard().value() - 1] = 1;
-   double[] dealerProbs = Blackjack.DealerRecursive(dealerCards, myShoe, theRules);
+   double[] dealerProbs = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
    //13 and 20. That's what both of these hands have. I also took insurance. Dang that's way
    //too many calculations.
 
@@ -1765,7 +1699,7 @@ static void printStrategy(ArrayList<ArrayList<State>> solvedStates,
               + "," + solvedStates.get(i).get(0).getSecondCard().getCardValue().value() + "\t       ");
       for (j = 0; j < solvedStates.get(i).size(); j++) {
          System.out.print(
-                 solvedStates.get(i).get(j).getPreferredAction().abbrev() + "        ");
+                 solvedStates.get(i).get(j).getBestAction().abbrev() + "        ");
       }
       System.out.print(newLineAndTab); //Should I use %t ?
       for (jj = 0; jj < solvedStates.get(i).size(); jj++) {
@@ -1821,16 +1755,16 @@ public static void testOverloadedDealer() {
    Utilities.zero(myCards);
    testOverloadedDealer(myCards, 0, 0, false);
    Utilities.zero(myCards);
-   myCards[Blackjack.ACECARD] = 1;
+   myCards[Constants.ACECARD] = 1;
    testOverloadedDealer(myCards, 11, 1, true);
-   myCards[Blackjack.TENCARD] = 1;
+   myCards[Constants.TENCARD] = 1;
    testOverloadedDealer(myCards, 21, 2, true);
-   myCards[Blackjack.NINECARD] = 1;
+   myCards[Constants.NINECARD] = 1;
    testOverloadedDealer(myCards, 20, 3, false);
-   myCards[Blackjack.SEVENCARD] = 1;
+   myCards[Constants.SEVENCARD] = 1;
    testOverloadedDealer(myCards, 27, 4, false);
    Utilities.zero(myCards);
-   myCards[Blackjack.ACECARD] = 4;
+   myCards[Constants.ACECARD] = 4;
    testOverloadedDealer(myCards, 14, 4, true);
 
    testGetDealerHand();
@@ -1923,7 +1857,7 @@ static public void testResplitEVs() {
       value = myStrategy.findBestEV(theRules, aState);
 
       assert (value > (1 + Constants.FIVE_PERCENT_ERROR) * -0.12446) : value + " for best action: "
-              + myStrategy.findBestAction(theRules, aState);
+              + myStrategy.findBestAction(aState, theRules);
 
       assert (value < (1 - Constants.FIVE_PERCENT_ERROR) * -0.12446) : value;
 
@@ -1960,10 +1894,10 @@ static public void testResplitEVs() {
       value = myStrategy.findBestEV(theRules, aState);
 
       assert (value < (1 + Constants.FIVE_PERCENT_ERROR) * 0.01726) :
-              value + " for best action: " + myStrategy.findBestAction(theRules, aState);
+              value + " for best action: " + myStrategy.findBestAction(aState, theRules);
 
       assert (value > (1 - Constants.FIVE_PERCENT_ERROR) * 0.01726) : value + " for best action: "
-              + myStrategy.findBestAction(theRules, aState);
+              + myStrategy.findBestAction(aState, theRules);
       // These two numbers are from http://www.bjstrat.net/cgi-bin/cdca.cgi
       //
 
@@ -2007,8 +1941,8 @@ static public void viewRawResplits() {
       //Assuming the dealer does NOT have blackjack.
       final String rulesHash = theRules.toString();
       System.out.println(rulesHash);
-      solvedSoft = Blackjack.solveSoftPlayersRecursive(theRules, false);
-      solvedHard = Blackjack.solveHardPlayersRecursive(theRules, false);
+      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
+      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
 
       Testers.printStrategy(solvedSoft, "Assuming the dealer doesn't have blackjack.", false);
       System.out.println("------------------------------------");
@@ -2107,7 +2041,7 @@ static public void testDirectSplitAlgorithm(CardValue playerCard,
       myShoe.fasterDrawSpecific(playerCard);
       myShoe.fasterDrawSpecific(dealCard);
       State myState = new State(myCards, dealerCard);
-      myState = Blackjack.PlayerRecursive(myShoe, myState, theRules);
+      myState = Calculation.PlayerRecursive(myShoe, myState, theRules);
 
 //And...goodbye 7+ hours. */
       State.printStateStatus(myState,
@@ -2143,7 +2077,7 @@ static public void testDealerHCP() {
 
    State solvedState =
            Testers.testPlayerRecursive(DCard, firstPCard, secondPCard, theRules, myShoe, false);
-   assert (solvedState.getPreferredAction() == Action.DOUBLE) : "Correct action not picked";
+   assert (solvedState.getBestAction() == Action.DOUBLE) : "Correct action not picked";
    assert ((solvedState.getExpectedValue() < 0.18192 + Constants.EPSILON)
            && (solvedState.getExpectedValue() > 0.18192 - Constants.EPSILON)) :
            "Expected value not calculated correctly for player 9-2 vs. dealer Ace:"
@@ -2190,9 +2124,9 @@ static public void viewRawStrategy(Rules theRules, String accuracyLevel,
       ArrayList<ArrayList<State>> solvedHard = new ArrayList<ArrayList<State>>();
       ArrayList<ArrayList<State>> solvedSoft = new ArrayList<ArrayList<State>>();
       System.out.println(accuracyLevel + ", " + rulesString);
-      solvedSoft = Blackjack.solveSoftPlayersRecursive(theRules, false);
+      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
       Testers.printStrategy(solvedSoft, "", viewSecondBest);
-      solvedHard = Blackjack.solveHardPlayersRecursive(theRules, false);
+      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
 
       System.out.println("---------------------------------------");
       Testers.printStrategy(solvedHard, "", viewSecondBest);
@@ -2214,177 +2148,6 @@ static public void viewRawStrategy(Rules theRules, String accuracyLevel,
 
 }
 
-/**
- *
- * Should be tested: answerHash, getConsolidatedActions
- */
-public static class AnswerTest {
-public static void runAllTests() {
-   testByteToCardValue();
-   testCardValueToByte();
-   testConstructors();
-   testAnswerHash();
-}
-
-/**
- * This function relies on the exact values of the byte when CardValues are
- * converted
- * to bytes. If those values change this function will probably throw an
- * exception.
- *
- */
-public static void testAnswerHash() {
-   Set<Integer> answerHashes = new TreeSet<Integer>();
-   int numberOfAddedHashes = 0;
-
-   boolean splitPossible;
-   byte first, second, dealer;
-   for (first = 1; first < 11; first++) {
-      for (second = first; second < 11; second++) //The order of first and second cards doesn't matter
-      {
-         for (dealer = 1; dealer < 11; dealer++) {
-            if (first == second) {
-               splitPossible = true;
-            }
-            else {
-               splitPossible = false;
-            }
-
-            if (!answerHashes.add(Answer.answerHash(first, second, dealer, false))) {
-               System.err.println("Answer hash error on bytes: First card = " + first
-                       + ", second card = " + second + ", dealer card = " + dealer + ".");
-               System.err.println("Splitting not recommended.");
-               System.err.println("My answer hash is: " + Answer.answerHash(first, second, dealer, false));
-               assert false;
-            }
-            if (splitPossible
-                    && (!answerHashes.add(Answer.answerHash(first, second, dealer, true)))) {
-               System.err.println("Answer hash error on bytes: First card = " + first
-                       + ", second card = " + second + ", dealer card = " + dealer + ".");
-               System.err.println("Splitting recommended.");
-               System.err.println("My answer hash is: " + Answer.answerHash(first, second, dealer, false));
-               assert false;
-            }
-
-         }
-      }
-   }
-
-
-}
-
-/**
- * Test of cardValueToByte method, of class Answer.
- */
-public static void testCardValueToByte() {
-   CardValue aCardValue = CardValue.ACE;
-   byte expResult = 1;
-   byte result = Answer.cardValueToByte(aCardValue);
-   assert (expResult == result);
-   // TODO review the generated test code and remove the default call to fail.
-   //fail("The test case is a prototype.");
-}
-
-/**
- * Test of byteToCardValue method, of class Answer.
- */
-public static void testByteToCardValue() {
-   byte myByte = 1;
-   CardValue expResult = CardValue.ACE;
-   CardValue result = Answer.byteToCardValue(myByte);
-   assert (expResult == result);
-
-}
-
-/**
- * Performs one test on the constructors.
- *
- */
-public static void testConstructors() {
-   State aState;
-   Rules theRules = new Rules(8);
-   theRules.setAccuracy(Rules.LOW_ACCURACY);
-   ArrayList<Card> myCards = new ArrayList<Card>();
-   myCards.add(new Card(Suit.SPADES, CardValue.TWO));
-   myCards.add(new Card(Suit.CLUBS, CardValue.JACK));
-   Card dealerCard = new Card(Suit.DIAMONDS, CardValue.TEN);
-   FastShoe myShoe = new FastShoe(theRules.getNumberOfDecks());
-   aState = new State(myCards, dealerCard);
-   myShoe.fastDrawSpecific(CardValue.TWO);
-   myShoe.fastDrawSpecific(CardValue.JACK);
-   myShoe.fastDrawSpecific(CardValue.TEN);
-
-   Answer anotherCopy = null;
-   try {
-      aState = Blackjack.PlayerRecursive(myShoe, aState, theRules);
-      Answer anAnswer = new Answer(aState);
-      assert (anAnswer.getBestAction() == Action.HIT);
-      assert (anAnswer.getSecondBestAction() == Action.SURRENDER); //I'd think
-      assert (anAnswer.getDealerCard() == CardValue.TEN);
-      assert (anAnswer.getFirstPlayerCard() == CardValue.TWO);
-      assert (anAnswer.getSecondPlayerCard() == CardValue.TEN);
-      Answer sameAnswer = new Answer(aState);
-      assert (anAnswer.equals(sameAnswer));
-      assert (anAnswer.isComplete() == sameAnswer.isComplete());
-      assert (anAnswer.myHashKey() == sameAnswer.myHashKey());
-
-      /*
-       System.out.println(anAnswer.hashCode() + ": this.hashCode().\n "
-       + Answer.answerHash(
-       Answer.cardValueToByte(anAnswer.getFirstPlayerCard()),
-       Answer.cardValueToByte(anAnswer.getSecondPlayerCard()),
-       Answer.cardValueToByte(anAnswer.getDealerCard()),
-       false) + ": Answer.answerHash().\n" + aState.getAnswerHash(false)
-       + ": State.getAnswerHash()."); */
-      assert (aState.getAnswerHash(false) == anAnswer.myHashKey());
-
-      try {
-         Answer someAnswer = new Answer(Strategy.dummyByte, CardValue.TWO,
-                 CardValue.JACK, CardValue.QUEEN);
-         assert false : "Answer constructor failed.";
-      }
-      catch (IOException ioe) {
-      }
-
-
-      final byte answerConsolidated = anAnswer.getConsolidatedActions();
-      assert (answerConsolidated == 3);
-      Answer copyOfAnswer = new Answer(answerConsolidated, CardValue.TWO,
-              CardValue.JACK, CardValue.QUEEN);
-      assert (copyOfAnswer.getBestAction() == Action.HIT);
-      assert (copyOfAnswer.getSecondBestAction() == Action.SURRENDER); //I'd think
-      assert (copyOfAnswer.getDealerCard() == CardValue.TEN);
-      assert (copyOfAnswer.getFirstPlayerCard() == CardValue.TWO);
-      assert (copyOfAnswer.myHashKey() == sameAnswer.myHashKey());
-      assert (copyOfAnswer.isComplete() == false);
-      assert (copyOfAnswer.getSecondPlayerCard() == CardValue.TEN);
-
-      anotherCopy = new Answer((byte) 19, CardValue.TWO, CardValue.JACK, CardValue.QUEEN);
-      assert (anotherCopy.getBestAction() == Action.SURRENDER) : anotherCopy.getBestAction();
-      assert (anotherCopy.getSecondBestAction() == Action.STAND) : anotherCopy.getSecondBestAction();
-      assert (anotherCopy.getDealerCard() == CardValue.TEN);
-      assert (anotherCopy.getFirstPlayerCard() == CardValue.TWO);
-      assert (anotherCopy.getSecondPlayerCard() == CardValue.TEN);
-      assert (anotherCopy.myHashKey() == sameAnswer.myHashKey());
-      assert (anotherCopy.isComplete() == false);
-
-      //best action * 6 + secondbestaction
-   }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-   }
-   catch (IOException io) {
-      io.printStackTrace();
-      throw new RuntimeException(io);
-   }
-   //anAnswer = new Answer(
-
-
-}
-
-}
-
 public static class testTotalEV {
 private static boolean saveAll = false;
 
@@ -2403,9 +2166,8 @@ public static void totalEVFourDeckStand17HoleCard(boolean verbosity) {
    theRules.setHitOn17(false);
    theRules.myDoubleRules.setOnlyTenAndEleven(true);
 
-   wrapperCheckTotalEV(0.0035484, theRules, verbosity);
-   //System.out.println("House edge is " + totalEV);
-
+   //EV figure from: Wizard Of Odds
+   wrapperCheckTotalEV(0.0035484, theRules, verbosity); 
 }
 
 /**

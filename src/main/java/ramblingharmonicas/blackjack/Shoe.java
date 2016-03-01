@@ -215,25 +215,25 @@ public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules)
    if (!player) {
       switch (myMode) {
          case DEALER_2_6:
-            return drawBetween(Blackjack.TWOCARD + 1, Blackjack.SIXCARD + 1);
+            return drawBetween(Constants.TWOCARD + 1, Constants.SIXCARD + 1);
          case DEALER_7_A:
             double sum = 0;
             final double relativeProbOfAce;
-            for (int i = Blackjack.SEVENCARD + 1; i <= Blackjack.TENCARD + 1; i++) {
+            for (int i = Constants.SEVENCARD + 1; i <= Constants.TENCARD + 1; i++) {
                sum += cardValueCache[i];
             }
             if (sum != 0) {
                relativeProbOfAce = ((double)
-                       cardValueCache[Blackjack.ACECARD + 1]) / sum;
+                       cardValueCache[Constants.ACECARD + 1]) / sum;
             }
             else {
                relativeProbOfAce = 1;
             }
             if (generator.nextDouble() < relativeProbOfAce) {
-               return drawBetween(Blackjack.ACECARD + 1, Blackjack.ACECARD + 1);
+               return drawBetween(Constants.ACECARD + 1, Constants.ACECARD + 1);
             }
             else {
-               return drawBetween(Blackjack.SEVENCARD + 1, Blackjack.TENCARD + 1);
+               return drawBetween(Constants.SEVENCARD + 1, Constants.TENCARD + 1);
             }
 
          case FREE_PLAY:
@@ -253,19 +253,19 @@ public Card drawAppropriate(DrawMode myMode, boolean player, Rules theRules)
       case ALL_HARD:
       case HARD_12_16:
          //Any non-ace card
-         return drawBetween(Blackjack.TWOCARD + 1, Blackjack.TENCARD + 1);
+         return drawBetween(Constants.TWOCARD + 1, Constants.TENCARD + 1);
       case ALL_SOFT:
-         if (cardValueCache[Blackjack.ACECARD + 1] == 0) {
+         if (cardValueCache[Constants.ACECARD + 1] == 0) {
             throw new ShuffleNeededException("No aces left -- "
                     + "can't draw a soft hand.");
          }
-         return drawBetween(Blackjack.TWOCARD + 1, Blackjack.TENCARD + 1);
+         return drawBetween(Constants.TWOCARD + 1, Constants.TENCARD + 1);
       case HARD_UNDER_12: // A card between 2 and 9.
-         return drawBetween(Blackjack.TWOCARD + 1, Blackjack.NINECARD + 1);
+         return drawBetween(Constants.TWOCARD + 1, Constants.NINECARD + 1);
       case SOFT_UNDER_16:
-         return drawBetween(Blackjack.TWOCARD + 1, Blackjack.FIVECARD + 1);
+         return drawBetween(Constants.TWOCARD + 1, Constants.FIVECARD + 1);
       case SOFT_OVER_16:
-         return drawBetween(Blackjack.SIXCARD + 1, Blackjack.TENCARD + 1);
+         return drawBetween(Constants.SIXCARD + 1, Constants.TENCARD + 1);
       default:
          throw new UnsupportedOperationException(myMode.toString());
    }
@@ -378,7 +378,7 @@ public Card drawSecondPlayerCard(DrawMode myMode, Card previouslyDrawnCard)
             throw new IllegalArgumentException("drawAppropriate(int,Card) "
                     + "called with invalid card: " + previouslyDrawnCard);
          }
-         return drawBetween(Blackjack.TWOCARD + 1, maxValue);
+         return drawBetween(Constants.TWOCARD + 1, maxValue);
       case ALL_SOFT_AND_HARD:
          return drawAllExcept(previouslyDrawnCard.getCardValue());
       default:

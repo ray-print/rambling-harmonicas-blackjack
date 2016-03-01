@@ -7,8 +7,8 @@ import java.io.Serializable;
 
 
 /* All member variable changes requires changes to these functions:
- * copy constructor, normal constructor, (hashcode and equals, which
- * are not implemented), Strategy rules toggles, toString,
+ * copy constructor, normal constructor, equals, 
+ * Strategy rules toggles, toString,
  * serialVersionUID, myHashCode, and any serialization related
  * methods.
  *
@@ -169,15 +169,12 @@ public void setEarlySurrenderNotOnAces(boolean earlySurrenderNotOnAces) {
 public boolean getAutoToggles() {
    //Ensure that duplicate variables match
    if (myDoubleRules.getAutoToggles() != rulesAutoToggles) {
-      System.err.println("Mistake in setting auto toggles in the "
-              + "current rule set.");
       //This function is called by toString(), so it can't call toString itself.
       //Instead, do:
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Double rules auto toggles are "
+      assert false:"Double rules auto toggles are "
                  + myDoubleRules.getAutoToggles() + ", and the Rules which own "
-                 + "those double rules have auto toggles set to " + rulesAutoToggles);
-      }
+                 + "those double rules have auto toggles set to " + rulesAutoToggles;
+      
    }
    return rulesAutoToggles;
 }
@@ -516,10 +513,7 @@ int getCharlie() {
  */
 public boolean isPossible(Action anAction, State currentState) {
    if (currentState.isBust()) {
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Function "
-                 + "Rules.isPossible(Action,State) called with a bust hand.");
-      }
+      assert false: "Function Rules.isPossible(Action,State) called with a bust hand.";
       return false;
    }
    //if = 0 we have a serious problem.
@@ -867,9 +861,7 @@ public void setHitOn17(boolean hitOn17) {
  */
 public void setBlackjackPayback(double blackJackPayback) {
    if ((blackJackPayback < 0.99) || (blackJackPayback > 9.99)) {
-      if (Blackjack.debug()) {
-         throw new IllegalArgumentException();
-      }
+        throw new IllegalArgumentException(((Double) blackJackPayback).toString());
    }
    this.blackJackPayback = blackJackPayback;
 }
@@ -1059,6 +1051,45 @@ public int numPossibleActions(State aState, boolean manualDeal) {
 
 public int getNumResplitAces() {
    return this.numResplitAces;
+}
+
+@Override
+public boolean equals(Object o) {
+    if (o == this) {
+        return true;
+    }
+    if ( (o == null) || (o.getClass() != this.getClass() )) {
+        return false;
+    }
+    Rules otherRules = (Rules) o;
+    return ( (Math.abs(getBlackJackPayback() - otherRules.getBlackJackPayback()) <
+                    Constants.SMALLEST_EPSILON)
+            && getCharlie() == otherRules.getCharlie()
+            && (dealerHoleCard() == otherRules.dealerHoleCard())
+            && (getDealerMaxHandSize() == otherRules.getDealerMaxHandSize())
+            && (getEarlySurrender() == otherRules.getEarlySurrender())
+            && (getEarlySurrenderNotOnAces() == otherRules.getEarlySurrenderNotOnAces())
+            && (hitOn17() == otherRules.hitOn17())
+            && (hitSplitAces() == otherRules.hitSplitAces())
+            && (getLateSurrender() == otherRules.getLateSurrender())
+            && (getMaxNumberSplitHands() == otherRules.getMaxNumberSplitHands())
+            && (getAccuracy() == otherRules.getAccuracy())
+            && (getNumResplitAces() == otherRules.getNumResplitAces())
+            && (getNumberOfDecks() == otherRules.getNumberOfDecks())
+            && (getPlayerMaxHandSize() == otherRules.getPlayerMaxHandSize())
+            && (getAutoToggles() == otherRules.getAutoToggles())
+            //TODO: implement .equals in myDoubleRules
+            && (myDoubleRules.alwaysPossible() == otherRules.myDoubleRules.alwaysPossible())
+            && (myDoubleRules.anyTwoCards() == otherRules.myDoubleRules.anyTwoCards())
+            && (myDoubleRules.notOnAces() == otherRules.myDoubleRules.notOnAces())
+            && (myDoubleRules.notSplitAces() == otherRules.myDoubleRules.notSplitAces())
+            && (myDoubleRules.onlyNineTenEleven() == otherRules.myDoubleRules.onlyNineTenEleven())
+            && (myDoubleRules.onlyTenAndEleven() == otherRules.myDoubleRules.onlyTenAndEleven()) );
+}
+
+@Override
+public int hashCode() {
+    return ( (Long) myHashKey()).hashCode();
 }
 
 @Override
