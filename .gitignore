@@ -5,7 +5,6 @@ Thumbs.db
 
 #Java
 *.class
-*.jar
 
 #Build
 build/
