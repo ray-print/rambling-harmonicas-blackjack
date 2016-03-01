@@ -2166,9 +2166,8 @@ public static void totalEVFourDeckStand17HoleCard(boolean verbosity) {
    theRules.setHitOn17(false);
    theRules.myDoubleRules.setOnlyTenAndEleven(true);
 
-   wrapperCheckTotalEV(0.0035484, theRules, verbosity);
-   //System.out.println("House edge is " + totalEV);
-
+   //EV figure from: Wizard Of Odds
+   wrapperCheckTotalEV(0.0035484, theRules, verbosity); 
 }
 
 /**

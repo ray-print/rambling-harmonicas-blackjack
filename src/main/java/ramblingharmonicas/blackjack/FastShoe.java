@@ -1,4 +1,5 @@
 package ramblingharmonicas.blackjack;
+import ramblingharmonicas.blackjack.calculation.Validation;
 import ramblingharmonicas.blackjack.cards.*;
 
 /**
@@ -435,13 +436,10 @@ double[] getDealerHCP(int dealerUpCardIndex) {
       probabilities = getAllProbs();
    }
 
-//ERROR CHECKING
-   if (Blackjack.debug()) {
+   Validation.assertProbsAreOne(probabilities);
+   //TODO: Refactor this assert block into a Validation function
       double sum = 0;
       for (i = 0; i < probabilities.length; i++) {
-         if (probabilities[i] > 0) {
-            sum += probabilities[i];
-         }
          if ((i == Constants.ACECARD) && (dealerUpCardIndex == Constants.TENCARD)) {
             assert (probabilities[i] < 0) : "Ace marked as being possible when it shouldn't be.";
          }
@@ -452,10 +450,6 @@ double[] getDealerHCP(int dealerUpCardIndex) {
             assert false : "Card marked as being possible to draw when it's not: cardindex " + i;
          }
       }
-      assert (sum < (1 + Constants.EPSILON)) && (sum > 1 - Constants.EPSILON);
-   }
-
-
    return probabilities;
 }
 

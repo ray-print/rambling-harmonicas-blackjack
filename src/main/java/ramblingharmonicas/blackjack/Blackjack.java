@@ -8,13 +8,11 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import ramblingharmonicas.blackjack.rules.Surrender;
 
-//TODO: Refactor to move some functionality to Utilities or Strategy or some new class(es).
 public class Blackjack {
 static public long dealerIterations = 0;
 static public long fastDealerIterations = 0;
 static public long playerIterations = 0;
 static public long holeCardCheck = 0;
-private static boolean DEBUGGING = true;
 
 public static void main(String[] args) throws NoRecommendationException, IOException {
     Strategy myStrategy = parseArguments(args);
@@ -220,22 +218,6 @@ private static OptionParser createOptionsParser() {
             + " after splitting.").withOptionalArg().ofType(Boolean.class).defaultsTo(
             true);
     return parser;
-}
-
-/**
- *
- * @return True if debugging is enabled, false otherwise
- * @deprecated Use asserts for doing assertions; for logging, a separate
- * set-up is to be created; or throw exceptions if it's called for. Or split up functions
- * to allow for better testing
- */
-public static boolean debug() {
-    if (DEBUGGING) {
-        return true;
-    }
-    else {
-        return false;
-    }
 }
 
 }

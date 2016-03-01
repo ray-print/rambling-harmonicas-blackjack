@@ -169,15 +169,12 @@ public void setEarlySurrenderNotOnAces(boolean earlySurrenderNotOnAces) {
 public boolean getAutoToggles() {
    //Ensure that duplicate variables match
    if (myDoubleRules.getAutoToggles() != rulesAutoToggles) {
-      System.err.println("Mistake in setting auto toggles in the "
-              + "current rule set.");
       //This function is called by toString(), so it can't call toString itself.
       //Instead, do:
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Double rules auto toggles are "
+      assert false:"Double rules auto toggles are "
                  + myDoubleRules.getAutoToggles() + ", and the Rules which own "
-                 + "those double rules have auto toggles set to " + rulesAutoToggles);
-      }
+                 + "those double rules have auto toggles set to " + rulesAutoToggles;
+      
    }
    return rulesAutoToggles;
 }
@@ -516,10 +513,7 @@ int getCharlie() {
  */
 public boolean isPossible(Action anAction, State currentState) {
    if (currentState.isBust()) {
-      if (Blackjack.debug()) {
-         throw new IllegalStateException("Function "
-                 + "Rules.isPossible(Action,State) called with a bust hand.");
-      }
+      assert false: "Function Rules.isPossible(Action,State) called with a bust hand.";
       return false;
    }
    //if = 0 we have a serious problem.
@@ -867,9 +861,7 @@ public void setHitOn17(boolean hitOn17) {
  */
 public void setBlackjackPayback(double blackJackPayback) {
    if ((blackJackPayback < 0.99) || (blackJackPayback > 9.99)) {
-      if (Blackjack.debug()) {
-         throw new IllegalArgumentException();
-      }
+        throw new IllegalArgumentException(((Double) blackJackPayback).toString());
    }
    this.blackJackPayback = blackJackPayback;
 }

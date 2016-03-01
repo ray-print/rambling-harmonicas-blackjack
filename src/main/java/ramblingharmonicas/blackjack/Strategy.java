@@ -1377,34 +1377,17 @@ public Action findSecondBestAction(Rules theRules, State myState)
         throws NoRecommendationException, IOException, IllegalStateException {
    Shoe aShoe = new Shoe(theRules.getNumberOfDecks());
    Answer myAnswer = findBestAnswer(aShoe, theRules, myState);
-   //System.out.println("Strategy.findSecondBestAction: Here is the Answer I have: ");
-   //System.out.println(myAnswer);
-   //if (true) throw new RuntimeException();
-   if (Blackjack.debug()) {
-      Action recommendedBest = myAnswer.getBestAction();
-      if ((myAnswer.getSecondBestAction() == recommendedBest)
-              && (!myState.playerBJ()) && theRules.isPossible(recommendedBest, myState)) {
-         System.err.println(theRules.toString() + myState.toString() + myAnswer.toString());
-         throw new NoRecommendationException(myState, theRules, null, "Second best action is the same as first best action.");
-      }
-      /*  I'm removing this error check. The reason is that
-       * during late surrender, you can't surrender until the dealer has checked
-       * for blackjack. So surrender isn't possible. It's only after the dealer checks
-       * that this becomes possible. I'm going to leave out that logic since it would
-       * be solely for the sake of this test.
-       *
-       recommendedBest =this.findBestAction(theRules, myState);
-       if (  (recommendedBest == myAnswer.getSecondBestAction() )
-       &&
-       (!myState.playerBJ() ) && (theRules.isPossible(recommendedBest, myState))
-       )
-       {
-       System.err.println(theRules.toString() + myState.toString() + myAnswer.toString());
-       System.err.println("this.findBestAction said that I should: " + this.findBestAction(theRules, myState) );
-       throw new NoRecommendationException(myState, theRules, "Second best action is the same as first best action.");
-       }
-       */
-   }
+
+   //Error checking. TODO: Refactor into separate function in Validation
+    Action recommendedBest = myAnswer.getBestAction();
+    if ((myAnswer.getSecondBestAction() == recommendedBest)
+            && (!myState.playerBJ()) && theRules.isPossible(recommendedBest, myState)) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(myAnswer).append("Second best action is the same as first best action.");
+        throw new NoRecommendationException(myState, theRules, null, sb.toString());
+    }
+
+   
    return myAnswer.getSecondBestAction();
 }
 
@@ -1884,9 +1867,8 @@ private void loadAnswersFromFile() throws IOException {
  *
  * @param answerFile
  */
-private byte[] retrieveRawStrategyData(InputStream answerFile,
-        final boolean validateData)
-        throws IOException {
+private byte[] retrieveRawStrategyData(InputStream answerFile) throws IOException {
+    final boolean validateData = true;
    DataInputStream byteSource = null; //Too slow...
    byte[] theRawStrat = new byte[Strategy.NUMBER_ANSWERS];
    byte[] scratchData = new byte[NUMBER_ANSWERS];
@@ -2008,7 +1990,7 @@ private void loadSmallFile(InputStream answerFile) throws IOException {
    final byte[] rawData;
    int index = 0;
 
-   rawData = retrieveRawStrategyData(answerFile, Blackjack.debug());
+   rawData = retrieveRawStrategyData(answerFile);
    Answer anAnswer;
    int myKey;
    byte consolidated;
@@ -2184,7 +2166,6 @@ public boolean store() throws NoRecommendationException, IOException {
  */
 boolean solveAndStore(Rules someRules, boolean actingSolo)
 		throws NoRecommendationException, IOException 
-		//,ClassNotFoundException, IOException
 {
    if (mapLoadDeactivated) {
       System.err.println("Strategy.solveAndStore: I cannot solve and store a data set when the total EV map "
@@ -2205,20 +2186,16 @@ boolean solveAndStore(Rules someRules, boolean actingSolo)
       throw new NoRecommendationException(null, someRules, null, "Can't store results of this skill level:" + strategyType);
    }
 
-
-   if (Blackjack.debug()) {
-      Validation.validateStrategy(this);
-   }
+   Validation.validateStrategy(this);
 
    if (someRules.myHashKey() != loadedRuleSet) {
-      System.err.println("Strategy.solveAndStore: Rules discrepancy. The rules I think are loaded are "
-              + theRules + ", with hash key " + loadedRuleSet);
-      System.err.println("However, I should have this rule set loaded, with hash key " + someRules.myHashKey()
-              + someRules);
-      System.err.println("I am returning without saving this rule set.");
-      throw new NoRecommendationException();
-      //saveTotalEVMap();
-      //throw new IllegalStateException();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Strategy.solveAndStore: Rules discrepancy.")
+          .append(" The rules I think are loaded are ").append(theRules)
+          .append(", with hash key ").append(loadedRuleSet)
+          .append("However, I should have this rule set loaded, with hash key ")
+          .append(someRules.myHashKey()).append(someRules);
+        throw new NoRecommendationException(sb.toString());
    }
 
    final boolean success = saveToFile();

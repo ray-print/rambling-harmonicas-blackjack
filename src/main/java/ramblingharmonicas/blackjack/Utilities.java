@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import ramblingharmonicas.blackjack.calculation.Validation;
 
 
 public class Utilities {
@@ -267,15 +268,7 @@ static double combinedStatesEV(State[] possibleStates, double[] probabilities) t
    if (possibleStates == null) {
       throw new NoRecommendationException("IllegalArgumentException");
    }
-   if (Blackjack.debug()) {
-      double sum = 0;
-      for (int i = 0; i < probabilities.length; i++) {
-         if (probabilities[i] > 0) {
-            sum += probabilities[i];
-         }
-      }
-      assert ((sum > 0.9999) && (sum < 1.0001)) : "Sum is " + sum;
-   }
+   Validation.assertProbsAreOne(probabilities);
    double answer = 0;
    for (int i = 0; i < possibleStates.length; i++) {
       if (probabilities[i] > 0) {

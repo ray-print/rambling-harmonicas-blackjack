@@ -12,6 +12,24 @@ import ramblingharmonicas.blackjack.cards.CardValue;
 
 public class Validation {
 
+public static boolean assertsOn() {
+    boolean assertsOn = false;
+    assert (assertsOn = true);    
+    return assertsOn;
+}
+
+public static void assertProbsAreOne(double probabilities []) {
+    if (!Validation.assertsOn()) {
+        return;
+    }
+    double sum = 0;
+    for (int i = 0; i < probabilities.length; i++) {
+       if (probabilities[i] > 0) {
+          sum += probabilities[i];
+       }
+    }
+    assert ((sum > 0.9999) && (sum < 1.0001)) : "Sum is " + sum;
+}
 /**
  * Tests that the given strategy obeys some common blackjack advice.
  * Essentially a wrapper function for validateOneStrategy and
