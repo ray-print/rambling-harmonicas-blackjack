@@ -1,4 +1,5 @@
 #### House edge and strategy calculator for standard blackjack (probabilistic analysis)
+This project is in beta.
 
 ## Setup
 
@@ -12,7 +13,7 @@ Test: (may take up to two minutes)
 Install:
 
 ```bash
- ./gradlew installDist
+./gradlew installDist
 ```
 
 The executable should then be built in build/install/Blackjack/bin
@@ -154,11 +155,9 @@ A, A                   Y       Y       Y       Y       Y       Y       Y       Y
 
 
 The house edge is -0.0590% 
-
-
 ```
 
-The program store strategy data in files; if the file is not found for a given rule set, it will calculate the data fresh based on a given rule set. 
+The program store strategy data in files; if the file is not found for a given rule set, it will calculate the data fresh based on a given rule set.
 
 ## API
 
@@ -178,8 +177,8 @@ Strategy myStrategy = new Strategy(theRules, Strategy.Skill.COMP_DEP);
 double houseEdge = myStrategy.getHouseEdge();
 ```
 
-#### Play out a hand:
-The API does not contain the idea of chips or amount wagered (or any graphics).
+#### Play out a hand
+The API does not contain the idea of chips or amount wagered (or any graphics). 
 
 ```java
 /* Same set up as above, then: */
@@ -199,10 +198,10 @@ myStrategy.setStrategyType(Strategy.Skill.PERFECT);
 //Checked exceptions -- IOException and NoRecommendationException
 Action optimalAction = myStrategy.findBestAction(myState, theRules, myShoe);
 ```
+The Javadocs in the State class have more information about how to play through a hand.
 
-## Status
-Results of this calculator matched those of other blackjack calculators, apart from split results (which tend to vary from calculator to calculator). If you find any discrepancy between the results here and those of other calculators, please let me know which results don't match. (Note this project is in alpha because of the shoddy state of testing and project organization, so if you are in need of reliable results you should go to the tried-and-true calculators.)
-The project's API is usable, but the code needs clean-up.
+## Capabilities
+Results of this calculator matched those of other blackjack calculators, apart from split results (which tend to vary from calculator to calculator). If you find any discrepancy between the results here and those of other calculators, please file an issue. 
 
 Supported rule sets include:
 * 1-8 decks
@@ -217,7 +216,7 @@ Supported rule sets include:
 number of cards, on split aces
 
 Solved rule sets can be stored on disk so that calculations do not need to be repeated.
-A standard rule set may take 5-10 seconds to calculate. If the dealer probability cache is used, then the first rule set will take much longer but then subsequent rule sets will be faster.
+A standard rule set may take 5-15 seconds to calculate. If the dealer probability cache is used, then the first rule set will take much longer but then subsequent rule sets will be faster.
 
 #### Limitations
 * The house edge is currently only calculated for composition-dependent strategies
@@ -226,19 +225,24 @@ A standard rule set may take 5-10 seconds to calculate. If the dealer probabilit
 * Standard deviation, effect of shoe depth, other probabilities not calculated
 * Split calculations are not optimized
 
+#### Status
+The project is in beta because of the shoddy state of project organization, so if you are in need of reliable results you should go to the tried-and-true calculators. 
+
+The project's API is usable, but the code needs clean-up.
+
 ## Project Goals
-* Use testing framework, refactor tests to match best practices, check code coverage, add test cases where applicable
-* Set up tests to run on every commit using some CI tool
+* Migrate tests to JUnit refactor tests to match best practices, check code coverage, add test cases where applicable
 * Refactor program to follow best practices
 * Change code architecture where appropriate, refactor overly long classes/functions
 * Use third-party libraries where appropriate
-* Remove dead/duplicate code
+* Remove dead/duplicate/deprecated code
 * Expose more functionality through the command line(different BJ payback amounts, EV for given hands, etc.)
 * Avoid breaking API changes if possible
 
 #### Long-term goals
-* Create web front-end, make this available as an API 
+* Create web front-end
 * Store results in database to make data more accessible
+* Add capabilities to match other calculators 
 
 ## Contributions
 Yes! They are welcome! Please let me know what you want to work on. The most important thing to do now is to refactor the tests: migrate them to JUnit, remove useless ones, and add unit tests where appropriate. Once that is done, then there are scores of TODOs -- just grab one and ping me and refactor away. Bug fixes and suggestions for API and documentation improvements are always welcome. Also please see the issues list.

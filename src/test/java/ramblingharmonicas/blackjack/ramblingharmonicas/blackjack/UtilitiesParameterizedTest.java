@@ -56,6 +56,58 @@ public static Collection<Object[]> data() {
     data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
     sampleHand = new ArrayList<Card>();
     
+    isSoft = false;
+    containsTen = false;
+    handTotal = 0;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();
+    
+    //TODO: Rewrite testRetrieveSingleCard so it only expects an exception when there
+    //are multiple cards in hand. Then this test can be uncommented.
+/*    sampleHand.add(anAce); 
+    isSoft = true;
+    containsTen = false;
+    handTotal = 11;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();*/
+    
+    sampleHand.add(anAce);
+    sampleHand.add(aTen);
+    isSoft = true;
+    containsTen = true;
+    handTotal = 21;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();
+
+    sampleHand.add(anAce);
+    sampleHand.add(aTen);
+    sampleHand.add(new Card(Suit.CLUBS, CardValue.NINE));
+    isSoft = false;
+    containsTen = true;
+    handTotal = 20;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();
+
+    sampleHand.add(anAce);
+    sampleHand.add(aTen);
+    sampleHand.add(new Card(Suit.CLUBS, CardValue.NINE));
+    sampleHand.add(new Card(Suit.CLUBS, CardValue.SEVEN));
+    isSoft = false;
+    containsTen = true;
+    handTotal = 27;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();
+    
+    sampleHand.add(anAce);
+    sampleHand.add(anAce);
+    sampleHand.add(anAce);
+    sampleHand.add(anAce);
+    isSoft = true;
+    containsTen = false;
+    handTotal = 14;
+    data.add(new Object[]{sampleHand, isSoft, containsTen, handTotal});
+    sampleHand = new ArrayList<Card>();
+    
     return data;
 }
 
