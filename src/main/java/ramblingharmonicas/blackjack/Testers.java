@@ -33,10 +33,6 @@ public static void callTests() {
 	 Testers.testResplitEVs();
 	   //Blackjack.printCacheStatus();
 }
-public static void main(String[] args) throws 
-        NoRecommendationException, IOException, ClassNotFoundException {
-   Testers.callTests();
-}
 
 private static void runAllCalculations(boolean verbosity) {
    System.out.println("Completing all calculations. This takes ~80 hours if not already done.-------");
@@ -376,7 +372,6 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
       ArrayList<Answer> someAnswers = new ArrayList<Answer>();
       someAnswers.add(hard);
 
-      Testers.simplePrintAnswer(someAnswers, theRules, false);
       assert false;
    }
 
@@ -553,9 +548,8 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       if (verbosity) {
          Testers.printStrategy(hardAnswers, theRules.toString(), false);
          Testers.printStrategy(softAnswers, "", false);
-         Testers.simplePrintAnswer(splitAnswers, theRules, false);
+         //Testers.simplePrintAnswer(splitAnswers, theRules, false);
       }
-
 
 
       Calculation.consolidateIntoTotalDependent(totalDependent, theRules);
@@ -1926,97 +1920,6 @@ static public void testResplitEVs() {
 
 }
 
-static public void viewRawResplits() {
-   try {
-
-
-      ArrayList<ArrayList<State>> solvedHard = new ArrayList<ArrayList<State>>();
-      ArrayList<ArrayList<State>> solvedSoft = new ArrayList<ArrayList<State>>();
-      Rules theRules = new Rules(4);
-      theRules.setNumResplitAces(1); //Aces be split, but not resplit
-      theRules.setMaxNumberSplitHands(2); //But other things can be resplit
-      theRules.setHitSplitAces(false);
-      theRules.setAccuracy(Rules.CACHE_ACCURACY);
-
-      //Assuming the dealer does NOT have blackjack.
-      final String rulesHash = theRules.toString();
-      System.out.println(rulesHash);
-      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
-      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
-
-      Testers.printStrategy(solvedSoft, "Assuming the dealer doesn't have blackjack.", false);
-      System.out.println("------------------------------------");
-      Testers.printStrategy(solvedHard, "Assuming the dealer doesn't have blackjack.", false);
-
-      Testers.viewRawSplitEV(theRules, solvedHard, solvedSoft, false);
-      if (!rulesHash.equals(theRules.toString())) {
-         System.out.println("Rules were corrupted.");
-      }
-      //double q = -7.96;
-      //System.out.format("%+.2f  " ,  q);
-
-   }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-
-   }
-
-
-}
-
-/** TODO: Finish deprecating and remove
- * Provides simple testing of split answers. Does no testing on early surrender
- * cases.
- *
- * Add assert back in after mystery bug found on 8 8 A that thinks splitting is
- * a bad idea.
- *
- * I should be using validateSolvedStrategy instead.
- *
- * @param stupidAnswers
- * @param theRules
- */
-@Deprecated
-static public void simplePrintAnswer(ArrayList<Answer> stupidAnswers,
-        Rules theRules, final boolean verbosity) {
-   CardValue firstCard;
-   CardValue secondCard, dealerCard;
-   Action bestAction;
-   for (int i = 0; i < stupidAnswers.size(); i++) {
-      firstCard = stupidAnswers.get(i).getFirstPlayerCard();
-      secondCard = stupidAnswers.get(i).getSecondPlayerCard();
-      dealerCard = stupidAnswers.get(i).getDealerCard();
-      bestAction = stupidAnswers.get(i).getBestAction();
-
-      if ((firstCard == secondCard)
-              && (firstCard
-              == CardValue.ACE) || (firstCard == CardValue.EIGHT)
-              && (theRules.getEarlySurrender() == false)) {
-         if ((theRules.dealerHoleCard() == false)
-                 && (theRules.getNumberOfDecks() >= 4)) {
-            if ((dealerCard == CardValue.ACE)
-                    || (dealerCard == CardValue.TEN)) {
-               assert (bestAction == Action.HIT);
-            }
-            else //Unsure of where I came up with these tests
-            {
-               assert (bestAction == Action.SPLIT);
-            }
-         }
-         else if ((theRules.getNumberOfDecks() >= 2)
-                 && (firstCard == CardValue.EIGHT)) {
-            assert (bestAction == Action.SURRENDER);
-         }
-         else if (theRules.dealerHoleCard()) {
-            assert (bestAction == Action.SPLIT);
-         }
-      }
-
-   }
-
-}
-
 /**
  * Mothballed -- far too slow to be of any practical use. Can be used to
  * do one-off testing? Might be useful if the cache were changed, player
@@ -2086,26 +1989,6 @@ static public void testDealerHCP() {
 
 
 
-}
-
-/**
- * Scratch
- *
- * This implies that enums do NOT need to be deep clones; they are more
- * like primitives. So I've changed CardValue and Card
- *
- *
- */
-@Deprecated
-static public void testEnumEncapsulation() {
-   Card aCard = new Card(Suit.SPADES, CardValue.TWO);
-   System.out.println(aCard);
-   CardValue otherCV = CardValue.FIVE;
-   CardValue myCV = aCard.getCardValue();
-   myCV = CardValue.FOUR;
-   System.out.println(aCard);
-   myCV = otherCV;
-   System.out.println(aCard);
 }
 
 /**
