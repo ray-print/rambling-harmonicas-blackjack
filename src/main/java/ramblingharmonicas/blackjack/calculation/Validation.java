@@ -196,32 +196,47 @@ private static void validateOneStrategy(CardValue dealerCard,
 
     }
     
-    //TODO: Track down why this is always good advice.
-    //Assuming no early surrender, with the players holding 8 8 or A A:
-    // For 4 or more decks, with no hole card, hit if the dealer has an ace or 10; 
-    // split otherwise.
-    
+    //Assuming no early surrender, with the player holding 8 8 or A A:
     if ( (firstPlayerCard == secondPlayerCard)
-         && (firstPlayerCard == CardValue.ACE) || (firstPlayerCard == CardValue.EIGHT)
+         && ( (firstPlayerCard == CardValue.ACE) || (firstPlayerCard == CardValue.EIGHT))
          && (theRules.getEarlySurrender() == false)) {
-        if ((theRules.dealerHoleCard() == false) && (theRules.getNumberOfDecks() >= 4)) {
-            if ((dealerCard == CardValue.ACE) || (dealerCard == CardValue.TEN)) {
-               assert (bestAction == Action.HIT);
-            }
-            else {
-               assert (bestAction == Action.SPLIT);
-            }
-        }
-        else 
-            if ((theRules.getNumberOfDecks() >= 2)
-                 && (firstPlayerCard == CardValue.EIGHT)) {
-            assert (bestAction == Action.SURRENDER);
-        }
-        else
-            if (theRules.dealerHoleCard()) {
-                assert (bestAction == Action.SPLIT);
-            }
+        Validation.testSplitEightsAces(firstPlayerCard, dealerCard, theRules, bestAction,
+                myState, aStrategy);
       }
+}
+
+private static void testSplitEightsAces(CardValue firstPlayerCard, CardValue dealerCard,
+        Rules theRules, Action bestAction, State myState, Strategy myStrategy)
+        throws NoRecommendationException, IOException {
+    StringBuilder status = new StringBuilder(theRules.toString() + myState +
+                   "This is my bestAction:" + bestAction);
+    final boolean dealerTenOrAce = 
+            (dealerCard == CardValue.ACE) || (dealerCard == CardValue.TEN);
+    
+    //4-8 Decks, no hole card: hit on dealer ace/ten, split on dealer 9 or lower
+    if ((theRules.dealerHoleCard() == false) && (theRules.getNumberOfDecks() >= 4)) {
+        if (dealerTenOrAce) {
+            assert (bestAction == Action.HIT) : status;
+        }
+        else {
+          assert (bestAction == Action.SPLIT) : status;
+        }
+       return;
+    }
+    
+    //Hard 16, 2+ decks, surrender on A
+    if ((theRules.getNumberOfDecks() >= 2) && (firstPlayerCard == CardValue.EIGHT) &&
+            (dealerCard == CardValue.ACE)) {
+        myState.setDealerBlackjack(false);
+        Action actualBestAction = myStrategy.findBestAction(myState);
+        assert (actualBestAction == Action.SURRENDER) : theRules.toString() + myState +
+                   "This is my bestAction:" + bestAction;
+        return;
+    }
+    
+    if (theRules.dealerHoleCard()) {
+        assert (bestAction == Action.SPLIT) : status;
+    }
 }
 
 }

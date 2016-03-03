@@ -9,31 +9,30 @@ import java.util.*;
 /**
  ***** TODO: Move all tests in this file into JUnit.  ****************
  * TODO: Move all code which solves and then stores data sets into separate file.
- * TODO: Move all non-tests into Blackjack.java
+ * TODO: Move all non-tests into appropriate files.
  *
  */
 public class Testers {
 
 public static void callTests() {
 	Testers.allFastTests();
-   /* Don't run these tests when the raw data files don't exist, or
-    * when calculations are deactivated.
-    //runAllCalculations(false);
-    //consolidateFiles(false);
-    * validateNonConsolidatedFiles(false);
-    //This should throw an exception quickly if calculations are deactivated
-    */
 
-	//validateConsolidatedFiles(true); //This takes about 14 minutes.
-	 Strategy someStrat = new Strategy( new Rules(8), Strategy.Skill.TOTAL_DEP);
+	Strategy someStrat = new Strategy( new Rules(8), Strategy.Skill.TOTAL_DEP);
 	 someStrat.testToggles();
-	//Testers.testStrategy(false); //This test is time-consuming
-	 Testers.testTotalEV.doAll(false, false); //Verbosity, saving
-	   //Blackjack.printCacheStatus();
-	 Testers.testResplitEVs();
-	   //Blackjack.printCacheStatus();
 }
 
+public static void allSlowTests() {
+       /* Don't run these tests when the raw data files don't exist, or
+    * when calculations are deactivated.*/
+    runAllCalculations(false);
+    consolidateFiles(false);
+    validateNonConsolidatedFiles(false);
+    //This should throw an exception quickly if calculations are deactivated
+    
+
+	validateConsolidatedFiles(true); //This takes about 14 minutes.
+
+}
 private static void runAllCalculations(boolean verbosity) {
    System.out.println("Completing all calculations. This takes ~80 hours if not already done.-------");
    final int[] deckArray = Strategy.solvedNumberOfDecks;//new int[]{1,2,4,6,8};
@@ -548,7 +547,7 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       if (verbosity) {
          Testers.printStrategy(hardAnswers, theRules.toString(), false);
          Testers.printStrategy(softAnswers, "", false);
-         //Testers.simplePrintAnswer(splitAnswers, theRules, false);
+         ///??TODO: Add Answer validation here?
       }
 
 
@@ -738,15 +737,17 @@ public static void allFastTests() {
    testInsuranceGoodIdea();
    Testers.testResolveHands();
    Testers.testOverloadedDealer(); //Utilities functions
-   Testers.dealerClassTest();
    Testers.testDealerHCP();
 
    Testers.testState();
 
    Testers.testRulesHash(false); //Generates ~410k unique keys at last count.
-   //false = no verbosity
    System.out.println("Quick tests took " + (System.currentTimeMillis() - startTime) + " ms.");
-
+   
+   //Longer tests
+   Testers.testStrategy(false); //This test is time-consuming
+   Testers.testTotalEV.doAll(false, false); //Verbosity, saving
+   Testers.testResplitEVs();
 }
 
 /**
@@ -829,9 +830,9 @@ public static void testState() {
    assert (otherState.getHandResult(1, 25, false) == State.LOSE);
    assert (otherState.getHandResult(1, 21, true) == State.LOSE);
    try {
-      assert (otherState.getHandResult(1, 18, true) == State.LOSE);
-      throw new IllegalStateException("State.getHandResult failed test -- no exception thrown"
-              + " when it was told the dealer had a blackjack and a hand total of 18.");
+      assert (otherState.getHandResult(1, 18, true) == State.LOSE):
+              "State.getHandResult failed test -- no exception thrown"
+              + " when it was told the dealer had a blackjack and a hand total of 18.";
    }
    catch (IllegalArgumentException iae) {
    }
@@ -892,8 +893,8 @@ static private void printAndTestFastDealerRecursive(
    int i;
    final long startTime = System.currentTimeMillis();
    long iterationSum = Blackjack.fastDealerIterations;
-   int[] handArray = new int[10];
-   Utilities.convertCardArraytoArray(myCards, handArray);
+   int[] handArray;
+   handArray = Utilities.convertCardArraytoArray(myCards);
    final double[] epicFail =
            Calculation.DealerRecursive(handArray, Deck, myRules);
    double probability_sum = 0;
@@ -1016,154 +1017,6 @@ static void testFastDealerRecursive(final int numDecks,
    System.out.println(
            "I used " + numDecks + " decks and a max hand size of "
            + myRules.getDealerMaxHandSize() + " cards.");
-
-}
-
-public static void dealerClassTest() {
-   ArrayList<Card> myCards = new ArrayList<Card>();
-   int failedTests = 0;
-   int totalTests = 0;
-   int success = 0;
-   Card anAce = new Card(Suit.CLUBS, CardValue.ACE);
-   Card aTwo = new Card(Suit.SPADES, CardValue.TWO);
-   Card aTen = new Card(Suit.DIAMONDS, CardValue.TEN);
-   Card aJack = new Card(Suit.HEARTS, CardValue.JACK);
-   Card aFive = new Card(Suit.CLUBS, CardValue.FIVE);
-
-   myCards.add(anAce);
-   myCards.add(anAce);
-   myCards.add(anAce);
-
-   if (Utilities.contains(myCards, CardValue.FIVE)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   totalTests++;
-   if (Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 13)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-   myCards.add(aTen);
-   myCards.add(aTen);
-   myCards.add(anAce);
-
-   if (!Utilities.contains(myCards, CardValue.JACK)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 21)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-
-   myCards.add(aTwo);
-   myCards.add(aTen);
-   myCards.add(aJack);
-   if (failedTests > 0) {
-      System.out.println("Dealer class test: Failed tests by this point");
-      assert false;
-   }
-   if (Utilities.contains(myCards, CardValue.ACE)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 22)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-
-   if (failedTests > 0) {
-      System.out.println(
-              "Test conducted on four functions of the Dealer class:");
-      System.out.println(
-              success + " tests worked; " + failedTests + " did not work.");
-      assert false;
-   }
-
-
-   int[] someCards = new int[10];
-   Utilities.zero(someCards);
-   someCards[0] = 1;
-   assert (Utilities.retrieveSingleCard(someCards) == 0) : "Dealer.retrieveSingleCard failed.";
-   someCards[1] = 1;
-   try {
-      Utilities.retrieveSingleCard(someCards);
-      assert (false) : "Dealer.retrieveSingleCard did not throw exception on two cards in hand.";
-   }
-   catch (IllegalArgumentException e) {
-   }
-   someCards[1] = someCards[0] = 0;
-   someCards[9] = 1;
-   assert (Utilities.retrieveSingleCard(someCards) == 9) : "Dealer.retrieveSingleCard failed.";
 
 }
 
@@ -1292,9 +1145,7 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
    int[] manualResults = new int[7];
    double[] manualProbs = new double[7];
    Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
-   final int[] handArray = new int[10];
-
-   Utilities.convertCardArraytoArray(startingCards, handArray);
+   final int[] handArray = Utilities.convertCardArraytoArray(startingCards);;
 
    ArrayList<Card> cloneOfStartHand = new ArrayList<Card>();
    for (int i = 0; i < startingCards.size(); i++) {
@@ -1432,7 +1283,7 @@ private static void advancedTestResolveHands() {
    int[] dealerCards = new int[10];
    ArrayList<Card> dealerArrayList = new ArrayList<Card>();
    dealerArrayList.add(dealerCard);
-   dealerCards = Utilities.convertCardArraytoArray(dealerArrayList, dealerCards);
+   dealerCards = Utilities.convertCardArraytoArray(dealerArrayList);
    double[] dealerResults = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
 
    double intermediateCalculatedValue = 0;
@@ -1761,8 +1612,6 @@ public static void testOverloadedDealer() {
    myCards[Constants.ACECARD] = 4;
    testOverloadedDealer(myCards, 14, 4, true);
 
-   testGetDealerHand();
-
    ArrayList<Card> testHand = new ArrayList<Card>();
    Rules someRules = new Rules(1);
    CardValue j = CardValue.THREE;
@@ -1775,38 +1624,7 @@ public static void testOverloadedDealer() {
    }
 }
 
-/**
- * Crude test of getDealerHand
- * Run by testOverloadedDealer
- *
- */
-private static void testGetDealerHand() {
 
-   ArrayList<Card> initialCards = new ArrayList<Card>();
-
-   int handTotal;
-   final Rules theRules = new Rules(1);
-   Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
-
-   theRules.setHoleCard(false);
-   Card two = new Card(Suit.CLUBS, CardValue.TWO);
-   initialCards.add(two);
-   double[] resultTotals = new double[7]; //not implemented yet.
-
-   for (int i = 0; i < 10000; i++) {
-      initialCards = Utilities.getDealerHand(theRules, initialCards, myShoe);
-      handTotal = Utilities.handTotal(initialCards);
-      assert (handTotal > 16) : "Handtotal is " + handTotal;
-      assert (handTotal < 27) : "Handtotal is " + handTotal;
-
-
-      myShoe = new Shoe(theRules.getNumberOfDecks());
-      initialCards.clear();
-      initialCards.add(two);
-   }
-
-
-}
 
 /**
  * Tests the rules hash for all values. See rules hash key function for more

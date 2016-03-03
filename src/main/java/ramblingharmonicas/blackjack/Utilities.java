@@ -154,8 +154,8 @@ public static boolean isSoft(List<Card> myCards) {
    return false;
 }
 
-/**
- * Untested.
+/** TODO: Add test for this function
+ * Used only by testing functions.
  * Takes an ArrayList of cards and turns it into a form that can be used by
  * Dealer's Recursive.
  *
@@ -164,17 +164,9 @@ public static boolean isSoft(List<Card> myCards) {
  * @return
  *
  */
-static int[] convertCardArraytoArray(ArrayList<Card> myCards, int[] array) {
-   if (array == null) {
-      array = new int[10];
-   }
-   else {
-      zero(array);
-   }
-   assert (array.length == 10) : "The starting array must be 10 elements long in order to be used.";
-   for (int i = 0; i < array.length; i++) {
-      array[i] = 0;
-   }
+static int [] convertCardArraytoArray(ArrayList<Card> myCards) {
+   int [] array = new int [10];
+   zero(array);
    for (int j = 0; j < myCards.size(); j++) {
       array[ (myCards.get(j).value() - 1)]++;
    }
@@ -188,7 +180,7 @@ static int[] convertCardArraytoArray(ArrayList<Card> myCards, int[] array) {
  * @param myCards
  * @return
  */
-static int retrieveSingleCard(int[] myCards) {
+static int retrieveSingleCard(final int[] myCards) {
    if (handSize(myCards) != 1) {
       throw new IllegalArgumentException("Function retrieve Single card"
               + "called with multiple cards in hand.");
