@@ -12,14 +12,15 @@ import ramblingharmonicas.blackjack.cards.CardValue;
 
 public class Validation {
 
-public static boolean assertsOn() {
-    boolean assertsOn = false;
-    assert (assertsOn = true);    
-    return assertsOn;
+final public static boolean assertsOn;
+static {
+    boolean areAssertsOn = false;
+    assert (areAssertsOn = true);    
+    assertsOn = areAssertsOn;
 }
 
 public static void assertProbsAreOne(double probabilities []) {
-    if (!Validation.assertsOn()) {
+    if (!assertsOn) {
         return;
     }
     double sum = 0;
@@ -83,19 +84,19 @@ private static void validateOneStrategy(CardValue dealerCard,
     String msg;
 
     State myState = new State(firstPlayerCard, secondPlayerCard, dealerCard);
-    Action chosenAction;
+    Action bestAction;
     final int handTotal;
     boolean isSoft;
-    chosenAction = aStrategy.findBestAction(myState);
+    bestAction = aStrategy.findBestAction(myState);
 
     //Always split aces when the dealer doesn't have a 10 or ace up.
     if (    (theRules.isPossible(Action.SPLIT, myState))
-            && (chosenAction != Action.SPLIT)
+            && (bestAction != Action.SPLIT)
             && (firstPlayerCard == secondPlayerCard)
             && (firstPlayerCard == CardValue.ACE)) {
         if ((dealerCard != CardValue.TEN) && (dealerCard != CardValue.ACE)) {
             msg = "With two Aces and a dealer " + dealerCard + ", "
-                    + "I chose to " + chosenAction.toString();
+                    + "I chose to " + bestAction.toString();
             throw new NoRecommendationException(myState, theRules, aStrategy, 
                     msg);
         }
@@ -105,7 +106,7 @@ private static void validateOneStrategy(CardValue dealerCard,
     // Don't surrender with dealer up card of 2-7
     if ((dealerCard.value() < 8)
             && (dealerCard.value() != CardValue.ACE.value())
-            && (chosenAction == Action.SURRENDER)) {
+            && (bestAction == Action.SURRENDER)) {
         msg = "I chose to surrender when the dealer had less than an 8 up.";
         throw new NoRecommendationException(myState, theRules, aStrategy, msg);
     }
@@ -122,9 +123,9 @@ private static void validateOneStrategy(CardValue dealerCard,
 
 
     // ALWAYS STAND ON 21
-    if ( (handTotal == 21) && (chosenAction != Action.STAND) ) {
+    if ( (handTotal == 21) && (bestAction != Action.STAND) ) {
         msg = "With a hand total of " + handTotal + " and a dealer "
-                + dealerCard + ", I chose to " + chosenAction.toString();
+                + dealerCard + ", I chose to " + bestAction.toString();
         throw new NoRecommendationException(myState, theRules, aStrategy, msg);
     }
 
@@ -136,9 +137,9 @@ private static void validateOneStrategy(CardValue dealerCard,
     }
 
     // ALWAYS STAND ON HARD 20
-    if ((handTotal == 20) && (!isSoft) && ((chosenAction != Action.STAND))) {
+    if ((handTotal == 20) && (!isSoft) && ((bestAction != Action.STAND))) {
         msg = "With a hand total of " + handTotal + " and a dealer "
-                + dealerCard + ", I chose to "+ chosenAction.toString();
+                + dealerCard + ", I chose to "+ bestAction.toString();
         throw new NoRecommendationException(myState, theRules, aStrategy, msg);
     }
 
@@ -146,9 +147,9 @@ private static void validateOneStrategy(CardValue dealerCard,
     if ((handTotal == 11) 
             && (theRules.isPossible(Action.DOUBLE, myState))
             && (dealerCard.value() != 10) && (dealerCard.value() != 1)
-            && (chosenAction != Action.DOUBLE)) {
+            && (bestAction != Action.DOUBLE)) {
         msg = "With a hand total of " + handTotal + " and a dealer " 
-                + dealerCard + ", I chose to " + chosenAction.toString() + 
+                + dealerCard + ", I chose to " + bestAction.toString() + 
                 ", not double.";
         throw new NoRecommendationException(myState, theRules, aStrategy, msg);
     }
@@ -157,12 +158,12 @@ private static void validateOneStrategy(CardValue dealerCard,
     // early surrender is not allowed. If early surrender is allowed, then
     // don't surrender unless the dealer has a 10 or ace up.
     if (handTotal <= 11) {
-        if ((chosenAction != Action.HIT) && (chosenAction != Action.DOUBLE)
-                && (chosenAction != Action.SPLIT)) {
+        if ((bestAction != Action.HIT) && (bestAction != Action.DOUBLE)
+                && (bestAction != Action.SPLIT)) {
             if (!theRules.getEarlySurrender()
                     && !theRules.getEarlySurrenderNotOnAces()) {
                 msg = "With a hand total of " + handTotal + ", I did not "
-                        + "choose to hit or double; I chose to " + chosenAction;
+                        + "choose to hit or double; I chose to " + bestAction;
                 throw new NoRecommendationException(myState, theRules, 
                         aStrategy, msg);
             }
@@ -171,7 +172,7 @@ private static void validateOneStrategy(CardValue dealerCard,
                         && (dealerCard != CardValue.ACE)) {
                     msg = "With a hand total of " + handTotal
                             + ", I did not choose to hit or double." +
-                            "My chosen action is: " + chosenAction;
+                            "My chosen action is: " + bestAction;
                     throw new NoRecommendationException(myState, theRules, 
                             aStrategy, msg);
                 }
@@ -184,15 +185,57 @@ private static void validateOneStrategy(CardValue dealerCard,
     // STAND ON A HARD 14+ if the dealer has 2-6 up.
     boolean has2To6Up = (dealerCard.value() >= 2) && (dealerCard.value() <= 6);
     if ((handTotal > 14) && has2To6Up && (!isSoft)) {
-        if ((chosenAction != Action.STAND)
-                && (chosenAction != Action.SPLIT)) {
+        if ((bestAction != Action.STAND)
+                && (bestAction != Action.SPLIT)) {
             msg = "With a hand total of " + handTotal
                     + ", I did not choose to stand or split." + 
-                    "My chosen action is: " + chosenAction;
+                    "My chosen action is: " + bestAction;
             throw new NoRecommendationException(myState, theRules, 
                     aStrategy, msg);
         }
 
+    }
+    
+    //Assuming no early surrender, with the player holding 8 8 or A A:
+    if ( (firstPlayerCard == secondPlayerCard)
+         && ( (firstPlayerCard == CardValue.ACE) || (firstPlayerCard == CardValue.EIGHT))
+         && (theRules.getEarlySurrender() == false)) {
+        Validation.testSplitEightsAces(firstPlayerCard, dealerCard, theRules, bestAction,
+                myState, aStrategy);
+      }
+}
+
+private static void testSplitEightsAces(CardValue firstPlayerCard, CardValue dealerCard,
+        Rules theRules, Action bestAction, State myState, Strategy myStrategy)
+        throws NoRecommendationException, IOException {
+    StringBuilder status = new StringBuilder(theRules.toString() + myState +
+                   "This is my bestAction:" + bestAction);
+    final boolean dealerTenOrAce = 
+            (dealerCard == CardValue.ACE) || (dealerCard == CardValue.TEN);
+    
+    //4-8 Decks, no hole card: hit on dealer ace/ten, split on dealer 9 or lower
+    if ((theRules.dealerHoleCard() == false) && (theRules.getNumberOfDecks() >= 4)) {
+        if (dealerTenOrAce) {
+            assert (bestAction == Action.HIT) : status;
+        }
+        else {
+          assert (bestAction == Action.SPLIT) : status;
+        }
+       return;
+    }
+    
+    //Hard 16, 2+ decks, surrender on A
+    if ((theRules.getNumberOfDecks() >= 2) && (firstPlayerCard == CardValue.EIGHT) &&
+            (dealerCard == CardValue.ACE)) {
+        myState.setDealerBlackjack(false);
+        Action actualBestAction = myStrategy.findBestAction(myState);
+        assert (actualBestAction == Action.SURRENDER) : theRules.toString() + myState +
+                   "This is my bestAction:" + bestAction;
+        return;
+    }
+    
+    if (theRules.dealerHoleCard()) {
+        assert (bestAction == Action.SPLIT) : status;
     }
 }
 

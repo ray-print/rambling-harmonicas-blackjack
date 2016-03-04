@@ -7,37 +7,31 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- ***** TODO: Move all tests in this file into JUnit.  ****************
+ ***** TODO: Move all tests in this file into JUnit, refactor the crap away.  ******
  * TODO: Move all code which solves and then stores data sets into separate file.
- * TODO: Move all non-tests into Blackjack.java
+ * TODO: Move all non-tests into appropriate files
  *
  */
 public class Testers {
 
 public static void callTests() {
 	Testers.allFastTests();
-   /* Don't run these tests when the raw data files don't exist, or
-    * when calculations are deactivated.
-    //runAllCalculations(false);
-    //consolidateFiles(false);
-    * validateNonConsolidatedFiles(false);
+
+	Strategy someStrat = new Strategy( new Rules(8), Strategy.Skill.TOTAL_DEP);
+	someStrat.testToggles();
+}
+
+public static void allSlowTests() {
+       /* Don't run these tests when the raw data files don't exist, or
+    * when calculations are deactivated.*/
+    runAllCalculations(false);
+    consolidateFiles(false);
+    validateNonConsolidatedFiles(false);
     //This should throw an exception quickly if calculations are deactivated
-    */
 
-	//validateConsolidatedFiles(true); //This takes about 14 minutes.
-	 Strategy someStrat = new Strategy( new Rules(8), Strategy.Skill.TOTAL_DEP);
-	 someStrat.testToggles();
-	//Testers.testStrategy(false); //This test is time-consuming
-	 Testers.testTotalEV.doAll(false, false); //Verbosity, saving
-	   //Blackjack.printCacheStatus();
-	 Testers.testResplitEVs();
-	   //Blackjack.printCacheStatus();
-}
-public static void main(String[] args) throws 
-        NoRecommendationException, IOException, ClassNotFoundException {
-   Testers.callTests();
-}
+	validateConsolidatedFiles(true); //This takes about 14 minutes.
 
+}
 private static void runAllCalculations(boolean verbosity) {
    System.out.println("Completing all calculations. This takes ~80 hours if not already done.-------");
    final int[] deckArray = Strategy.solvedNumberOfDecks;//new int[]{1,2,4,6,8};
@@ -116,13 +110,6 @@ public static void consolidateFiles(boolean verbosity) {
    System.out.println("Consolidation is complete. Minutes taken: " + (q / 60000));
 }
 
-/**
- * Basic tests of Strategy class.
- *
- * At one point, these tests required maximum accuracy -- cache accuracy
- * was not accurate enough. Now, they pass with cache accuracy.
- *
- */
 static public class StrategyTest {
 private Rules theRules;
 private Shoe myShoe;
@@ -315,15 +302,7 @@ public void testFindBestActionOmniBus(boolean verbosity) throws IOException {
 
 }
 
-/**
- * This tests two or three split recommendations.
- *
- * Called by testFindBestActionOmniBus
- *
- */
 private void testSplitRecommendations(boolean verbosity) throws IOException {
-
-
    Card dealerCard = new Card(Suit.CLUBS, CardValue.TEN);
    myCards.clear();
    myCards.add(new Card(Suit.CLUBS, CardValue.SIX));
@@ -376,14 +355,11 @@ private void testSplitRecommendations(boolean verbosity) throws IOException {
       ArrayList<Answer> someAnswers = new ArrayList<Answer>();
       someAnswers.add(hard);
 
-      Testers.simplePrintAnswer(someAnswers, theRules, false);
       assert false;
    }
 
    myCards.clear();
-   myCards.add(new Card(Suit.CLUBS, CardValue.EIGHT));
-   myCards.add(new Card(Suit.CLUBS, CardValue.EIGHT));
-   aState = new State(myCards, dealerCard);
+   aState = new State(CardValue.EIGHT, CardValue.EIGHT, dealerCard.getCardValue());
    aState.setDealerBlackjack(false);
    try {
       anAction = myStrategy.findBestAction(aState, theRules, myShoe);
@@ -404,9 +380,9 @@ static public void printTestToggleReport() {
 
 }
 
-static int numberRulesSets;
-static int numberSetsAccepted;
-static Set listOfRulesKeys = new TreeSet();
+private static int numberRulesSets;
+private static int numberSetsAccepted;
+private static Set listOfRulesKeys = new TreeSet();
 
 /**
  * This is a helper function. It should not be called on its own.
@@ -418,21 +394,12 @@ static public void testToggles(Rules someRules) {
    if (listOfRulesKeys.add(someRules.myHashKey())) {
       numberSetsAccepted++;
    }
-   else
-    ;
-
-
 }
 
 /**
  * Checks that solveAndStore is not throwing exceptions.
  * If this Strategy has not already been saved, this will solve and save it.
  * If this Strategy has been saved, this will load the strategy.
- *
- *
- * @param verbosity
- * @throws IOException
- * @throws NoRecommendationException
  *
  */
 public void testSolveAndStore(boolean verbosity) throws IOException, NoRecommendationException {
@@ -469,7 +436,8 @@ public void testAnswerLoad(boolean verbosity) throws IOException {
    Testers.testTotalEV.wrapperCheckTotalEV(0.00608, theRules, verbosity);
 
    if (verbosity) {
-      System.out.println("Loading two files took: " + (System.currentTimeMillis() - initTime) + " ms.");
+      System.out.println("Loading two files took: " + 
+              (System.currentTimeMillis() - initTime) + " ms.");
    }
 }
 
@@ -479,7 +447,8 @@ public void testAnswerLoad(boolean verbosity) throws IOException {
  *
  * Low accuracy is NOT good enough.
  */
-public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT THE CHANCE OF DEALER BLACKJACK
+public void testConsolidateHardAndOmniBus(boolean verbosity) {  
+    //FACTORS OUT THE CHANCE OF DEALER BLACKJACK
    try {
       Rules someRules = new Rules(2);
       someRules.setMaxNumberSplitHands(2);
@@ -506,7 +475,6 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       assert (aStrategy.findBestAction(someState) == Action.SURRENDER) :
               (aStrategy.findBestAnswer(new Shoe(someRules.getNumberOfDecks()), someRules, someState)).toString();
       //-> Hit comp-dep
-      //This last one fails.
 
       someRules = new Rules(1);
       someRules.setHitOn17(false);
@@ -532,7 +500,8 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       assert (aStrategy.findBestAction(someState, someRules) == Action.STAND); //Hit comp-dep
 
 
-      //Below here is a test done without using the Strategy framework
+      //Below here is a test done without using the Strategy framework;
+      //it should be refactored to use the Strategy framework
       ArrayList<ArrayList<State>> hardAnswers;
       ArrayList<ArrayList<State>> totalDependent;
       ArrayList<ArrayList<State>> softAnswers;
@@ -553,9 +522,8 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
       if (verbosity) {
          Testers.printStrategy(hardAnswers, theRules.toString(), false);
          Testers.printStrategy(softAnswers, "", false);
-         Testers.simplePrintAnswer(splitAnswers, theRules, false);
+         ///??TODO: Add Answer validation here?
       }
-
 
 
       Calculation.consolidateIntoTotalDependent(totalDependent, theRules);
@@ -566,7 +534,6 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
 
       }
 //Compare the two tables now. They should be identical except for 8 and 12.
-      // Testers.printStrategy(
       for (int i = 0; i < hardAnswers.size(); i++) {
          for (int j = 0; j < hardAnswers.get(0).size(); j++) {
             if ((hardAnswers.get(i).get(j).handTotal() == 8)
@@ -574,7 +541,6 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
             ; //it's okay, a player 6 and 2 vs. a dealer 6 should hit not double.
             //http://wizardofodds.com/games/blackjack/appendix/3c/
             //The appendix and his other notes do not take surrender into account.
-            //He's got a separate page for it, and that's why I initially thought I was wrong.
             else if ((hardAnswers.get(i).get(j).handTotal() == 12)
                     && ((hardAnswers.get(i).get(j).getDealerUpCard().getCardValue() == CardValue.THREE)
                     || (hardAnswers.get(i).get(j).getDealerUpCard().getCardValue() == CardValue.FOUR)))
@@ -587,10 +553,11 @@ public void testConsolidateHardAndOmniBus(boolean verbosity) {  //FACTORS OUT TH
                   if (key != theRules.myHashKey()) {
                      throw new RuntimeException("Rules corruption in Strategy test.");
                   }
-
-                  State.printStateStatus(hardAnswers.get(i).get(j), "Hard state recommends:");
-                  State.printStateStatus(totalDependent.get(i).get(j), "Total dependent recommends:");
-                  assert (false);
+                  StringBuilder sb = new StringBuilder();
+                  sb.append("Hard state recommends:").append(hardAnswers.get(i).get(j))
+                    .append("Total dependent recommends:").append(totalDependent.get(i).get(j));
+                  
+                  assert false : sb;
                   //A previous function here changed the calculation accuracy, which is why this failed at one point.
                }
 
@@ -676,16 +643,7 @@ public static void testTotalConsolidatedForConsolidation(boolean verbosity,
             }
          }
       }
-
-
-
-
    }
-
-
-
-
-
 }
 
 /**
@@ -701,16 +659,13 @@ private static void setActionsForHandTotals(boolean lowHands,
    int handTotal;
    final CardValue[] doNotSet;
    if (lowHands) {
-      // doNotSet = new CardValue[] { CardValue.TWO, CardValue.TWO};
       firstCard = CardValue.TWO;
    }
    else {
-      // doNotSet = new CardValue[] { CardValue.TWO, CardValue.TEN};
       firstCard = CardValue.TEN;
    }
 
-   for (CardValue k : CardValue.twoToTen) { //if ( (k == doNotSet[0]) || (k == doNotSet[1]) )
-      // continue;
+   for (CardValue k : CardValue.twoToTen) { 
       handTotal = k.value() + firstCard.value();
       scratch = new State(k, firstCard, dealerCard);
       bestAction[handTotal] = aStrategy.findBestAction(scratch);
@@ -744,15 +699,17 @@ public static void allFastTests() {
    testInsuranceGoodIdea();
    Testers.testResolveHands();
    Testers.testOverloadedDealer(); //Utilities functions
-   Testers.dealerClassTest();
    Testers.testDealerHCP();
 
    Testers.testState();
 
    Testers.testRulesHash(false); //Generates ~410k unique keys at last count.
-   //false = no verbosity
    System.out.println("Quick tests took " + (System.currentTimeMillis() - startTime) + " ms.");
-
+   
+   //Longer tests
+   Testers.testStrategy(false); //This test is time-consuming
+   Testers.testTotalEV.doAll(false, false); //Verbosity, saving
+   Testers.testResplitEVs();
 }
 
 /**
@@ -835,9 +792,9 @@ public static void testState() {
    assert (otherState.getHandResult(1, 25, false) == State.LOSE);
    assert (otherState.getHandResult(1, 21, true) == State.LOSE);
    try {
-      assert (otherState.getHandResult(1, 18, true) == State.LOSE);
-      throw new IllegalStateException("State.getHandResult failed test -- no exception thrown"
-              + " when it was told the dealer had a blackjack and a hand total of 18.");
+      assert (otherState.getHandResult(1, 18, true) == State.LOSE):
+              "State.getHandResult failed test -- no exception thrown"
+              + " when it was told the dealer had a blackjack and a hand total of 18.";
    }
    catch (IllegalArgumentException iae) {
    }
@@ -898,8 +855,8 @@ static private void printAndTestFastDealerRecursive(
    int i;
    final long startTime = System.currentTimeMillis();
    long iterationSum = Blackjack.fastDealerIterations;
-   int[] handArray = new int[10];
-   Utilities.convertCardArraytoArray(myCards, handArray);
+   int[] handArray;
+   handArray = Utilities.convertCardArraytoArray(myCards);
    final double[] epicFail =
            Calculation.DealerRecursive(handArray, Deck, myRules);
    double probability_sum = 0;
@@ -1025,154 +982,6 @@ static void testFastDealerRecursive(final int numDecks,
 
 }
 
-public static void dealerClassTest() {
-   ArrayList<Card> myCards = new ArrayList<Card>();
-   int failedTests = 0;
-   int totalTests = 0;
-   int success = 0;
-   Card anAce = new Card(Suit.CLUBS, CardValue.ACE);
-   Card aTwo = new Card(Suit.SPADES, CardValue.TWO);
-   Card aTen = new Card(Suit.DIAMONDS, CardValue.TEN);
-   Card aJack = new Card(Suit.HEARTS, CardValue.JACK);
-   Card aFive = new Card(Suit.CLUBS, CardValue.FIVE);
-
-   myCards.add(anAce);
-   myCards.add(anAce);
-   myCards.add(anAce);
-
-   if (Utilities.contains(myCards, CardValue.FIVE)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   totalTests++;
-   if (Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 13)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-   myCards.add(aTen);
-   myCards.add(aTen);
-   myCards.add(anAce);
-
-   if (!Utilities.contains(myCards, CardValue.JACK)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 21)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-
-   myCards.add(aTwo);
-   myCards.add(aTen);
-   myCards.add(aJack);
-   if (failedTests > 0) {
-      System.out.println("Dealer class test: Failed tests by this point");
-      assert false;
-   }
-   if (Utilities.contains(myCards, CardValue.ACE)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!Utilities.isBust(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (Utilities.isSoft(myCards)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-
-   if (!(Utilities.handTotal(myCards) == 22)) {
-      failedTests++;
-   }
-   else {
-      success++;
-   }
-   myCards.remove(0);
-   myCards.remove(0);
-   myCards.remove(0);
-
-
-   if (failedTests > 0) {
-      System.out.println(
-              "Test conducted on four functions of the Dealer class:");
-      System.out.println(
-              success + " tests worked; " + failedTests + " did not work.");
-      assert false;
-   }
-
-
-   int[] someCards = new int[10];
-   Utilities.zero(someCards);
-   someCards[0] = 1;
-   assert (Utilities.retrieveSingleCard(someCards) == 0) : "Dealer.retrieveSingleCard failed.";
-   someCards[1] = 1;
-   try {
-      Utilities.retrieveSingleCard(someCards);
-      assert (false) : "Dealer.retrieveSingleCard did not throw exception on two cards in hand.";
-   }
-   catch (IllegalArgumentException e) {
-   }
-   someCards[1] = someCards[0] = 0;
-   someCards[9] = 1;
-   assert (Utilities.retrieveSingleCard(someCards) == 9) : "Dealer.retrieveSingleCard failed.";
-
-}
-
 /**
  * Helper function for main insurance tester
  *
@@ -1205,7 +1014,7 @@ static private boolean insuranceTester(FastShoe myShoe,
    else {
       theAnswer = false;
    }
-//startingHand.clear();
+
    myShoe.addCard(new Card(Suit.CLUBS, PCardOne));
    myShoe.addCard(new Card(Suit.CLUBS, PCardTwo));
    myShoe.addCard(new Card(Suit.CLUBS, dealerCard));
@@ -1251,11 +1060,7 @@ static public boolean testInsuranceGoodIdea() {
       }
    }
 
-   if (myShoe.numberOfCards() != 52) {
-      System.out.println(
-              "Error in testing function testPlayersRecursiveHelpers");
-      assert false;
-   }
+   assert (myShoe.numberOfCards() == 52);
 
    int i = 0;
    for (CardValue p : CardValue.values()) {
@@ -1269,7 +1074,6 @@ static public boolean testInsuranceGoodIdea() {
          break;
       }
    }
-//myShoe.printContents();
 
    for (CardValue pcone : CardValue.values()) {
       for (CardValue pctwo : CardValue.values()) {
@@ -1289,7 +1093,7 @@ static public boolean testInsuranceGoodIdea() {
 /**
  * Used to test getDealerHand in Utilities (the function that does the work, not
  * the convenience functions).
- * This eats up a decent amount of time.
+ * This calls DealersRecursive and eats up a decent amount of time.
  *
  * @param startingCards
  * @param theRules
@@ -1298,16 +1102,15 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
    int[] manualResults = new int[7];
    double[] manualProbs = new double[7];
    Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
-   final int[] handArray = new int[10];
-
-   Utilities.convertCardArraytoArray(startingCards, handArray);
+   final int[] handArray = Utilities.convertCardArraytoArray(startingCards);
 
    ArrayList<Card> cloneOfStartHand = new ArrayList<Card>();
    for (int i = 0; i < startingCards.size(); i++) {
       cloneOfStartHand.add(new Card(startingCards.get(i)));
    }
 
-   final double[] calculatedResults = Calculation.DealerRecursive(handArray, new FastShoe(myShoe), theRules);
+   final double[] calculatedResults = Calculation.DealerRecursive(handArray,
+           new FastShoe(myShoe), theRules);
 
    ArrayList<Card> results;
    final double ITERATIONS = 50000;
@@ -1342,7 +1145,7 @@ static void testGetDealerHand(ArrayList<Card> startingCards, Rules theRules) {
 
 
 //System.out.print("Manual count: ");
-   for (int j = 0; j < manualResults.length; j++) { //System.out.print(manualResults[j] + "   ");
+   for (int j = 0; j < manualResults.length; j++) { 
       manualProbs[j] = ((double) (manualResults[j])) / ((double) ITERATIONS);
       sum += manualResults[j];
    }
@@ -1427,18 +1230,17 @@ private static void advancedTestResolveHands() {
 
    //OK. To calculate first do insurance:
    double probOfTen = myShoe.probabilityOf(CardValue.TEN);
-   double calculatedValue = 0;
-   calculatedValue = probOfTen * 1 + (1 - probOfTen) * -0.5;
+   double calculatedValue = probOfTen * 1 + (1 - probOfTen) * -0.5;
    //System.out.println("Insurance is worth " + calculatedValue);
    //Then do losing hand:
    calculatedValue -= 1;
    //Then do blackjack -- A 10 is insta-lose, otherwise nothing happens.
    //calculatedValue = probOfTen * -1; (should be done already by DealerRecursive)
 
-   int[] dealerCards = new int[10];
+   int[] dealerCards;
    ArrayList<Card> dealerArrayList = new ArrayList<Card>();
    dealerArrayList.add(dealerCard);
-   dealerCards = Utilities.convertCardArraytoArray(dealerArrayList, dealerCards);
+   dealerCards = Utilities.convertCardArraytoArray(dealerArrayList);
    double[] dealerResults = Calculation.DealerRecursive(dealerCards, myShoe, theRules);
 
    double intermediateCalculatedValue = 0;
@@ -1484,7 +1286,6 @@ private static void advancedTestResolveHands() {
    alwaysCloned = new State(myCards, dealerCard);
 
    Strategy.insuranceGoodIdea(myShoe, theRules, alwaysCloned);
-   //Why did I call this??
 
    alwaysCloned.action(Action.INSURANCE); //TESTING
    alwaysCloned.setDealerBlackjack(true);
@@ -1566,9 +1367,6 @@ private static void advancedTestResolveHands() {
    assert ((-0.2064 < value) && (value < -0.2052)) : "Expected result was between -0.2062 and -0.2050; actual"
            + " result is " + value;
 
-
-
-
 }
 
 /**
@@ -1585,10 +1383,8 @@ private static void advancedTestResolveHands() {
 static State testPlayerRecursive(final Card DCard, final Card firstPCard,
         final Card secondPCard, final Rules theRules, FastShoe myShoe,
         final boolean dealerBJPossible) {
-   ArrayList<Card> myCards = new ArrayList<Card>();
-   myCards.add(firstPCard);
-   myCards.add(secondPCard);
-   State myState = new State(myCards, DCard);
+   State myState = new State(firstPCard.getCardValue(), secondPCard.getCardValue(), 
+           DCard.getCardValue());
    if (!dealerBJPossible) {
       myState.setDealerBlackjack(false);
    }
@@ -1601,8 +1397,6 @@ static State testPlayerRecursive(final Card DCard, final Card firstPCard,
 
    }
 }
-//State resolveHands(State finishedState, FastShoe myShoe, Rules theRules)
-//solves for EV.
 
 /**
  * Tests some resolveHands scenarios.
@@ -1627,8 +1421,8 @@ static void testResolveHands() {
 
 
    assert (Strategy.insuranceGoodIdea(myShoe, theRules, aState) == false);
-   aState.action(Action.INSURANCE); //TESTING
-   aState.setDealerBlackjack(false); //TESTING
+   aState.action(Action.INSURANCE);
+   aState.setDealerBlackjack(false);
    aState.action(Action.SPLIT);
 
    myShoe.fasterDrawSpecific(q);
@@ -1648,7 +1442,6 @@ static void testResolveHands() {
            theRules);
 
 
-
    int[] dealerCards = new int[10];
    Utilities.zero(dealerCards);
 
@@ -1659,8 +1452,6 @@ static void testResolveHands() {
 
    //Insurance first
    double expectedEV = -0.5;
-
-
 
    //13 hand.
    expectedEV += 1 * dealerProbs[0]; // -.59
@@ -1682,8 +1473,9 @@ static void testResolveHands() {
 }
 
 
-/* Prints the hard or soft strategy table in its raw form.
- *
+/** Prints the hard or soft strategy table in its raw form.
+ * @deprecated This data should be stored in Strategy, and Strategy already contains
+ * print functionality
  */
 static void printStrategy(ArrayList<ArrayList<State>> solvedStates,
         String message, final boolean printSecondBest) {
@@ -1720,119 +1512,33 @@ static void printStrategy(ArrayList<ArrayList<State>> solvedStates,
       }
       System.out.println();
    }
-
-
-}
-
-/**
- * Helper function for testOverloadedDealer
- *
- *
- * @param test
- * @param corrHandTotal
- * @param corrHandSize
- * @param isSoft
- */
-private static void testOverloadedDealer(final int[] test,
-        final int corrHandTotal,
-        final int corrHandSize,
-        final boolean isSoft) {
-   if (Utilities.handTotal(test) != corrHandTotal) {
-      throw new RuntimeException("Test failed.");
-   }
-   if (Utilities.handSize(test) != corrHandSize) {
-      throw new RuntimeException("Test failed.");
-   }
-   if (Utilities.isSoft(test, corrHandTotal) != isSoft) {
-      throw new RuntimeException("Test failed.");
-   }
-
-
 }
 
 public static void testOverloadedDealer() {
-   int[] myCards = new int[10];
-   Utilities.zero(myCards);
-   testOverloadedDealer(myCards, 0, 0, false);
-   Utilities.zero(myCards);
-   myCards[Constants.ACECARD] = 1;
-   testOverloadedDealer(myCards, 11, 1, true);
-   myCards[Constants.TENCARD] = 1;
-   testOverloadedDealer(myCards, 21, 2, true);
-   myCards[Constants.NINECARD] = 1;
-   testOverloadedDealer(myCards, 20, 3, false);
-   myCards[Constants.SEVENCARD] = 1;
-   testOverloadedDealer(myCards, 27, 4, false);
-   Utilities.zero(myCards);
-   myCards[Constants.ACECARD] = 4;
-   testOverloadedDealer(myCards, 14, 4, true);
-
-   testGetDealerHand();
-
    ArrayList<Card> testHand = new ArrayList<Card>();
    Rules someRules = new Rules(1);
    CardValue j = CardValue.THREE;
-   for (CardValue k : CardValue.values()) //for (CardValue j : CardValue.values())
+   for (CardValue k : CardValue.values())
    {
       testHand.add(new Card(Suit.CLUBS, k));
       testHand.add(new Card(Suit.CLUBS, j));
       testGetDealerHand(testHand, someRules);
-
    }
-}
-
-/**
- * Crude test of getDealerHand
- * Run by testOverloadedDealer
- *
- */
-private static void testGetDealerHand() {
-
-   ArrayList<Card> initialCards = new ArrayList<Card>();
-
-   int handTotal;
-   final Rules theRules = new Rules(1);
-   Shoe myShoe = new Shoe(theRules.getNumberOfDecks());
-
-   theRules.setHoleCard(false);
-   Card two = new Card(Suit.CLUBS, CardValue.TWO);
-   initialCards.add(two);
-   double[] resultTotals = new double[7]; //not implemented yet.
-
-   for (int i = 0; i < 10000; i++) {
-      initialCards = Utilities.getDealerHand(theRules, initialCards, myShoe);
-      handTotal = Utilities.handTotal(initialCards);
-      assert (handTotal > 16) : "Handtotal is " + handTotal;
-      assert (handTotal < 27) : "Handtotal is " + handTotal;
-
-
-      myShoe = new Shoe(theRules.getNumberOfDecks());
-      initialCards.clear();
-      initialCards.add(two);
-   }
-
-
 }
 
 /**
  * Tests the rules hash for all values. See rules hash key function for more
  * information.
- *
- *
- *
  */
 static public void testRulesHash(boolean verbose) {
    Strategy someStrategy = new Strategy(new Rules(), Strategy.Skill.COMP_DEP);
-
    someStrategy.testRulesKeys(verbose);
-
 }
 
 /**
  * Tests the numbers for two scenarios.
  * Since the specific EVs are not stored in files, forceSolve must be set to
- * true
- * so that values can be recalculated here.
+ * true so that values can be recalculated here.
  *
  */
 static public void testResplitEVs() {
@@ -1899,8 +1605,6 @@ static public void testResplitEVs() {
       assert (value > (1 - Constants.FIVE_PERCENT_ERROR) * 0.01726) : value + " for best action: "
               + myStrategy.findBestAction(aState, theRules);
       // These two numbers are from http://www.bjstrat.net/cgi-bin/cdca.cgi
-      //
-
 
       aState = new State(new Card(Suit.CLUBS, CardValue.THREE),
               new Card(Suit.CLUBS, CardValue.THREE),
@@ -1926,135 +1630,6 @@ static public void testResplitEVs() {
 
 }
 
-static public void viewRawResplits() {
-   try {
-
-
-      ArrayList<ArrayList<State>> solvedHard = new ArrayList<ArrayList<State>>();
-      ArrayList<ArrayList<State>> solvedSoft = new ArrayList<ArrayList<State>>();
-      Rules theRules = new Rules(4);
-      theRules.setNumResplitAces(1); //Aces be split, but not resplit
-      theRules.setMaxNumberSplitHands(2); //But other things can be resplit
-      theRules.setHitSplitAces(false);
-      theRules.setAccuracy(Rules.CACHE_ACCURACY);
-
-      //Assuming the dealer does NOT have blackjack.
-      final String rulesHash = theRules.toString();
-      System.out.println(rulesHash);
-      solvedSoft = Calculation.solveSoftPlayersRecursive(theRules, false);
-      solvedHard = Calculation.solveHardPlayersRecursive(theRules, false);
-
-      Testers.printStrategy(solvedSoft, "Assuming the dealer doesn't have blackjack.", false);
-      System.out.println("------------------------------------");
-      Testers.printStrategy(solvedHard, "Assuming the dealer doesn't have blackjack.", false);
-
-      Testers.viewRawSplitEV(theRules, solvedHard, solvedSoft, false);
-      if (!rulesHash.equals(theRules.toString())) {
-         System.out.println("Rules were corrupted.");
-      }
-      //double q = -7.96;
-      //System.out.format("%+.2f  " ,  q);
-
-   }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-
-   }
-
-
-}
-
-/** TODO: Finish deprecating and remove
- * Provides simple testing of split answers. Does no testing on early surrender
- * cases.
- *
- * Add assert back in after mystery bug found on 8 8 A that thinks splitting is
- * a bad idea.
- *
- * I should be using validateSolvedStrategy instead.
- *
- * @param stupidAnswers
- * @param theRules
- */
-@Deprecated
-static public void simplePrintAnswer(ArrayList<Answer> stupidAnswers,
-        Rules theRules, final boolean verbosity) {
-   CardValue firstCard;
-   CardValue secondCard, dealerCard;
-   Action bestAction;
-   for (int i = 0; i < stupidAnswers.size(); i++) {
-      firstCard = stupidAnswers.get(i).getFirstPlayerCard();
-      secondCard = stupidAnswers.get(i).getSecondPlayerCard();
-      dealerCard = stupidAnswers.get(i).getDealerCard();
-      bestAction = stupidAnswers.get(i).getBestAction();
-
-      if ((firstCard == secondCard)
-              && (firstCard
-              == CardValue.ACE) || (firstCard == CardValue.EIGHT)
-              && (theRules.getEarlySurrender() == false)) {
-         if ((theRules.dealerHoleCard() == false)
-                 && (theRules.getNumberOfDecks() >= 4)) {
-            if ((dealerCard == CardValue.ACE)
-                    || (dealerCard == CardValue.TEN)) {
-               assert (bestAction == Action.HIT);
-            }
-            else //Unsure of where I came up with these tests
-            {
-               assert (bestAction == Action.SPLIT);
-            }
-         }
-         else if ((theRules.getNumberOfDecks() >= 2)
-                 && (firstCard == CardValue.EIGHT)) {
-            assert (bestAction == Action.SURRENDER);
-         }
-         else if (theRules.dealerHoleCard()) {
-            assert (bestAction == Action.SPLIT);
-         }
-      }
-
-   }
-
-}
-
-/**
- * Mothballed -- far too slow to be of any practical use. Can be used to
- * do one-off testing? Might be useful if the cache were changed, player
- * decisions were set in stone, and some other modifications made.
- *
- * @param playerCardValue
- * @param DealerCardValue
- * @param numberOfDekcs
- * @param theRules
- *
- */
-static public void testDirectSplitAlgorithm(CardValue playerCard,
-        CardValue dealCard, Rules theRules) {
-   try {
-
-      ArrayList<Card> myCards = new ArrayList<Card>();
-      myCards.add(new Card(Suit.CLUBS, playerCard));
-      myCards.add(new Card(Suit.HEARTS, playerCard));
-      Card dealerCard = new Card(Suit.DIAMONDS, dealCard);
-      FastShoe myShoe = new FastShoe(theRules.getNumberOfDecks());
-      myShoe.fasterDrawSpecific(playerCard);
-      myShoe.fasterDrawSpecific(playerCard);
-      myShoe.fasterDrawSpecific(dealCard);
-      State myState = new State(myCards, dealerCard);
-      myState = Calculation.PlayerRecursive(myShoe, myState, theRules);
-
-//And...goodbye 7+ hours. */
-      State.printStateStatus(myState,
-              "Splitting " + playerCard + " vs. dealer " + dealCard + ", level " + theRules.getAccuracy()
-              + " accuracy.[low med good high max]");
-   }
-   catch (NoRecommendationException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-   }
-
-}
-
 /**
  * A single test to check correct functioning of hole card probabilities.
  *
@@ -2062,8 +1637,6 @@ static public void testDirectSplitAlgorithm(CardValue playerCard,
  */
 static public void testDealerHCP() {
    /*When the dealer has an ace or ten and not a blackjack and a hole card. */
-
-
    Card firstPCard = new Card(Suit.HEARTS, CardValue.NINE);
    Card secondPCard = new Card(Suit.CLUBS, CardValue.TWO);
    Card DCard = new Card(Suit.SPADES, CardValue.ACE);
@@ -2082,30 +1655,6 @@ static public void testDealerHCP() {
            && (solvedState.getExpectedValue() > 0.18192 - Constants.EPSILON)) :
            "Expected value not calculated correctly for player 9-2 vs. dealer Ace:"
            + solvedState.getExpectedValue();
-
-
-
-
-}
-
-/**
- * Scratch
- *
- * This implies that enums do NOT need to be deep clones; they are more
- * like primitives. So I've changed CardValue and Card
- *
- *
- */
-@Deprecated
-static public void testEnumEncapsulation() {
-   Card aCard = new Card(Suit.SPADES, CardValue.TWO);
-   System.out.println(aCard);
-   CardValue otherCV = CardValue.FIVE;
-   CardValue myCV = aCard.getCardValue();
-   myCV = CardValue.FOUR;
-   System.out.println(aCard);
-   myCV = otherCV;
-   System.out.println(aCard);
 }
 
 /**
@@ -2118,7 +1667,6 @@ static public void testEnumEncapsulation() {
 static public void viewRawStrategy(Rules theRules, String accuracyLevel,
         final boolean viewSecondBest) {
    try {
-
       final long startTime = System.currentTimeMillis();
       final String rulesString = theRules.toString();
       ArrayList<ArrayList<State>> solvedHard = new ArrayList<ArrayList<State>>();
@@ -2152,13 +1700,10 @@ public static class testTotalEV {
 private static boolean saveAll = false;
 
 /**
- * TO DO
- * Only one test, add more.
+ * TO DO: Only one test, add more.
  *
- * @param verbosity
  */
 public static void totalEVFourDeckStand17HoleCard(boolean verbosity) {
-
    Rules theRules;
    theRules = new Rules(4);
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
@@ -2172,9 +1717,6 @@ public static void totalEVFourDeckStand17HoleCard(boolean verbosity) {
 
 /**
  * Performs 3+ tests
- *
- * @param verbosity
- *
  */
 public static void totalEVEightDeckHit17HoleCard(boolean verbosity) {
    Rules theRules;
@@ -2182,10 +1724,8 @@ public static void totalEVEightDeckHit17HoleCard(boolean verbosity) {
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(false);
    theRules.setHitOn17(true);
-   //theRules.myDoubleRules.setOnlyTenAndEleven(true);
    theRules.setHoleCard(true);
    wrapperCheckTotalEV(0.0060762, theRules, verbosity);
-
 
    theRules = new Rules(8);
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
@@ -2199,12 +1739,11 @@ public static void totalEVEightDeckHit17HoleCard(boolean verbosity) {
    theRules.setBlackjackPayback(1.5);
    theRules.setLateSurrender(false);
    wrapperCheckTotalEV(0.0091384, theRules, verbosity);
-   //NEXT TEST
+
    theRules = new Rules(8);
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(false);
    theRules.setHitOn17(true);
-   //theRules.myDoubleRules.setOnlyTenAndEleven(true);
    theRules.setHoleCard(true);
    theRules.setMaxNumberSplitHands(2);
    theRules.setNumResplitAces(1);
@@ -2216,18 +1755,12 @@ public static void totalEVEightDeckHit17HoleCard(boolean verbosity) {
    wrapperCheckTotalEV(0.00608, theRules, verbosity);
 }
 
-/**
- *
- *
- * @param verbosity
- */
 public static void totalEVOneDeckStand17NoHole(boolean verbosity) {
    Rules theRules;
    theRules = new Rules(1);
-   theRules.setAccuracy(Rules.CACHE_ACCURACY); //to make it faster
+   theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(true);
    theRules.setHitOn17(false);
-   //theRules.myDoubleRules.setOnlyTenAndEleven(true);
    theRules.setHoleCard(false);
    theRules.setEarlySurrenderNotOnAces(true);
    theRules.myDoubleRules.setAnyTwoCards(true);
@@ -2239,13 +1772,10 @@ public static void totalEVOneDeckStand17NoHole(boolean verbosity) {
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(true);
    wrapperCheckTotalEV(-0.0031627, theRules, verbosity);
-
 }
 
 /**
  * Does 5 + tests
- *
- * @param verbosity
  */
 public static void totalEVFourDeckStand17NoHole(boolean verbosity) {
    Rules theRules;
@@ -2323,8 +1853,7 @@ public static void totalEVTwoDeckHit17HoleCard(boolean verbosity) {
    theRules.myDoubleRules.setNotSplitAces(false);
    wrapperCheckTotalEV(0.00302, theRules, verbosity);
 
-   //theRules.myDoubleRules.setOnlyNineTenEleven(true); MODIFIED
-   theRules = new Rules(2); //Changed from 2. 2->8 decks is about 1 % less accurate.
+   theRules = new Rules(2); 
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(true);
    theRules.setHitOn17(true);
@@ -2333,7 +1862,6 @@ public static void totalEVTwoDeckHit17HoleCard(boolean verbosity) {
    theRules.setHoleCard(true);
    theRules.myDoubleRules.setNotPostSplit(false);
    theRules.setBlackjackPayback(1.5);
-
    theRules.setEarlySurrenderNotOnAces(false);
    theRules.setLateSurrender(false);
    wrapperCheckTotalEV(0.0018, theRules, verbosity);
@@ -2347,25 +1875,27 @@ public static void totalEVTwoDeckHit17HoleCard(boolean verbosity) {
    theRules.setNumResplitAces(0);
    theRules.setHoleCard(true);
    theRules.myDoubleRules.setNotPostSplit(true);
-   theRules.myDoubleRules.setNotSplitAces(false); //true = Can't check on Wizard site
+   theRules.myDoubleRules.setNotSplitAces(false);
    theRules.setBlackjackPayback(1.5);
    theRules.setLateSurrender(true);
    wrapperCheckTotalEV(0.004625, theRules, verbosity);
 
-   // NEXT TEST
+
+   //TODO: Verify that this fails on resplit aces, then fix.
    theRules = new Rules(2);
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
-   theRules.setHitSplitAces(true); //This is where I go wrong. Hitting split aces.
+   theRules.setHitSplitAces(true);
    theRules.setHitOn17(true);
    theRules.setMaxNumberSplitHands(2);
    theRules.setNumResplitAces(0); //Fails at 1 = 0.002657  //but also 0 = .0030468 or .00301
    theRules.setHoleCard(true);
    theRules.myDoubleRules.setNotPostSplit(true);
-   theRules.myDoubleRules.setNotSplitAces(false); //true = Can't check on Wizard site
+   theRules.myDoubleRules.setNotSplitAces(false);
    theRules.setBlackjackPayback(1.5);
    theRules.setLateSurrender(true);
    wrapperCheckTotalEV(0.0030468, theRules, verbosity);
-   // NEXT TEST
+
+
    theRules = new Rules(2);
    theRules.setAccuracy(Rules.CACHE_ACCURACY);
    theRules.setHitSplitAces(true);
@@ -2419,7 +1949,7 @@ public static void totalEVOneDeckHit17NoHole(boolean verbosity) {
    theRules.setLateSurrender(false);
    theRules.setEarlySurrender(false);
    theRules.setBlackjackPayback(6.0D / 5.0D);
-   wrapperCheckTotalEV(0.015467, theRules, verbosity);  //WoO
+   wrapperCheckTotalEV(0.015467, theRules, verbosity);
 
    //Total-consolidated
    //OneDeckHit17NoHole
@@ -2514,9 +2044,6 @@ private static boolean checkTotalEV(double expectedHouseEdge, double totalEV,
 /**
  * This computes the house edge for over 20 different scenarios*
  *
- * @param verbosity
- *
- *
  * *Single deck is barely tested.
  */
 static public void doAll(boolean verbosity, boolean savingStatus) {
@@ -2529,8 +2056,6 @@ static public void doAll(boolean verbosity, boolean savingStatus) {
    if (verbosity) {
       System.out.println("All single deck tests passed.");
    }
-   DealerCache.clearCache();
-
 
    totalEVTwoDeckHit17HoleCard(verbosity);
    if (verbosity) {
