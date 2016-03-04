@@ -231,7 +231,7 @@ The project is in beta because of the shoddy state of project organization, so i
 The project's API is usable, but the code needs clean-up.
 
 ## Project Goals
-* Migrate tests to JUnit refactor tests to match best practices, check code coverage, add test cases where applicable
+* Migrate tests to JUnit, refactor match best practices, check code coverage, add test cases where applicable
 * Refactor program to follow best practices
 * Change code architecture where appropriate, refactor overly long classes/functions
 * Use third-party libraries where appropriate
@@ -251,7 +251,7 @@ Yes! They are welcome! Please let me know what you want to work on. The most imp
 GNU
 
 ## Background
-This is the first program of any length I wrote; I stopped development in August 2014 and restarted in Feb 2016. The code needs serious refactoring (for several reasons -- I did it on a lark, not expecting to publish it; I was inexperienced when I wrote it; and I purposely used no external libraries.). It's in Java so it will obviously never compare to other calculators in terms of speed.
+This is the first program of any length I wrote; I stopped development in August 2014 and restarted in Feb 2016. The code needs serious refactoring (for several reasons -- I did it on a lark, not expecting to publish it; I was inexperienced when I wrote it; and I purposely used no external libraries.). It's in Java so it will never compare to other calculators in terms of speed.
 
 There is nothing new in this calculator in terms of algorithms. It uses a cache to speed up calculation of dealer hand results and approximates split hand results.
 
